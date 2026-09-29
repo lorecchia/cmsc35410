@@ -1,0 +1,14 @@
+---
+title: "Notes"
+listing:
+  contents: notes
+  type: table
+  fields: [title, subtitle, description]
+  sort: "order"
+  field-display-names:
+    subtitle: "Topic"
+    description: "Notes"
+toc: false
+---
+
+Lecture notes and supplementary readings. Drafts are revised during the quarter; report typos via the "Report an issue" link on any page.

@@ -1,0 +1,222 @@
+---
+title: "The Davis–Kahan sin Θ Theorem"
+subtitle: "Supplement to the linear algebra review"
+description: "Draft. For the spectral clustering lecture."
+order: 3
+---
+
+Weyl's inequality (Review Part I, Corollary 6.9) says that eigen*values* of a self-adjoint matrix move by at most $\|E\|$ under a perturbation $E$. Eigen*vectors* are more fragile. If two eigenvalues are close, an arbitrarily small perturbation can rotate the corresponding eigenvectors by $90°$. The Davis–Kahan theorem says this is the only obstruction: an **invariant subspace** is stable, with error controlled by $\|E\|$ divided by the **eigengap** separating it from the rest of the spectrum.
+
+Notation follows Part I of the review: $\mathbb{F} \in \{\mathbb{R}, \mathbb{C}\}$, $M^*$ is the conjugate transpose, and $\|\cdot\|$ is the operator (spectral) norm unless marked otherwise.
+
+---
+
+## 1. Motivating example
+
+Let $A = \operatorname{diag}(1+\varepsilon, 1)$ and $\hat A = \begin{pmatrix} 1 + \varepsilon/2 & \varepsilon/2 \\ \varepsilon/2 & 1 + \varepsilon/2\end{pmatrix}$.
+
+- The top eigenvector of $A$ is $e_1$.
+- The top eigenvector of $\hat A$ is $(e_1 + e_2)/\sqrt2$.
+- The perturbation $\hat A - A = \frac{\varepsilon}{2}\begin{pmatrix}-1 & 1 \\ 1 & 1\end{pmatrix}$ has norm $\varepsilon/\sqrt2$, which is tiny.
+- Yet the top eigenvector rotated by $45°$.
+
+The perturbation is on the same scale as the eigengap $\varepsilon$, so no eigenvector stability can be expected. By contrast, the two-dimensional eigenspace $\operatorname{span}\{e_1, e_2\}$ did not move at all.
+
+**Lesson:** bound the distance between *subspaces*, and measure the perturbation relative to the gap.
+
+---
+
+## 2. Distances between subspaces
+
+Let $V, \hat V \in \mathbb{F}^{n\times k}$ have orthonormal columns ($V^*V = \hat V^*\hat V = I_k$), spanning subspaces $\mathcal V$ and $\hat{\mathcal V}$.
+
+**Principal angles.** The singular values of $\hat V^* V \in \mathbb{F}^{k\times k}$ lie in $[0,1]$. Write them as $\cos\theta_1 \ge \dots \ge \cos\theta_k$, with $\theta_i \in [0, \pi/2]$. The $\theta_i$ are the **principal angles** between $\mathcal V$ and $\hat{\mathcal V}$. They do not depend on the choice of orthonormal bases. Set
+$$
+\sin\Theta(V, \hat V) = \operatorname{diag}(\sin\theta_1, \dots, \sin\theta_k).
+$$
+
+**Lemma 2.1.** Let $\hat V_\perp \in \mathbb{F}^{n\times(n-k)}$ complete $\hat V$ to a unitary matrix $[\hat V\ \hat V_\perp]$.
+
+1. The singular values of $\hat V_\perp^* V$ are $\sin\theta_1, \dots, \sin\theta_k$, padded with zeros if $n - k > k$.
+2. $\|VV^* - \hat V \hat V^*\| = \|\sin\Theta\| = \sin\theta_1$, and $\|VV^* - \hat V\hat V^*\|_F = \sqrt2\,\|\sin\Theta\|_F$.
+3. There is a unitary $O \in \mathbb{F}^{k\times k}$ with $\|\hat V O - V\|_F \le \sqrt2\,\|\sin\Theta\|_F$.
+
+*Proof.*
+(1) Since $\hat V\hat V^* + \hat V_\perp \hat V_\perp^* = I$,
+$$
+I_k = V^*V = (\hat V^*V)^*(\hat V^*V) + (\hat V_\perp^* V)^*(\hat V_\perp^* V).
+$$
+So the eigenvalues of $(\hat V_\perp^*V)^*(\hat V_\perp^*V)$ are $1 - \cos^2\theta_i = \sin^2\theta_i$.
+
+(2) In the orthonormal basis $[\hat V\ \hat V_\perp]$, a direct computation from (1) shows that $VV^* - \hat V\hat V^*$ has eigenvalues $\pm\sin\theta_i$, plus zeros. Both identities follow. (Exercise: carry out the $2\times 2$ block computation.)
+
+(3) Take an SVD $\hat V^*V = U (\cos\Theta) W^*$ and set $O = UW^*$. Then
+$$
+\|\hat VO - V\|_F^2 = 2k - 2\,\mathrm{Re}\operatorname{tr}(O^*\hat V^*V) = 2\sum_i (1 - \cos\theta_i) \le 2\sum_i \sin^2\theta_i,
+$$
+using $1 - c \le 1 - c^2$ for $c \in [0,1]$. $\blacksquare$
+
+Part (3) is what spectral clustering needs. The embedding computed from data, the rows of $\hat V$, matches the ideal embedding (the rows of $V$) **up to a rotation $O$**. A rotation does not affect $k$-means, since it preserves all pairwise distances.
+
+---
+
+## 3. The theorem
+
+**Theorem 3.1 (Davis–Kahan $\sin\Theta$ theorem).** Let $A$ and $\hat A = A + E$ be self-adjoint $n\times n$ matrices.
+
+- Let $V \in \mathbb{F}^{n\times k}$ have orthonormal columns with $AV = V\Lambda_1$, where $\Lambda_1$ is diagonal with entries in an interval $[a, b]$.
+- Let $\hat V_\perp \in \mathbb{F}^{n\times(n-k)}$ have orthonormal columns with $\hat A \hat V_\perp = \hat V_\perp \hat\Lambda_2$, where $\hat\Lambda_2$ is diagonal with every entry outside $(a - \delta, b + \delta)$, for some $\delta > 0$.
+
+Let $\hat V$ be the orthonormal complement of $\hat V_\perp$. It spans the remaining $k$ eigenvectors of $\hat A$. Then for the operator norm and for the Frobenius norm,
+$$
+\|\sin\Theta(V, \hat V)\| \;\le\; \frac{\|EV\|}{\delta} \;\le\; \frac{\|E\|}{\delta},
+\qquad
+\|\sin\Theta(V, \hat V)\|_F \;\le\; \frac{\|EV\|_F}{\delta}.
+$$
+
+In words: if the *unperturbed* eigenvalues of interest sit in $[a,b]$, and the *perturbed* eigenvalues we discard stay at distance $\delta$ from that interval, then the subspace moves by at most $\|E\|/\delta$.
+
+### 3.1 The Sylvester lemma
+
+**Lemma 3.2.** Let $\Lambda \in \mathbb{F}^{k\times k}$ and $D \in \mathbb{F}^{m\times m}$ be self-adjoint. Suppose the eigenvalues of $\Lambda$ lie in $[a,b]$ and those of $D$ lie outside $(a - \delta, b+\delta)$. Then for every $X \in \mathbb{F}^{m\times k}$ and $\|\cdot\| \in \{\|\cdot\|_{\mathrm{op}}, \|\cdot\|_F\}$,
+$$
+\|DX - X\Lambda\| \ge \delta\,\|X\|.
+$$
+
+*Proof.* Let $c = (a+b)/2$ and $r = (b-a)/2$. Then $\|\Lambda - cI\| \le r$. Every eigenvalue of $D - cI$ has absolute value at least $r + \delta$, so $D - cI$ is invertible with $\|(D - cI)^{-1}\| \le 1/(r+\delta)$.
+
+Set $Y = DX - X\Lambda = (D - cI)X - X(\Lambda - cI)$. Then $X = (D-cI)^{-1}\big(Y + X(\Lambda - cI)\big)$. Using $\|PQ\| \le \|P\|_{\mathrm{op}}\|Q\|$ and $\|QP\| \le \|Q\|\,\|P\|_{\mathrm{op}}$, which hold for both norms,
+$$
+\|X\| \le \frac{\|Y\| + r\|X\|}{r + \delta}.
+$$
+Rearranging gives $\delta\|X\| \le \|Y\|$. $\blacksquare$
+
+The centering trick is what makes the lemma work in operator norm. For the Frobenius norm alone there is a one-line proof when $D$ and $\Lambda$ are diagonal: $(DX - X\Lambda)_{ij} = (d_i - \lambda_j)X_{ij}$ and $|d_i - \lambda_j| \ge \delta$.
+
+### 3.2 Proof of Theorem 3.1
+
+Let $X = \hat V_\perp^* V$. By Lemma 2.1(1), $\|X\| = \|\sin\Theta\|$ and $\|X\|_F = \|\sin\Theta\|_F$. Multiply the identity $\hat A V - V\Lambda_1 = (A + E)V - V\Lambda_1 = EV$ on the left by $\hat V_\perp^*$, and use $\hat V_\perp^*\hat A = \hat\Lambda_2\hat V_\perp^*$ (valid because $\hat A$ is self-adjoint). This gives the **Sylvester equation**
+$$
+\hat\Lambda_2 X - X\Lambda_1 = \hat V_\perp^* E V.
+$$
+By Lemma 3.2, $\delta\|X\| \le \|\hat V_\perp^* EV\| \le \|EV\|$. $\blacksquare$
+
+The whole proof is two lines once the Sylvester equation is written down. The eigengap enters only through Lemma 3.2.
+
+### 3.3 A version with the gap measured on $A$ alone
+
+In applications, $A$ is an idealized (population) matrix whose spectrum we know, and $\hat A$ is observed. The natural gap is that of $A$. For the top-$k$ eigenspace, let
+$$
+\delta_0 = \lambda_k(A) - \lambda_{k+1}(A) > 0,
+$$
+where $\lambda_1(\cdot) \ge \dots \ge \lambda_n(\cdot)$.
+
+**Corollary 3.3.** Let $V$ and $\hat V$ span the top-$k$ eigenspaces of $A$ and $\hat A = A + E$. Then
+$$
+\|\sin\Theta(V,\hat V)\| \le \frac{2\|E\|}{\delta_0}, \qquad \|\sin\Theta(V, \hat V)\|_F \le \frac{2\sqrt k\,\|E\|}{\delta_0}.
+$$
+
+*Proof.* Suppose first $\|E\| \le \delta_0/2$. Apply Theorem 3.1 with $[a,b] = [\lambda_k(A), \lambda_1(A)]$. By Weyl, every discarded eigenvalue of $\hat A$ satisfies $\lambda_j(\hat A) \le \lambda_{k+1}(A) + \|E\| = a - (\delta_0 - \|E\|)$. So $\delta = \delta_0 - \|E\| \ge \delta_0/2$ works.
+
+If instead $\|E\| > \delta_0/2$, the operator-norm bound exceeds $1 \ge \|\sin\Theta\|$, so it holds trivially.
+
+The Frobenius bound follows from $\|\sin\Theta\|_F \le \sqrt k\,\|\sin\Theta\|$. $\blacksquare$
+
+Yu, Wang & Samworth (2015) prove the sharper $\|\sin\Theta\|_F \le 2\min(\sqrt k\,\|E\|, \|E\|_F)/\delta_0$ and handle eigenvalues in the middle of the spectrum, not just the top $k$. Combined with Lemma 2.1(3), for some unitary $O$,
+$$
+\|\hat VO - V\|_F \le \frac{2\sqrt{2k}\,\|E\|}{\delta_0}.
+$$
+
+---
+
+## 4. Application sketch: why spectral clustering works
+
+This is the template shared by Ng–Jordan–Weiss, the analysis in von Luxburg's tutorial, and the stochastic block model analyses of Rohe–Chatterjee–Yu and Lei–Rinaldo.
+
+1. **Ideal matrix.** Take $k$ clusters with no edges between them, or a population matrix $A = \mathbb{E}[\hat A]$ with block structure. Then the top-$k$ eigenvectors of the appropriate matrix have **rows that take only $k$ distinct values**, one per cluster.
+   - Unnormalized block model: node $i$ in cluster $j$ has row $\propto e_j^\top/\sqrt{n_j}$, up to a rotation.
+   - Normalized Laplacian (Ng–Jordan–Weiss): rows are rescaled by the square roots of the degrees. After row-normalization, they become $k$ mutually orthogonal unit vectors.
+
+   Let $\Delta$ be the minimum distance between distinct rows.
+2. **Eigengap.** Compute or lower-bound $\delta_0 = \lambda_k(A) - \lambda_{k+1}(A)$. For a disconnected ideal graph, this is controlled by the spectral gaps of the individual clusters.
+3. **Perturbation size.** Bound $\|E\| = \|\hat A - A\|$. In the deterministic setting, $E$ is the between-cluster weight. In the random setting, a matrix concentration inequality gives $\|E\| = O(\sqrt{\text{max expected degree}})$ with high probability.
+4. **Davis–Kahan.** $\|\hat VO - V\|_F \le 2\sqrt{2k}\,\|E\|/\delta_0$.
+5. **Rounding.** Call node $i$ *bad* if its row satisfies $\|(\hat VO)_i - V_i\| \ge \Delta/2$. By Markov's inequality on the squared row errors,
+$$
+\#\text{bad nodes} \le \frac{4\,\|\hat VO - V\|_F^2}{\Delta^2} \le \frac{32\,k\,\|E\|^2}{\Delta^2\,\delta_0^2}.
+$$
+Assigning each good node to the nearest *true* center labels it correctly. For the centers found by (approximate) $k$-means, an extra argument is needed, which loses constant factors (Lei & Rinaldo 2015, Lemma 5.3).
+
+The row-wise conclusion in step 5 comes from a Frobenius bound via Markov. Bounding every row individually needs $\ell_{2\to\infty}$ or entrywise perturbation theory (Cape–Tang–Priebe; Abbe–Fan–Wang–Zhong), which is a natural "further directions" pointer.
+
+---
+
+## 5. Sources and how they fit together
+
+*Notes for planning the lecture. Titles, venues, and years are from memory. The Ng–Jordan–Weiss citation of Stewart & Sun in particular should be checked before it goes on a syllabus.*
+
+**The original theorem.**
+
+- **C. Davis & W. M. Kahan, "The rotation of eigenvectors by a perturbation. III," *SIAM J. Numer. Anal.* 7 (1970).** The source of the $\sin\Theta$, $\tan\Theta$, $\sin 2\Theta$ family of theorems, stated for operators on Hilbert space. Heavy going; better cited than assigned.
+- **G. W. Stewart & J.-G. Sun, *Matrix Perturbation Theory* (Academic Press, 1990).** The standard matrix-analysis reference for invariant-subspace perturbation. This is what Ng–Jordan–Weiss cite.
+- **R. Bhatia, *Matrix Analysis* (GTM 169), Ch. VII.** Clean proofs of the $\sin\Theta$ theorems via Sylvester equations, including the operator-norm subtleties. The proof above follows this route.
+
+**Ng, Jordan & Weiss — the classical application.** "On Spectral Clustering: Analysis and an Algorithm" (NIPS 2001).
+
+- Introduces the now-standard algorithm: normalized affinity $D^{-1/2}AD^{-1/2}$, top-$k$ eigenvectors, row-normalization, $k$-means.
+- The analysis treats the observed affinity matrix as a perturbation of the ideal block-diagonal one. It applies a Stewart–Sun subspace bound (a Davis–Kahan $\sin\Theta$ theorem, not cited under that name) with an eigengap supplied by assumptions (A1)–(A4) on within-cluster connectivity and between-cluster weight.
+- Conclusion: the row-normalized embedding clusters tightly around $k$ mutually orthogonal points.
+- Row-normalization is exactly what makes the ideal rows orthogonal unit vectors despite degree heterogeneity.
+- Good for the lecture as the historical origin. The assumptions are somewhat opaque, so a cleaner restatement is worth doing in class.
+
+**von Luxburg, "A Tutorial on Spectral Clustering," *Statistics and Computing* (2007).**
+
+- The perturbation-theory section states Davis–Kahan explicitly and explains why the eigengap between $\lambda_k$ and $\lambda_{k+1}$ is the right quantity.
+- Also discusses when the argument is shaky: the ideal eigenvectors must be piecewise constant, and the perturbation must be small in operator norm.
+- Probably the easiest version to present, and a good reading assignment.
+
+**Stochastic block model analyses — the modern template.**
+
+- **Rohe, Chatterjee & Yu, "Spectral clustering and the high-dimensional stochastic blockmodel," *Annals of Statistics* (2011).** Normalized Laplacian under the SBM, with the number of clusters allowed to grow. Uses concentration + Davis–Kahan + counting misclustered nodes.
+- **Lei & Rinaldo, "Consistency of spectral clustering in stochastic block models," *Annals of Statistics* (2015).** Sharper, cleaner version for the adjacency matrix. Includes the approximate-$k$-means rounding lemma used in step 5 above. Best source for a complete, rigorous end-to-end proof.
+
+**Yu, Wang & Samworth, "A useful variant of the Davis–Kahan theorem for statisticians," *Biometrika* (2015).**
+
+- Requires an eigengap only for the population matrix $A$, not for the noisy $\hat A$. This is exactly what applications need, since the observed spectrum is not under our control.
+- Also gives the $\min(\sqrt k\|E\|, \|E\|_F)$ form, and a version for singular vectors (Wedin-type).
+- Short, and a good reading.
+
+**Peng, Sun & Zanetti, "Partitioning well-clustered graphs: spectral clustering works!" (COLT 2015; journal version in *SIAM J. Comput.*).**
+
+- A contrasting, worst-case (non-probabilistic) approach. Assumes a gap between $\lambda_{k+1}$ of the normalized Laplacian and the $k$-way expansion constant $\rho(k)$.
+- Proves a **structure theorem**: the bottom-$k$ eigenvectors are close to cluster indicator vectors, and vice versa. This is argued directly, not through a black-box Davis–Kahan bound.
+- Connects naturally to the higher-order Cheeger inequality (Lee–Oveis Gharan–Trevisan) and fits a course with a spectral graph theory emphasis.
+- Useful to contrast with the Davis–Kahan route: which quantity plays the role of the eigengap, and why.
+
+**Further directions (row-wise / entrywise control).**
+
+- **Cape, Tang & Priebe, "The two-to-infinity norm and singular subspace geometry…," *Annals of Statistics* (2019).**
+- **Abbe, Fan, Wang & Zhong, "Entrywise eigenvector analysis of random matrices with low expected rank," *Annals of Statistics* (2020).**
+- These give per-row bounds, and hence exact recovery results, where Davis–Kahan plus Markov only bounds the *number* of misclustered nodes.
+
+**Suggested lecture arc.**
+
+1. Motivating example (Section 1).
+2. Principal angles (Section 2).
+3. Davis–Kahan proof via the Sylvester equation (Section 3).
+4. Ng–Jordan–Weiss as the historical application.
+5. The clean five-step template (Section 4), with Lei–Rinaldo as the rigorous version.
+6. Peng–Sun–Zanetti as the graph-theoretic alternative.
+7. Pointer to entrywise theory.
+
+Assign von Luxburg plus Yu–Wang–Samworth as reading.
+
+---
+
+## 6. Exercises
+
+1. Complete the proof of Lemma 2.1(2): compute $VV^* - \hat V\hat V^*$ in the basis $[\hat V\ \hat V_\perp]$ and find its eigenvalues.
+2. Show that the gap condition in Theorem 3.1 cannot be dropped: for every $\varepsilon > 0$, construct $A, E$ with $\|E\| = \varepsilon$ and $\|\sin\Theta\| = 1$ for the top eigenvectors.
+3. Show that the constant in Theorem 3.1 is sharp: find $2\times2$ examples with $\|\sin\Theta\|$ arbitrarily close to $\|E\|/\delta$.
+4. Let $G$ be the disjoint union of two copies of a $d$-regular expander on $n/2$ vertices, whose second adjacency eigenvalue is $\lambda < d$. Add an arbitrary set of edges between the copies with maximum degree $d'$. Use Corollary 3.3 (with $k = 2$) and the rounding argument of Section 4 to bound the number of misclassified vertices in terms of $n$, $d'$, and $d - \lambda$. *(Hint: $\|E\| \le d'$.)*
+5. *(SVD version.)* State and prove an analogue of Theorem 3.1 for left and right singular subspaces of a rectangular matrix, by applying it to the self-adjoint dilation $\begin{pmatrix} 0 & M \\ M^* & 0\end{pmatrix}$.

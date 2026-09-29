@@ -1,0 +1,16 @@
+---
+title: "Resources"
+toc: false
+---
+
+## Reference texts
+
+[TBD — add the course's recommended books and surveys.]{.tbd}
+
+## Software
+
+The lecture demos are plain HTML/JavaScript and run in any browser. Code examples in the slides use Python with `numpy`, `scipy`, `matplotlib`, and `networkx`.
+
+## Previous offering
+
+Materials from the Fall 2019 offering of CMSC 35410 are available on request.

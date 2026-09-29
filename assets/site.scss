@@ -1,0 +1,12 @@
+/*-- scss:defaults --*/
+$font-family-sans-serif: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+$primary: #800000; // UChicago maroon
+$link-color: #800000;
+$navbar-bg: #800000;
+$navbar-fg: #ffffff;
+
+/*-- scss:rules --*/
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap");
+
+.schedule-table td, .schedule-table th { vertical-align: top; }
+.tbd { color: #888; font-style: italic; }

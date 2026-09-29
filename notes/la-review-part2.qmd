@@ -1,0 +1,361 @@
+---
+title: "Linear Algebra Review, Part II"
+subtitle: "Linear algebra in infinite dimensions"
+description: "Draft. Hilbert spaces, compact operators, the Laplacian."
+order: 2
+---
+
+This note is a crash course in linear algebra in infinite dimensions: Hilbert spaces, bounded operators, the ways infinite dimensions differ from finite ones, compact operators, the spectral theorem for compact self-adjoint operators, and a brief look at unbounded operators such as the Laplacian. It assumes Part I, especially the variational proof of the spectral theorem (Part I, Section 6), which Section 7 below follows almost verbatim.
+
+## Why we need it
+
+Many objects in spectral ML are finite-dimensional *samples* of infinite-dimensional ones:
+
+- A kernel matrix $K_{ij} = k(x_i, x_j)$ on $m$ sample points approximates the integral operator $(T_k f)(x) = \int k(x, y) f(y)\, d\mu(y)$ on $L^2(\mu)$.
+- A graph Laplacian built on points sampled from a manifold approximates the Laplace–Beltrami operator.
+- A graphon is the limit object of a sequence of dense graphs, and its adjacency "matrix" is an integral operator.
+- An infinite graph (a lattice, a tree) has an adjacency operator on $\ell^2(V)$.
+
+To ask whether the spectrum of the sample converges to the spectrum of the limit, we first need to know what the spectrum of the limit is. The good news: for the operators above that are **compact and self-adjoint**, the answer looks almost exactly like Part I, Theorem 6.2. The bad news: most other intuitions from finite dimensions fail. This part explains which ones and why.
+
+---
+
+## 1. Normed spaces and completeness
+
+A **norm** on a vector space $X$ is a function $\|\cdot\|: X \to [0,\infty)$ that is positive definite, homogeneous ($\|cx\| = |c|\,\|x\|$), and satisfies the triangle inequality. A normed space is a **Banach space** if it is complete: every Cauchy sequence converges.
+
+Examples:
+
+- $\ell^p = \{(x_k)_{k\ge1} : \sum_k |x_k|^p < \infty\}$ with $\|x\|_p = (\sum_k |x_k|^p)^{1/p}$, for $1 \le p < \infty$.
+- $\ell^\infty$, the bounded sequences, with the sup norm.
+- $C([0,1])$, the continuous functions, with $\|f\|_\infty = \sup_t |f(t)|$.
+- $L^p(\mu)$, the (equivalence classes of) measurable functions with $\int |f|^p\, d\mu < \infty$.
+
+**Finite vs. infinite dimensions.**
+
+- In finite dimensions, all norms are equivalent, every subspace is closed, and every linear map is continuous. None of these holds in infinite dimensions.
+- $C([0,1])$ with the norm $\|f\|_2 = (\int_0^1 |f|^2)^{1/2}$ is a normed space but *not* complete. Its completion is $L^2([0,1])$. This is one reason $L^2$, with its "functions defined only almost everywhere", is the natural setting.
+- In infinite dimensions, "subspace" and "closed subspace" are different notions, and most theorems need the second. For instance, the finitely supported sequences $c_{00} \subset \ell^2$ form a proper subspace that is **dense**: its closure is all of $\ell^2$.
+
+---
+
+## 2. Hilbert spaces
+
+A **Hilbert space** $H$ is an inner product space that is complete in the induced norm. Examples:
+
+- $\mathbb{F}^n$.
+- $\ell^2$ (or $\ell^2(V)$ for a countable set $V$) with $\langle x, y\rangle = \sum_k x_k \bar y_k$.
+- $L^2(\mu)$ with $\langle f, g\rangle = \int f \bar g\, d\mu$.
+- Reproducing kernel Hilbert spaces (RKHS), which we will meet with kernel methods.
+
+$\ell^p$ and $L^p$ for $p \ne 2$ are Banach but not Hilbert spaces; their norms fail the parallelogram law.
+
+**Theorem 2.1 (Projection theorem).** Let $M \subseteq H$ be a **closed** subspace. Every $x \in H$ has a unique nearest point $P_M x \in M$, characterized by $x - P_M x \perp M$. The map $P_M$ is linear, $P_M^2 = P_M = P_M^*$, and $\|P_M\| \le 1$. Moreover, $H = M \oplus M^\perp$ and $(M^\perp)^\perp = M$.
+
+*Proof sketch.* Let $d = \inf_{m \in M}\|x - m\|$ and pick $m_k \in M$ with $\|x - m_k\| \to d$. By the parallelogram law applied to $x - m_j$ and $x - m_k$,
+$$
+\|m_j - m_k\|^2 = 2\|x-m_j\|^2 + 2\|x-m_k\|^2 - 4\big\|x - \tfrac{m_j+m_k}{2}\big\|^2 \le 2\|x-m_j\|^2 + 2\|x-m_k\|^2 - 4d^2 \to 0.
+$$
+So $(m_k)$ is Cauchy. Completeness of $H$ and closedness of $M$ give a limit $m_\star \in M$ with $\|x - m_\star\| = d$. The orthogonality characterization follows from the same first-order argument as in Part I, Lemma 6.3. $\blacksquare$
+
+Closedness is essential. For $M = c_{00} \subset \ell^2$ we get $M^\perp = \{0\}$, yet $M \ne \ell^2$, so $H \ne M \oplus M^\perp$.
+
+**Theorem 2.2 (Riesz representation).** Every continuous linear functional $\varphi : H \to \mathbb{F}$ has the form $\varphi(x) = \langle x, y\rangle$ for a unique $y \in H$, and $\|\varphi\| = \|y\|$.
+
+*Proof sketch.* If $\varphi = 0$, take $y = 0$. Otherwise $\ker \varphi$ is a closed proper subspace, so by Theorem 2.1 there is a unit vector $z \perp \ker\varphi$. For any $x$, the vector $\varphi(x) z - \varphi(z) x$ lies in $\ker\varphi$ and is therefore orthogonal to $z$. Expanding gives $\varphi(x) = \langle x, \overline{\varphi(z)}\, z\rangle$. $\blacksquare$
+
+---
+
+## 3. Orthonormal bases
+
+An orthonormal set $\{e_\alpha\}$ in $H$ is an **orthonormal basis** (or Hilbert basis) if its linear span is **dense** in $H$. This is *not* a basis in the linear-algebra (Hamel) sense: we allow infinite sums that converge in norm. (A Hamel basis of an infinite-dimensional Banach space is always uncountable and practically useless.)
+
+**Theorem 3.1.** Let $\{e_k\}_{k \ge 1}$ be an orthonormal sequence in $H$.
+
+1. **(Bessel's inequality)** $\sum_k |\langle x, e_k\rangle|^2 \le \|x\|^2$ for every $x$.
+2. For any scalars $(c_k)$, the series $\sum_k c_k e_k$ converges in $H$ iff $\sum_k |c_k|^2 < \infty$.
+3. The following are equivalent:
+   - (a) $\{e_k\}$ is an orthonormal basis;
+   - (b) $\{e_k\}^\perp = \{0\}$;
+   - (c) $x = \sum_k \langle x, e_k\rangle e_k$ for every $x$;
+   - (d) **(Parseval)** $\|x\|^2 = \sum_k |\langle x, e_k\rangle|^2$ for every $x$.
+
+*Proof sketch.* (1) comes from $0 \le \|x - \sum_{k\le n}\langle x, e_k\rangle e_k\|^2 = \|x\|^2 - \sum_{k \le n}|\langle x, e_k\rangle|^2$. (2) holds because partial sums are Cauchy iff the tails $\sum_{k>n}|c_k|^2$ vanish, which is Pythagoras plus completeness. For (3): by (1) and (2), $y = \sum_k \langle x, e_k\rangle e_k$ exists and $x - y \perp$ every $e_k$. This gives (b)⇒(c). The implications (c)⇒(d), (c)⇒(a), and (a)⇒(b) are routine. For (d)⇒(c), apply Pythagoras to $\|x - \sum_{k\le n}\langle x, e_k\rangle e_k\|^2$. $\blacksquare$
+
+A Hilbert space is **separable** (has a countable dense subset) iff it has a countable orthonormal basis, obtained by Gram–Schmidt applied to a dense sequence. Every infinite-dimensional separable Hilbert space is isometrically isomorphic to $\ell^2$ via $x \mapsto (\langle x, e_k\rangle)_k$. Examples of orthonormal bases:
+
+- the standard basis $\{\delta_k\}$ of $\ell^2$;
+- the Fourier basis $\{e^{ikt}/\sqrt{2\pi}\}_{k\in\mathbb{Z}}$ of $L^2([0,2\pi])$;
+- the Hermite functions in $L^2(\mathbb{R})$;
+- the Laplacian eigenfunctions on a compact manifold (a consequence of Section 8).
+
+All spaces in this course are separable.
+
+---
+
+## 4. Bounded operators and adjoints
+
+For normed spaces $X, Y$, a linear map $T : X \to Y$ is **bounded** if $\|T\| := \sup_{\|x\| \le 1}\|Tx\| < \infty$.
+
+**Proposition 4.1.** A linear map is continuous iff it is continuous at $0$ iff it is bounded.
+
+In finite dimensions every linear map is bounded. In infinite dimensions this fails, and some of the most important operators, including differentiation and Laplacians, are **unbounded**. Section 8 discusses them. Until then, "operator" means bounded operator.
+
+Let $B(H)$ denote the bounded operators on a Hilbert space $H$. For $T \in B(H)$ and fixed $y$, the functional $x \mapsto \langle Tx, y\rangle$ is continuous. By Riesz, it equals $\langle x, T^*y\rangle$ for a unique $T^*y$. This defines the **adjoint** $T^* \in B(H)$, with $\|T^*\| = \|T\|$ and $\|T^*T\| = \|T\|^2$. The definitions of self-adjoint, PSD, orthogonal projection ($P = P^2 = P^*$), and unitary ($U^*U = UU^* = I$) carry over unchanged, and Part I, Lemma 6.1 holds verbatim for self-adjoint $T \in B(H)$ provided $W$ is a closed invariant subspace.
+
+A useful fact about self-adjoint operators, whose proof uses only the parallelogram law:
+
+**Lemma 4.2.** If $T \in B(H)$ is self-adjoint, then $\|T\| = \sup_{\|x\|=1} |\langle Tx, x\rangle|$.
+
+*Proof.* Let $M$ denote the supremum. Cauchy–Schwarz gives $M \le \|T\|$. For the reverse, expand using self-adjointness to get, for all $x, y$,
+$$
+4\,\mathrm{Re}\,\langle Tx, y\rangle = \langle T(x+y), x+y\rangle - \langle T(x-y), x-y\rangle \le M\big(\|x+y\|^2 + \|x-y\|^2\big) = 2M\big(\|x\|^2 + \|y\|^2\big).
+$$
+For $\|x\| = 1$ with $Tx \ne 0$, put $y = Tx/\|Tx\|$. The left side becomes $4\|Tx\|$ and the right side $4M$. So $\|Tx\| \le M$. $\blacksquare$
+
+---
+
+## 5. What goes wrong in infinite dimensions
+
+Keep the following examples in mind. They are exactly what the compactness hypothesis in Section 7 rules out.
+
+**(a) Injective does not imply surjective.** The *right shift* $S(x_1, x_2, \dots) = (0, x_1, x_2, \dots)$ on $\ell^2$ is an isometry ($\|Sx\| = \|x\|$), so it is injective, but it is not surjective. Its adjoint is the *left shift* $S^*(x_1, x_2, \dots) = (x_2, x_3, \dots)$, which is surjective but not injective. There is no rank–nullity theorem.
+
+**(b) A self-adjoint operator may have no eigenvalues.** Let $(Mf)(t) = t\,f(t)$ on $L^2([0,1])$. Then $M$ is bounded, self-adjoint, and PSD, with $\|M\| = 1$. If $Mf = \lambda f$, then $(t - \lambda) f(t) = 0$ almost everywhere, which forces $f = 0$ in $L^2$. So $M$ has **no eigenvectors at all**. Yet $M$ is clearly "diagonal" with "eigenvalues" $t \in [0,1]$. It is diagonal in a continuous sense, with generalized eigenfunctions $\delta_\lambda \notin L^2$. The right shift $S$ also has no eigenvalues.
+
+**(c) The spectrum is more than the eigenvalues.** For $T \in B(H)$, define the **spectrum**
+$$
+\sigma(T) = \{\lambda \in \mathbb{C} : T - \lambda I \text{ is not a bijection } H \to H\}.
+$$
+(By the bounded inverse theorem, a bounded bijection automatically has a bounded inverse.) The set of eigenvalues, or **point spectrum**, is only a subset of $\sigma(T)$. In example (b), $\sigma(M) = [0,1]$, but $M$ has no eigenvalues: $M - \lambda I$ is injective but not surjective for $\lambda \in [0,1]$.
+
+Standard facts about the spectrum:
+
+- $\sigma(T)$ is a nonempty compact subset of $\mathbb{C}$ contained in $\{|\lambda| \le \|T\|\}$.
+- If $T$ is self-adjoint, then $\sigma(T) \subseteq [m, M]$, where $m = \inf_{\|x\|=1}\langle Tx, x\rangle$ and $M = \sup_{\|x\|=1}\langle Tx, x\rangle$. Both $m$ and $M$ belong to $\sigma(T)$.
+
+In finite dimensions the spectrum is exactly the set of eigenvalues.
+
+**(d) The unit ball is not compact.** An orthonormal sequence $(e_k)$ satisfies $\|e_j - e_k\| = \sqrt 2$ for $j \ne k$, so it has no convergent subsequence. This is exactly the step in Part I, Lemma 6.3 that fails: $\sup_{\|x\|=1}\langle Tx, x\rangle$ need not be attained. In example (b), the supremum $1$ is approached by functions concentrating near $t = 1$ but never reached.
+
+**(e) Weak vs. strong convergence.** A sequence $x_k$ **converges weakly** to $x$, written $x_k \rightharpoonup x$, if $\langle x_k, y\rangle \to \langle x, y\rangle$ for every $y$. By Bessel's inequality, every orthonormal sequence satisfies $e_k \rightharpoonup 0$, even though $\|e_k\| = 1$. Bounded sequences in a Hilbert space always have weakly convergent subsequences. The phenomenon in (d) is that weak limits can lose mass.
+
+---
+
+## 6. Compact operators
+
+**Definition.** $T \in B(H)$ is **compact** if the image of every bounded sequence has a convergent subsequence. Equivalently, the closure of $T(\text{unit ball})$ is compact.
+
+A compact operator converts the weak convergence of Section 5(e) into norm convergence: if $x_k \rightharpoonup x$, then $Tx_k \to Tx$. Intuitively, a compact operator is one that is "almost finite-dimensional".
+
+**Proposition 6.1.**
+
+1. Every **finite-rank** bounded operator (one with $\dim \operatorname{range} T < \infty$) is compact.
+2. If $T_n$ are compact and $\|T_n - T\| \to 0$, then $T$ is compact. Consequently, norm limits of finite-rank operators are compact. On a Hilbert space the converse also holds: every compact operator is such a limit.
+3. If $T$ is compact and $A, B$ are bounded, then $ATB$ is compact. $T^*$ is compact iff $T$ is.
+4. On an infinite-dimensional $H$, the identity operator is **not** compact (Section 5(d)). Hence a compact operator on an infinite-dimensional space is never invertible, and $0 \in \sigma(T)$.
+
+*Proof of (2).* Let $(x_k)$ be bounded by $1$. By a diagonal argument, pass to a subsequence along which $(T_n x_k)_k$ converges for every $n$. Then
+$$
+\|Tx_j - Tx_k\| \le 2\|T - T_n\| + \|T_n x_j - T_n x_k\|.
+$$
+Choose $n$ so the first term is small, then take $j, k$ large to make the second term small. So $(Tx_k)$ is Cauchy, hence convergent. $\blacksquare$
+
+**Examples.**
+
+- **Diagonal operators.** For $d = (d_k)$ bounded, $D(x)_k = d_k x_k$ on $\ell^2$ is compact iff $d_k \to 0$. (If $d_k \to 0$, the truncations are finite-rank approximations. If $|d_k| \ge \delta$ infinitely often, the vectors $De_k$ along those $k$ are pairwise at distance $\ge \sqrt2\,\delta$.) The multiplication operator $M$ of Section 5(b) is not compact.
+- **Hilbert–Schmidt integral operators.** Let $(X, \mu)$ be a $\sigma$-finite measure space and $K \in L^2(\mu \otimes \mu)$. Define
+$$
+(T_K f)(x) = \int_X K(x,y)\, f(y)\, d\mu(y).
+$$
+By Cauchy–Schwarz, $|T_K f(x)|^2 \le \int |K(x,y)|^2 d\mu(y) \cdot \|f\|^2$. Integrating in $x$ gives $\|T_K\| \le \|K\|_{L^2(\mu\otimes\mu)}$. Finite sums $\sum_i a_i(x) b_i(y)$ are dense in $L^2(\mu \otimes\mu)$, and each such kernel gives a finite-rank operator. So $T_K$ is a norm limit of finite-rank operators, hence compact. It is self-adjoint iff $K(x,y) = \overline{K(y,x)}$ almost everywhere. **Every kernel-method integral operator and every graphon operator is of this form.**
+
+---
+
+## 7. The spectral theorem for compact self-adjoint operators
+
+Throughout, $H \ne \{0\}$ is a Hilbert space over $\mathbb{F}$ and $T \in B(H)$ is compact and self-adjoint.
+
+### 7.1 Statement
+
+**Theorem 7.1 (Spectral theorem, compact self-adjoint operators).** There exist a finite or countably infinite orthonormal sequence $(e_k)$ in $H$ and nonzero real numbers $(\lambda_k)$ with $|\lambda_1| \ge |\lambda_2| \ge \cdots$ such that:
+
+1. $T e_k = \lambda_k e_k$ for every $k$.
+2. If the sequence is infinite, then $\lambda_k \to 0$.
+3. For every $x \in H$,
+$$
+Tx = \sum_k \lambda_k \langle x, e_k\rangle\, e_k,
+$$
+with convergence in operator norm: $\big\|T - \sum_{k \le n}\lambda_k e_k e_k^*\big\| = |\lambda_{n+1}| \to 0$.
+
+4. $H = \ker T \oplus \overline{\operatorname{span}}\{e_k\}$, an orthogonal direct sum.
+5. The nonzero eigenvalues of $T$ are exactly the $\lambda_k$. Each has finite multiplicity, and its eigenspace is spanned by the $e_k$ with $\lambda_k$ equal to it.
+
+In particular, if $H$ is separable, then combining $(e_k)$ with an orthonormal basis of $\ker T$ gives an **orthonormal basis of $H$ consisting of eigenvectors of $T$**.
+
+Compare with Part I, Theorem 6.2. The only new features are that there may be infinitely many eigenvalues, that they can accumulate only at $0$, and that $\ker T$ may be infinite-dimensional. The spectrum is $\sigma(T) = \{\lambda_k\} \cup \{0\}$ when $H$ is infinite-dimensional.
+
+### 7.2 The key lemma: the top eigenvalue exists
+
+In Part I, Lemma 6.3, compactness of the unit sphere guaranteed that the maximum of the Rayleigh quotient is attained. Here, compactness of $T$ plays that role.
+
+**Lemma 7.2.** If $T$ is compact and self-adjoint, then $\|T\|$ or $-\|T\|$ is an eigenvalue of $T$.
+
+*Proof.* If $T = 0$, every nonzero vector is an eigenvector with eigenvalue $0$. Assume $T \ne 0$. By Lemma 4.2 there are unit vectors $x_n$ with $|\langle Tx_n, x_n\rangle| \to \|T\|$. These numbers are real, so passing to a subsequence we may assume $\langle Tx_n, x_n\rangle \to \lambda$, where $\lambda \in \{\|T\|, -\|T\|\}$ and $\lambda \ne 0$. Then
+$$
+\|Tx_n - \lambda x_n\|^2 = \|Tx_n\|^2 - 2\lambda\langle Tx_n, x_n\rangle + \lambda^2 \le 2\lambda^2 - 2\lambda \langle Tx_n, x_n\rangle \longrightarrow 0,
+$$
+using $\|Tx_n\| \le \|T\| = |\lambda|$. By compactness, a further subsequence has $Tx_n \to y$ for some $y$. Then $\lambda x_n = Tx_n - (Tx_n - \lambda x_n) \to y$, so $x_n \to y/\lambda$ and $\|y\| = |\lambda| \ne 0$. By continuity of $T$,
+$$
+Ty = \lim_n T(\lambda x_n) = \lambda \lim_n Tx_n = \lambda y. \qquad\blacksquare
+$$
+
+The first display is the same "approximate eigenvector" computation behind Part I, Lemma 6.3. Compactness upgrades an approximate eigenvector to a genuine one. Without compactness this fails: for the operator $M$ of Section 5(b), such approximate eigenvectors exist for every $\lambda \in [0,1]$, but no genuine eigenvector does.
+
+### 7.3 Proof of Theorem 7.1
+
+**Construction.** Set $H_1 = H$. We build $e_1, e_2, \dots$ inductively. Suppose $e_1, \dots, e_{n-1}$ have been constructed, with $Te_k = \lambda_k e_k$, and let
+$$
+H_n = \{e_1, \dots, e_{n-1}\}^\perp.
+$$
+This is a closed subspace, hence a Hilbert space. It is $T$-invariant: if $x \perp e_k$ for all $k < n$, then $\langle Tx, e_k\rangle = \langle x, Te_k\rangle = \lambda_k\langle x, e_k\rangle = 0$. The restriction $T_n = T|_{H_n}$ is therefore compact and self-adjoint on $H_n$.
+
+- If $T_n = 0$ (this includes the case $H_n = \{0\}$), stop. The sequence is finite, of length $n - 1$.
+- Otherwise, Lemma 7.2 gives a unit vector $e_n \in H_n$ with $Te_n = \lambda_n e_n$ and $|\lambda_n| = \|T_n\| > 0$.
+
+Since $H_{n+1} \subseteq H_n$, we have $|\lambda_{n+1}| = \|T_{n+1}\| \le \|T_n\| = |\lambda_n|$. By construction the $e_k$ are orthonormal. This proves (1).
+
+**(2) The eigenvalues tend to $0$.** Suppose the sequence is infinite and $|\lambda_k| \ge \delta > 0$ for all $k$. Then for $j \ne k$,
+$$
+\|Te_j - Te_k\|^2 = \lambda_j^2 + \lambda_k^2 \ge 2\delta^2,
+$$
+so $(Te_k)$ has no convergent subsequence even though $(e_k)$ is bounded. This contradicts compactness.
+
+**(3) The expansion.** Fix $x$ and let $P_n x = \sum_{k \le n}\langle x, e_k\rangle e_k$. Then $x - P_n x \in H_{n+1}$ and $\|x - P_n x\| \le \|x\|$. Since $T P_n x = \sum_{k\le n}\lambda_k \langle x, e_k\rangle e_k$,
+$$
+\Big\|Tx - \sum_{k\le n}\lambda_k\langle x, e_k\rangle e_k\Big\| = \|T_{n+1}(x - P_nx)\| \le |\lambda_{n+1}|\,\|x\|.
+$$
+If the sequence stops at $N$, set $\lambda_{N+1} := 0$ (because $T_{N+1} = 0$). In either case the right side tends to $0$ by (2). This proves the pointwise expansion and the operator-norm bound $\le |\lambda_{n+1}|$. Equality follows by testing on $x = e_{n+1}$.
+
+**(4) The kernel.** If $x \perp e_k$ for all $k$, then (3) gives $Tx = 0$. Conversely, if $Tx = 0$, then $\langle x, e_k\rangle = \lambda_k^{-1}\langle x, Te_k\rangle = \lambda_k^{-1}\langle Tx, e_k\rangle = 0$. Hence $\ker T = \{e_k\}^\perp$. Since $\{e_k\}^\perp = \big(\overline{\operatorname{span}}\{e_k\}\big)^\perp$, Theorem 2.1 gives $H = \ker T \oplus \overline{\operatorname{span}}\{e_k\}$.
+
+**(5) No other nonzero eigenvalues, and finite multiplicity.** Let $Tx = \mu x$ with $\mu \ne 0$ and $x \neq 0$. By (4), write $x = x_0 + \sum_k \langle x, e_k\rangle e_k$ with $x_0 \in \ker T$. Applying $T$ and using (3),
+$$
+\mu x_0 + \sum_k \mu\langle x, e_k\rangle e_k = \sum_k \lambda_k\langle x, e_k\rangle e_k.
+$$
+Comparing components gives $x_0 = 0$ and $\langle x, e_k\rangle = 0$ whenever $\lambda_k \ne \mu$. Since $x \ne 0$, some $\lambda_k$ equals $\mu$, and $x$ lies in the span of $\{e_k : \lambda_k = \mu\}$. That set is finite because $\lambda_k \to 0$ and $\mu \ne 0$.
+
+**Separable case.** $\ker T$ is a closed subspace of a separable Hilbert space, so it has a countable orthonormal basis. Its union with $(e_k)$ is orthonormal (by (4)) and has dense span (by (4)), so it is an orthonormal basis of $H$ by Theorem 3.1. $\blacksquare$
+
+### 7.4 Consequences and extensions
+
+**Min–max for compact operators.** Order the positive eigenvalues as $\lambda_1^+ \ge \lambda_2^+ \ge \dots > 0$, with multiplicity. If there are at least $k$ of them, then
+$$
+\lambda_k^+ = \max_{\dim S = k}\ \min_{x \in S\setminus\{0\}} R_T(x),
+$$
+by the same proof as Part I, Theorem 6.8. The analogous formula holds for the negative eigenvalues. Weyl's inequality (Part I, Corollary 6.9) also carries over. This is the basic tool for comparing the spectrum of a kernel matrix with that of its limiting integral operator.
+
+**Functional calculus.** For bounded $f$ with $f(0) = 0$, the operator $f(T) = \sum_k f(\lambda_k)\, e_k e_k^*$ is well defined. With $f(0)$ arbitrary, add $f(0)$ times the projection onto $\ker T$.
+
+**Mercer's theorem.** Let $X$ be a compact metric space and $\mu$ a finite Borel measure with full support. Let $k$ be a continuous, symmetric, positive semidefinite kernel, meaning every Gram matrix $[k(x_i,x_j)]$ is PSD. Then $T_k$ is compact, self-adjoint, and PSD on $L^2(\mu)$. Its eigenfunctions $\varphi_k$ for positive eigenvalues can be chosen continuous, and
+$$
+k(x,y) = \sum_k \lambda_k\, \varphi_k(x)\,\overline{\varphi_k(y)},
+$$
+with absolute and uniform convergence on $X \times X$. Consequently, $\sum_k \lambda_k = \int k(x,x)\, d\mu(x) < \infty$, i.e., $T_k$ is trace class. The map $x \mapsto (\sqrt{\lambda_k}\,\varphi_k(x))_k \in \ell^2$ is an explicit feature map for $k$.
+
+**Beyond compact operators.** Every bounded self-adjoint operator admits a spectral theorem, but in general it is unitarily equivalent to a *multiplication operator* like $M$ in Section 5(b) on some $L^2(\nu)$, not to a diagonal matrix. Equivalently, it has a projection-valued spectral measure. The spectrum then splits into a *discrete* part (isolated eigenvalues of finite multiplicity) and an *essential* part. For compact operators the essential spectrum is at most $\{0\}$. The essential spectrum is what makes, for instance, the unnormalized graph Laplacian's spectral clustering inconsistent in some regimes (von Luxburg–Belkin–Bousquet). See Reed & Simon Vol. I or Teschl for the general theory.
+
+---
+
+## 8. Unbounded operators
+
+There are two quite different kinds of unbounded linear operators. Only the second kind matters in practice.
+
+**(i) Everywhere-defined but discontinuous maps.** Every infinite-dimensional normed space $X$ carries linear maps $T : X \to X$ (or linear functionals $X \to \mathbb{F}$) that are defined on all of $X$ but are not bounded.
+
+*Construction:*
+
+1. Pick linearly independent unit vectors $b_1, b_2, \dots$.
+2. Extend them to a Hamel basis of $X$. This uses Zorn's lemma.
+3. Set $f(b_k) = k$, set $f = 0$ on the remaining basis vectors, and extend linearly.
+
+Then $|f(b_k)|/\|b_k\| = k \to \infty$. Such maps are pathological: they cannot be written down explicitly, and their graphs are not closed. By the **closed graph theorem**, an everywhere-defined linear map between Banach spaces with a closed graph is automatically bounded. These maps never arise in applications, and we will not see them again.
+
+**(ii) Densely defined operators.** The unbounded operators of analysis are defined only on a dense subspace $\operatorname{dom}(T) \subsetneq H$, called the **domain**. Examples:
+
+- **Diagonal operator on $\ell^2$:** $(Tx)_k = k\,x_k$, with $\operatorname{dom}(T) = \{x : \sum_k k^2|x_k|^2 < \infty\}$. The domain contains $c_{00}$, so it is dense, and $\|Te_k\| = k$.
+- **Differentiation on $L^2([0,1])$:** $Tf = f'$, with domain, say, $C^1([0,1])$ or the Sobolev space $H^1$. Since $T e^{2\pi i k t} = 2\pi i k\, e^{2\pi i k t}$, $T$ has no finite norm.
+- **Multiplication by $t$ on $L^2(\mathbb{R})$:** $\operatorname{dom} = \{f : tf \in L^2\}$. This is the unbounded cousin of the operator $M$ in Section 5(b).
+- **The Laplace–Beltrami operator** $\Delta$ on $L^2$ of a Riemannian manifold. This is the continuum limit of graph Laplacians built on sampled points.
+- **The graph Laplacian of an infinite graph with unbounded degrees**, acting on $\ell^2(V)$. For bounded degree $d_{\max}$, one has $\|L\| \le 2d_{\max}$, so $L$ is bounded. Without a degree bound, $\|L\delta_u\| \ge d_u$ is unbounded.
+
+**Symmetry forces unboundedness to live on a proper domain.**
+
+**Theorem 8.1 (Hellinger–Toeplitz).** If $T : H \to H$ is linear, defined on *all* of $H$, and symmetric ($\langle Tx, y\rangle = \langle x, Ty\rangle$ for all $x, y$), then $T$ is bounded.
+
+*Proof.* We check that the graph of $T$ is closed. Suppose $x_n \to x$ and $Tx_n \to y$. For every $z$,
+$$
+\langle y, z\rangle = \lim_n \langle Tx_n, z\rangle = \lim_n \langle x_n, Tz\rangle = \langle x, Tz\rangle = \langle Tx, z\rangle,
+$$
+so $y = Tx$. The closed graph theorem then gives boundedness. $\blacksquare$
+
+So an unbounded "self-adjoint" operator like $\Delta$ *cannot* be defined on all of $L^2$. The domain is part of the data.
+
+**Symmetric vs. self-adjoint.** For densely defined $T$, the adjoint $T^*$ is defined on
+$$
+\operatorname{dom}(T^*) = \{y : x \mapsto \langle Tx, y\rangle \text{ is bounded on } \operatorname{dom}(T)\},
+$$
+with $T^*y$ given by Riesz representation. Two notions separate:
+
+- $T$ is **symmetric** if $\langle Tx, y\rangle = \langle x, Ty\rangle$ for all $x, y \in \operatorname{dom}(T)$, i.e., $T^*$ extends $T$.
+- $T$ is **self-adjoint** if $T = T^*$, *including equality of domains*.
+
+In finite dimensions, and for bounded operators, the two notions coincide. Here they do not, and the difference is real.
+
+*Example.* $T = -\frac{d^2}{dx^2}$ on $C_c^\infty((0,1))$ is symmetric but not self-adjoint. It has several self-adjoint extensions, corresponding to **boundary conditions**, and they have different spectra:
+
+- Dirichlet, $f(0) = f(1) = 0$: eigenvalues $(k\pi)^2$ for $k \ge 1$, eigenfunctions $\sin(k\pi x)$.
+- Neumann, $f'(0) = f'(1) = 0$: eigenvalues $(k\pi)^2$ for $k \ge 0$, eigenfunctions $\cos(k\pi x)$.
+
+The same phenomenon appears for Laplacians on non-compact manifolds and on some infinite graphs. Whether the Laplacian is essentially self-adjoint (has a unique self-adjoint extension) is a genuine question there; see Grigor'yan or Schmüdgen. For a self-adjoint unbounded operator, the spectrum is still real and closed, but it is unbounded. A spectral theorem holds in the multiplication-operator form of Section 7.4.
+
+**Taming unbounded operators with compact resolvents.** The standard way to bring unbounded operators within reach of Section 7 is to invert them. Suppose $T \succeq 0$ is self-adjoint and its **resolvent** $(I + T)^{-1}$ is compact. The resolvent is then bounded, self-adjoint, and injective. Theorem 7.1 gives an orthonormal eigenbasis $(e_k)$ of $H$ with $(I+T)^{-1}e_k = \nu_k e_k$ and $\nu_k \downarrow 0$. Hence
+$$
+T e_k = \mu_k e_k, \qquad \mu_k = \nu_k^{-1} - 1, \qquad 0 \le \mu_1 \le \mu_2 \le \dots \to \infty.
+$$
+This is exactly the spectral picture of the Laplacian on a compact manifold: a discrete spectrum going to infinity, and an $L^2$ eigenbasis.
+
+*Concrete instance.* For the Dirichlet Laplacian $T = -\frac{d^2}{dx^2}$ on $[0,1]$, $T$ itself is invertible. Its inverse is the integral operator with the **Green's function**
+$$
+G(x,y) = \min(x,y) - xy,
+$$
+a continuous symmetric kernel, so $T^{-1}$ is a compact Hilbert–Schmidt operator (Section 6). Compare Exercise 4, where $\min(x,y)$ plays the same role for mixed boundary conditions.
+
+**Why this matters in the course.**
+
+- Graph Laplacians on $m$ sampled points converge to $\Delta$, an unbounded operator. So spectral convergence results (Belkin–Niyogi, García Trillos et al.) are stated eigenvalue-by-eigenvalue, or through bounded functions of the operator.
+- Diffusion maps work with the **heat semigroup** $e^{-t\Delta} = \sum_k e^{-t\mu_k} e_k e_k^*$. For $t > 0$, this is a bounded, compact, self-adjoint operator, even though $\Delta$ is not.
+- Passing to a bounded function of an unbounded operator — resolvent, heat semigroup, or spectral projection — is the recurring technique.
+
+---
+
+## 9. Exercises
+
+1. Show that $c_{00}$ is dense in $\ell^2$, and that $c_{00}^\perp = \{0\}$.
+2. Compute $\sigma(S)$ for the right shift on $\ell^2$ over $\mathbb{C}$. *(Answer: the closed unit disk. Show that $S^*$ has every $|\lambda| < 1$ as an eigenvalue.)*
+3. Show that the Volterra operator $(Vf)(t) = \int_0^t f(s)\,ds$ on $L^2([0,1])$ is compact but has no nonzero eigenvalues. Why does this not contradict Theorem 7.1?
+4. Let $k(x,y) = \min(x,y)$ on $[0,1]$ with Lebesgue measure. Find the eigenvalues and eigenfunctions of $T_k$. *(Hint: differentiate $T_k\varphi = \lambda\varphi$ twice and use the boundary conditions $\varphi(0) = 0$, $\varphi'(1) = 0$.)* Verify Mercer's theorem numerically by comparing with the eigenvalues of the $m \times m$ matrix $\frac1m[\min(i/m, j/m)]_{i,j}$.
+5. Let $G$ be an infinite graph with edge weights and weighted degrees bounded by $d_{\max}$. Show that $L = D - A$ defines a bounded self-adjoint operator on $\ell^2(V)$ with $0 \preceq L \preceq 2d_{\max} I$. *(Hint: $\langle Lx, x\rangle = \sum_{\{u,v\}} w_{uv}(x_u - x_v)^2$ and Lemma 4.2.)*
+
+---
+
+## References
+
+- E. Kreyszig, *Introductory Functional Analysis with Applications*. The gentlest ramp-up to Sections 1–6.
+- H. Brezis, *Functional Analysis, Sobolev Spaces and PDEs*, Ch. 6. Compact self-adjoint operators and elliptic eigenvalue problems.
+- P. Lax, *Functional Analysis*. Compact and self-adjoint spectral theory, with applications.
+- G. Teschl, *Mathematical Methods in Quantum Mechanics* (free online), and M. Reed & B. Simon, *Methods of Modern Mathematical Physics*, Vol. I. The general spectral theorem.
+- K. Schmüdgen, *Unbounded Self-adjoint Operators on Hilbert Space* (GTM 265). Domains, extensions, and quadratic forms (Section 8).
+- A. Grigor'yan, *Introduction to Analysis on Graphs*. Laplacians on infinite graphs, including essential self-adjointness.
+- I. Steinwart & A. Christmann, *Support Vector Machines*, Ch. 4. Mercer's theorem and RKHS integral operators.
+- L. Rosasco, M. Belkin & E. De Vito, "On Learning with Integral Operators," *JMLR* 2010. Kernel matrices as empirical integral operators.

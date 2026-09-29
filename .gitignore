@@ -1,0 +1,14 @@
+/_site/
+/.quarto/
+**/*.quarto_ipynb
+**/lecture*_files/
+*.html
+!lectures/**/demos/*.html
+.DS_Store
+__pycache__/
+.ipynb_checkpoints/
+
+# Never commit solutions or grades to this public repo
+solutions/
+*solution*
+*grades*

@@ -1,0 +1,58 @@
+---
+title: "Spectral Methods for Machine Learning and Network Analysis"
+subtitle: "CMSC 35410 · University of Chicago · Autumn 2026"
+toc: false
+---
+
+Spectral methods study complex systems through the **eigenvalues and eigenvectors** of associated linear operators. Because the theory extends from finite-dimensional linear algebra to infinite-dimensional operators, it gives one framework for problems ranging from graph partitioning and random walks to manifold learning and the numerical solution of differential equations. This graduate course develops that theory and its algorithmic uses, with a focus on spectral graph theory and spectral methods in machine learning.
+
+## Logistics
+
+|                   |                                                     |
+|-------------------|-----------------------------------------------------|
+| **Instructor**    | Lorenzo Orecchia                                    |
+| **Lectures**      | [TBD — days, time, room]{.tbd}                      |
+| **Office hours**  | [TBD]{.tbd}                                         |
+| **TA**            | [TBD]{.tbd}                                         |
+| **Discussion**    | [TBD — Ed / Canvas]{.tbd}                           |
+| **Prerequisites** | Linear algebra, probability, and algorithms at the advanced undergraduate level. |
+
+## Tentative topics
+
+::: {.columns}
+::: {.column width="50%"}
+**Finite dimensions**
+
+- Spectral graph theory
+- Random walks on graphs and their convergence
+- Spectral clustering
+- Cheeger's inequality
+- Spectral algorithms via semidefinite programming
+- Spectral sparsification
+- Expander graphs
+- Markov chain mixing times and log-Sobolev inequalities
+- Method of moments for latent-variable models
+:::
+
+::: {.column width="50%"}
+**Infinite dimensions**
+
+- Sturm–Liouville theory and spectral decomposition
+- Markov processes in continuous space and their generators
+- Brownian motion and the Laplacian
+- Langevin dynamics and the Fokker–Planck equation
+- Bakry–Émery theory
+- Manifold learning and diffusion maps
+- Spectral collocation methods
+:::
+:::
+
+## Getting started
+
+- Lecture 1 slides: [Why Eigenvectors?](lectures/lecture01/lecture1.qmd)
+- Background reading: [Linear Algebra Review, Part I](notes/la-review-part1.qmd) (Sections 1 and 6 are the essentials)
+- See the [Schedule](schedule.qmd) for all lectures and readings.
+
+## Grading
+
+[TBD — e.g. homework, scribe notes, final project.]{.tbd}

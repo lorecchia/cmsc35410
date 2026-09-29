@@ -1,0 +1,52 @@
+project:
+  type: website
+  output-dir: _site
+  resources:
+    - "lectures/**/demos/**"
+  render:
+    - "*.qmd"
+    - "lectures/**/*.qmd"
+    - "notes/*.qmd"
+    - "homework/*.qmd"
+
+website:
+  title: "CMSC 35410"
+  description: "Spectral Methods for Machine Learning and Network Analysis — University of Chicago"
+  site-url: "https://lorecchia.github.io/cmsc35410"
+  repo-url: "https://github.com/lorecchia/cmsc35410"
+  repo-actions: [source, issue]
+  page-navigation: true
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: schedule.qmd
+        text: Schedule
+      - href: notes.qmd
+        text: Notes
+      - href: homework.qmd
+        text: Homework
+      - href: resources.qmd
+        text: Resources
+    right:
+      - icon: github
+        href: "https://github.com/lorecchia/cmsc35410"
+        aria-label: GitHub repository
+  page-footer:
+    left: "CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis"
+    right: "Built with [Quarto](https://quarto.org)"
+
+format:
+  html:
+    theme:
+      light: [cosmo, assets/site.scss]
+      dark: [darkly, assets/site.scss]
+    toc: true
+    html-math-method: mathjax
+    number-sections: false
+    link-external-newwindow: true
+
+execute:
+  freeze: auto
+  echo: false
+  warning: false

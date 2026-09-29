@@ -1,0 +1,21 @@
+---
+title: "Schedule"
+toc: false
+---
+
+Tentative and updated as the quarter goes. Slides open in presentation mode (press **F** for fullscreen, **S** for speaker view, **E** for print/PDF mode).
+
+::: {.schedule-table}
+
+| #  | Date | Topic | Materials |
+|----|------|-------|-----------|
+| 1  | [TBD]{.tbd} | Why eigenvectors? A tour of spectral methods | [Slides](lectures/lecture01/lecture1.qmd) · demos: [PageRank](lectures/lecture01/demos/pagerank.html), [Fiedler vector](lectures/lecture01/demos/fiedler.html), [Heat diffusion](lectures/lecture01/demos/heat.html) |
+| 2  | [TBD]{.tbd} | Linear algebra review: the spectral theorem, Courant–Fischer, Weyl | [LA Review I](notes/la-review-part1.qmd) |
+| 3  | [TBD]{.tbd} | Spectral graph theory: Laplacians and their spectra | |
+| 4  | [TBD]{.tbd} | Spectral clustering and eigenvector perturbation | [Davis–Kahan](notes/davis-kahan.qmd) |
+| 5  | [TBD]{.tbd} | Cheeger's inequality | |
+| 6  | [TBD]{.tbd} | Random walks and mixing | |
+| …  | | | |
+|    | [TBD]{.tbd} | Infinite dimensions: Hilbert spaces and compact operators | [LA Review II](notes/la-review-part2.qmd) |
+
+:::

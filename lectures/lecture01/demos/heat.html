@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heat diffusion on a graph</title>
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="controls">
+    <span class="seg" id="graphSeg">
+      <button data-g="path">Path</button>
+      <button data-g="cycle" class="on">Cycle</button>
+      <button data-g="bar">Two clusters + bridge</button>
+    </span>
+    <label>t <input type="range" id="t" min="-2" max="3" step="0.01" value="-2" style="width:200px"><span class="val" id="tVal"></span></label>
+    <button id="play" class="primary">Play</button>
+    <label id="contLab"><input type="checkbox" id="cont" checked> continuous circle kernel</label>
+  </div>
+  <div class="panels">
+    <div class="panel">
+      <h3>u(t) = e<sup>−tL</sup>u<sub>0</sub> — click a node to move the heat source</h3>
+      <svg id="graph" viewBox="0 0 480 400"></svg>
+    </div>
+    <div class="panel">
+      <h3>Temperature by node</h3>
+      <svg id="prof" viewBox="0 0 480 170"></svg>
+      <h3>Mode amplitudes e<sup>−λ<sub>k</sub>t</sup> |⟨u<sub>0</sub>, v<sub>k</sub>⟩| (log scale)</h3>
+      <svg id="modes" viewBox="0 0 480 190"></svg>
+    </div>
+  </div>
+  <div class="readout" id="readout"></div>
+</div>
+<script src="lib.js"></script>
+<script>
+function build(kind) {
+  let n, edges = [], pos = [];
+  if (kind === "path") {
+    n = 20;
+    for (let i = 0; i < n - 1; i++) edges.push([i, i + 1]);
+    for (let i = 0; i < n; i++) pos.push([30 + i * 420 / (n - 1), 200 + 60 * Math.sin(i / (n - 1) * Math.PI * 2)]);
+  } else if (kind === "cycle") {
+    n = 24;
+    for (let i = 0; i < n; i++) edges.push([i, (i + 1) % n]);
+    for (let i = 0; i < n; i++) { const th = -Math.PI / 2 + 2 * Math.PI * i / n; pos.push([240 + 160 * Math.cos(th), 200 + 160 * Math.sin(th)]); }
+  } else {
+    const m = 8; n = 2 * m;
+    for (let b = 0; b < 2; b++) for (let i = 0; i < m; i++) for (let j = i + 1; j < m; j++) edges.push([b * m + i, b * m + j]);
+    edges.push([m - 1, m]);   // the bridge
+    // left clique centred at (125,200) with node m-1 facing right; right clique with node m facing left
+    for (let i = 0; i < m; i++) { const th = 2 * Math.PI * (i + 1) / m; pos.push([125 + 90 * Math.cos(th), 200 + 90 * Math.sin(th)]); }
+    for (let i = 0; i < m; i++) { const th = Math.PI + 2 * Math.PI * i / m; pos.push([355 + 90 * Math.cos(th), 200 + 90 * Math.sin(th)]); }
+  }
+  const L = Array.from({ length: n }, () => Array(n).fill(0));
+  edges.forEach(([i, j]) => { L[i][j] -= 1; L[j][i] -= 1; L[i][i] += 1; L[j][j] += 1; });
+  const eig = eigSym(L);
+  return { kind, n, edges, pos, eig };
+}
+
+let G = build("cycle"), src = 0, logt = -2, timer = null;
+
+function state() {
+  const t = 10 ** logt, { n, eig } = G;
+  const c = eig.vectors.map(v => v[src]);             // ⟨u0, v_k⟩ with u0 = e_src
+  const amp = eig.values.map((l, k) => Math.exp(-Math.max(l, 0) * t) * c[k]);
+  const u = Array(n).fill(0);
+  amp.forEach((a, k) => eig.vectors[k].forEach((vk, i) => u[i] += a * vk));
+  return { t, u, amp };
+}
+
+const gsvg = document.getElementById("graph"), psvg = document.getElementById("prof"), msvg = document.getElementById("modes");
+
+function render() {
+  const { t, u, amp } = state(), { n, edges, pos, eig } = G;
+  const umax = Math.max(...u);
+  gsvg.innerHTML = "";
+  edges.forEach(([i, j]) => el("line", { x1: pos[i][0], y1: pos[i][1], x2: pos[j][0], y2: pos[j][1], class: "edge", "stroke-width": 1.3 }, gsvg));
+  pos.forEach(([x, y], i) => {
+    const c = el("circle", { cx: x, cy: y, r: i === src ? 13 : 11, fill: sequential(u[i] / umax), stroke: i === src ? "#1c1b19" : "#78716c", "stroke-width": i === src ? 2.5 : 1, style: "cursor:pointer" }, gsvg);
+    c.onclick = () => { src = i; render(); };
+  });
+  el("text", { x: 10, y: 392, class: "tick" }, gsvg).textContent = "colour scaled to the current maximum; equilibrium value is 1/n = " + fmt(1 / n);
+
+  // profile
+  psvg.innerHTML = "";
+  const x0 = 40, w = 430, y0 = 145, h = 125, sh = i => G.kind === "cycle" ? ((i - src + Math.floor(n / 2)) % n + n) % n : i, X = i => x0 + (sh(i) + 0.5) / n * w, Y = v => y0 - v / 1.0 * h;
+  const ymax = 1;
+  [0, 0.5, 1].forEach(v => {
+    el("line", { x1: x0, x2: x0 + w, y1: Y(v), y2: Y(v), stroke: "#eee" }, psvg);
+    el("text", { x: x0 - 5, y: Y(v) + 4, "text-anchor": "end", class: "tick" }, psvg).textContent = v;
+  });
+  el("line", { x1: x0, x2: x0 + w, y1: Y(1 / n), y2: Y(1 / n), stroke: "#8a857b", "stroke-dasharray": "4 3" }, psvg);
+  for (let i = 0; i < n; i++) {
+    const v = Math.min(u[i], ymax);
+    el("rect", { x: X(i) - w / n * 0.35, y: Y(v), width: w / n * 0.7, height: Math.max(0, y0 - Y(v)), fill: sequential(u[i] / umax), stroke: "#a8a29e", "stroke-width": 0.5 }, psvg);
+  }
+  if (G.kind === "cycle" && document.getElementById("cont").checked) {
+    // heat kernel on a circle of circumference n (Fourier eigenbasis), sampled finely
+    const pts = [];
+    for (let s = 0; s <= 400; s++) {
+      const xx = s / 400 * n - 0.5 - Math.floor(n / 2) + src;
+      let val = 1 / n;
+      for (let k = 1; k < 200; k++) val += 2 / n * Math.exp(-((2 * Math.PI * k / n) ** 2) * t) * Math.cos(2 * Math.PI * k * (xx - src) / n);
+      pts.push(`${s ? "L" : "M"}${x0 + (s / 400 * n) / n * w},${Y(Math.min(Math.max(val, -0.05), 1.05))}`);
+    }
+    el("path", { d: pts.join(" "), fill: "none", stroke: "#2563eb", "stroke-width": 2 }, psvg);
+    el("text", { x: x0 + w, y: 16, "text-anchor": "end", class: "tick", fill: "#2563eb" }, psvg).textContent = "— continuous heat kernel on the circle";
+  }
+  el("line", { x1: x0, x2: x0 + w, y1: y0, y2: y0, class: "axis" }, psvg);
+  el("text", { x: x0 + w, y: y0 + 16, "text-anchor": "end", class: "tick" }, psvg).textContent = "node";
+
+  // modes
+  msvg.innerHTML = "";
+  const mx0 = 44, mw = 426, my0 = 160, mh = 140, lo = -8, hi = 0;
+  const MY = a => my0 - (Math.log10(Math.max(Math.abs(a), 1e-8)) - lo) / (hi - lo) * mh;
+  for (let d = lo; d <= hi; d += 2) {
+    el("line", { x1: mx0, x2: mx0 + mw, y1: MY(10 ** d), y2: MY(10 ** d), stroke: "#eee" }, msvg);
+    el("text", { x: mx0 - 5, y: MY(10 ** d) + 4, "text-anchor": "end", class: "tick" }, msvg).textContent = "1e" + d;
+  }
+  const bw = mw / n;
+  amp.forEach((a, k) => {
+    const y = MY(a);
+    el("rect", { x: mx0 + k * bw + bw * 0.15, y, width: bw * 0.7, height: Math.max(0, my0 - y), rx: 1.5,
+      fill: k === 0 ? "#57534e" : k === 1 ? "#ea580c" : "#a8a398" }, msvg);
+  });
+  el("line", { x1: mx0, x2: mx0 + mw, y1: my0, y2: my0, class: "axis" }, msvg);
+  el("text", { x: mx0, y: my0 + 16, class: "tick" }, msvg).textContent = "k = 1 (constant)";
+  el("text", { x: mx0 + 1.5 * bw, y: my0 + 28, class: "tick", fill: "#ea580c" }, msvg).textContent = "k = 2 (Fiedler) — the last non-constant mode to die";
+  el("text", { x: mx0 + mw, y: my0 + 16, "text-anchor": "end", class: "tick" }, msvg).textContent = "λₖ increasing →";
+
+  document.getElementById("tVal").textContent = fmt(t, 2);
+  document.getElementById("contLab").style.visibility = G.kind === "cycle" ? "visible" : "hidden";
+  document.getElementById("readout").innerHTML =
+    `t = <b>${fmt(t, 2)}</b> &nbsp;·&nbsp; λ₂ = <b>${fmt(eig.values[1])}</b> &nbsp;·&nbsp; relaxation time 1/λ₂ ≈ <b>${fmt(1 / eig.values[1], 1)}</b> &nbsp;·&nbsp; ` +
+    `max<sub>i</sub> |u<sub>i</sub>(t) − 1/n| = <b>${fmt(Math.max(...u.map(x => Math.abs(x - 1 / n))))}</b>`;
+}
+
+function stop() { clearInterval(timer); timer = null; document.getElementById("play").textContent = "Play"; }
+document.getElementById("play").onclick = e => {
+  if (timer) { stop(); return; }
+  if (logt >= 2.99) logt = -2;
+  e.target.textContent = "Pause";
+  timer = setInterval(() => {
+    logt = Math.min(3, logt + 0.02);
+    document.getElementById("t").value = logt; render();
+    if (logt >= 3) stop();
+  }, 40);
+};
+document.getElementById("t").oninput = e => { stop(); logt = +e.target.value; render(); };
+document.getElementById("cont").onchange = render;
+document.querySelectorAll("#graphSeg button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#graphSeg button").forEach(x => x.classList.remove("on"));
+  b.classList.add("on"); stop(); G = build(b.dataset.g); src = 0; logt = -2; document.getElementById("t").value = -2; render();
+});
+render();
+</script>
+</body>
+</html>
