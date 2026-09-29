@@ -364,11 +364,12 @@ for k in ks:
 fig, ax = plt.subplots(1, 2, figsize=(11, 4.6))
 ax[0].bar(np.arange(1, 21), s[:20] ** 2 / (s ** 2).sum(), color=BLUE)
 ax[0].set(xlabel="component $i$", ylabel="fraction of variance", title="Scree plot: $\\sigma_i^2 / \\sum_j \\sigma_j^2$")
-ax[1].plot(ks, err_rand, "-", color=GREY, lw=2, label="random rank-$k$ projection")
-ax[1].plot(ks, pred, "-", color=ORANGE, lw=3, label="Eckart–Young: $\\sqrt{\\sum_{i>k}\\sigma_i^2}$")
-ax[1].plot(ks, err_svd, "o", color=BLUE, ms=6, label="measured $\\|X - X_k\\|_F$ (truncated SVD)")
+ax[1].plot(ks, err_rand, "x", color=GREY, ms=7, mew=1.8, label="random rank-$k$ projection")
+ax[1].plot(ks, pred, "o", mfc="none", mec=ORANGE, ms=12, mew=2, label="Eckart–Young: $\\sqrt{\\sum_{i>k}\\sigma_i^2}$")
+ax[1].plot(ks, err_svd, "o", color=BLUE, ms=5, label="measured $\\|X - X_k\\|_F$ (truncated SVD)")
 ax[1].set(xlabel="rank $k$", ylabel="Frobenius error", title="Reconstruction error")
 ax[1].set_ylim(0, 110)
+ax[1].set_xticks(range(0, 21, 5))
 ax[1].legend(frameon=False, fontsize=11, loc="upper right")
 fig.tight_layout()
 plt.show()
@@ -438,7 +439,7 @@ $$
 The **same equation** as the graph case — a finite sum becomes a discrete-but-infinite one.
 
 ::: notes
-The eigenbasis comes from Theorem 4.1 in the Linear Algebra Review note, applied to the compact self-adjoint resolvent (I+Δ)⁻¹.
+The eigenbasis comes from Theorem 7.1 in Linear Algebra Review, Part II (see its Section 8), applied to the compact self-adjoint resolvent (I+Δ)⁻¹.
 :::
 
 ## Where the geometry hides {.smaller}

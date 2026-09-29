@@ -5,7 +5,7 @@ description: "Draft. For the spectral clustering lecture."
 order: 3
 ---
 
-Weyl's inequality (Review Part I, Corollary 6.9) says that eigen*values* of a self-adjoint matrix move by at most $\|E\|$ under a perturbation $E$. Eigen*vectors* are more fragile. If two eigenvalues are close, an arbitrarily small perturbation can rotate the corresponding eigenvectors by $90°$. The Davis–Kahan theorem says this is the only obstruction: an **invariant subspace** is stable, with error controlled by $\|E\|$ divided by the **eigengap** separating it from the rest of the spectrum.
+Weyl's inequality (Review Part I, Corollary 2.9) says that eigen*values* of a self-adjoint matrix move by at most $\|E\|$ under a perturbation $E$. Eigen*vectors* are more fragile. If two eigenvalues are close, an arbitrarily small perturbation can rotate the corresponding eigenvectors by $90°$. The Davis–Kahan theorem says this is the only obstruction: an **invariant subspace** is stable, with error controlled by $\|E\|$ divided by the **eigengap** separating it from the rest of the spectrum.
 
 Notation follows Part I of the review: $\mathbb{F} \in \{\mathbb{R}, \mathbb{C}\}$, $M^*$ is the conjugate transpose, and $\|\cdot\|$ is the operator (spectral) norm unless marked otherwise.
 

@@ -5,7 +5,7 @@ description: "Draft. Hilbert spaces, compact operators, the Laplacian."
 order: 2
 ---
 
-This note is a crash course in linear algebra in infinite dimensions: Hilbert spaces, bounded operators, the ways infinite dimensions differ from finite ones, compact operators, the spectral theorem for compact self-adjoint operators, and a brief look at unbounded operators such as the Laplacian. It assumes Part I, especially the variational proof of the spectral theorem (Part I, Section 6), which Section 7 below follows almost verbatim.
+This note is a crash course in linear algebra in infinite dimensions: Hilbert spaces, bounded operators, the ways infinite dimensions differ from finite ones, compact operators, the spectral theorem for compact self-adjoint operators, and a brief look at unbounded operators such as the Laplacian. It assumes Part I, especially the variational proof of the spectral theorem (Part I, Section 2), which Section 7 below follows almost verbatim.
 
 ## Why we need it
 
@@ -16,7 +16,7 @@ Many objects in spectral ML are finite-dimensional *samples* of infinite-dimensi
 - A graphon is the limit object of a sequence of dense graphs, and its adjacency "matrix" is an integral operator.
 - An infinite graph (a lattice, a tree) has an adjacency operator on $\ell^2(V)$.
 
-To ask whether the spectrum of the sample converges to the spectrum of the limit, we first need to know what the spectrum of the limit is. The good news: for the operators above that are **compact and self-adjoint**, the answer looks almost exactly like Part I, Theorem 6.2. The bad news: most other intuitions from finite dimensions fail. This part explains which ones and why.
+To ask whether the spectrum of the sample converges to the spectrum of the limit, we first need to know what the spectrum of the limit is. The good news: for the operators above that are **compact and self-adjoint**, the answer looks almost exactly like Part I, Theorem 2.2. The bad news: most other intuitions from finite dimensions fail. This part explains which ones and why.
 
 ---
 
@@ -56,7 +56,7 @@ $\ell^p$ and $L^p$ for $p \ne 2$ are Banach but not Hilbert spaces; their norms 
 $$
 \|m_j - m_k\|^2 = 2\|x-m_j\|^2 + 2\|x-m_k\|^2 - 4\big\|x - \tfrac{m_j+m_k}{2}\big\|^2 \le 2\|x-m_j\|^2 + 2\|x-m_k\|^2 - 4d^2 \to 0.
 $$
-So $(m_k)$ is Cauchy. Completeness of $H$ and closedness of $M$ give a limit $m_\star \in M$ with $\|x - m_\star\| = d$. The orthogonality characterization follows from the same first-order argument as in Part I, Lemma 6.3. $\blacksquare$
+So $(m_k)$ is Cauchy. Completeness of $H$ and closedness of $M$ give a limit $m_\star \in M$ with $\|x - m_\star\| = d$. The orthogonality characterization follows from the same first-order argument as in Part I, Lemma 2.3. $\blacksquare$
 
 Closedness is essential. For $M = c_{00} \subset \ell^2$ we get $M^\perp = \{0\}$, yet $M \ne \ell^2$, so $H \ne M \oplus M^\perp$.
 
@@ -101,7 +101,7 @@ For normed spaces $X, Y$, a linear map $T : X \to Y$ is **bounded** if $\|T\| :=
 
 In finite dimensions every linear map is bounded. In infinite dimensions this fails, and some of the most important operators, including differentiation and Laplacians, are **unbounded**. Section 8 discusses them. Until then, "operator" means bounded operator.
 
-Let $B(H)$ denote the bounded operators on a Hilbert space $H$. For $T \in B(H)$ and fixed $y$, the functional $x \mapsto \langle Tx, y\rangle$ is continuous. By Riesz, it equals $\langle x, T^*y\rangle$ for a unique $T^*y$. This defines the **adjoint** $T^* \in B(H)$, with $\|T^*\| = \|T\|$ and $\|T^*T\| = \|T\|^2$. The definitions of self-adjoint, PSD, orthogonal projection ($P = P^2 = P^*$), and unitary ($U^*U = UU^* = I$) carry over unchanged, and Part I, Lemma 6.1 holds verbatim for self-adjoint $T \in B(H)$ provided $W$ is a closed invariant subspace.
+Let $B(H)$ denote the bounded operators on a Hilbert space $H$. For $T \in B(H)$ and fixed $y$, the functional $x \mapsto \langle Tx, y\rangle$ is continuous. By Riesz, it equals $\langle x, T^*y\rangle$ for a unique $T^*y$. This defines the **adjoint** $T^* \in B(H)$, with $\|T^*\| = \|T\|$ and $\|T^*T\| = \|T\|^2$. The definitions of self-adjoint, PSD, orthogonal projection ($P = P^2 = P^*$), and unitary ($U^*U = UU^* = I$) carry over unchanged, and Part I, Lemma 2.1 holds verbatim for self-adjoint $T \in B(H)$ provided $W$ is a closed invariant subspace.
 
 A useful fact about self-adjoint operators, whose proof uses only the parallelogram law:
 
@@ -136,7 +136,7 @@ Standard facts about the spectrum:
 
 In finite dimensions the spectrum is exactly the set of eigenvalues.
 
-**(d) The unit ball is not compact.** An orthonormal sequence $(e_k)$ satisfies $\|e_j - e_k\| = \sqrt 2$ for $j \ne k$, so it has no convergent subsequence. This is exactly the step in Part I, Lemma 6.3 that fails: $\sup_{\|x\|=1}\langle Tx, x\rangle$ need not be attained. In example (b), the supremum $1$ is approached by functions concentrating near $t = 1$ but never reached.
+**(d) The unit ball is not compact.** An orthonormal sequence $(e_k)$ satisfies $\|e_j - e_k\| = \sqrt 2$ for $j \ne k$, so it has no convergent subsequence. This is exactly the step in Part I, Lemma 2.3 that fails: $\sup_{\|x\|=1}\langle Tx, x\rangle$ need not be attained. In example (b), the supremum $1$ is approached by functions concentrating near $t = 1$ but never reached.
 
 **(e) Weak vs. strong convergence.** A sequence $x_k$ **converges weakly** to $x$, written $x_k \rightharpoonup x$, if $\langle x_k, y\rangle \to \langle x, y\rangle$ for every $y$. By Bessel's inequality, every orthonormal sequence satisfies $e_k \rightharpoonup 0$, even though $\|e_k\| = 1$. Bounded sequences in a Hilbert space always have weakly convergent subsequences. The phenomenon in (d) is that weak limits can lose mass.
 
@@ -193,11 +193,11 @@ with convergence in operator norm: $\big\|T - \sum_{k \le n}\lambda_k e_k e_k^*\
 
 In particular, if $H$ is separable, then combining $(e_k)$ with an orthonormal basis of $\ker T$ gives an **orthonormal basis of $H$ consisting of eigenvectors of $T$**.
 
-Compare with Part I, Theorem 6.2. The only new features are that there may be infinitely many eigenvalues, that they can accumulate only at $0$, and that $\ker T$ may be infinite-dimensional. The spectrum is $\sigma(T) = \{\lambda_k\} \cup \{0\}$ when $H$ is infinite-dimensional.
+Compare with Part I, Theorem 2.2. The only new features are that there may be infinitely many eigenvalues, that they can accumulate only at $0$, and that $\ker T$ may be infinite-dimensional. The spectrum is $\sigma(T) = \{\lambda_k\} \cup \{0\}$ when $H$ is infinite-dimensional.
 
 ### 7.2 The key lemma: the top eigenvalue exists
 
-In Part I, Lemma 6.3, compactness of the unit sphere guaranteed that the maximum of the Rayleigh quotient is attained. Here, compactness of $T$ plays that role.
+In Part I, Lemma 2.3, compactness of the unit sphere guaranteed that the maximum of the Rayleigh quotient is attained. Here, compactness of $T$ plays that role.
 
 **Lemma 7.2.** If $T$ is compact and self-adjoint, then $\|T\|$ or $-\|T\|$ is an eigenvalue of $T$.
 
@@ -210,7 +210,7 @@ $$
 Ty = \lim_n T(\lambda x_n) = \lambda \lim_n Tx_n = \lambda y. \qquad\blacksquare
 $$
 
-The first display is the same "approximate eigenvector" computation behind Part I, Lemma 6.3. Compactness upgrades an approximate eigenvector to a genuine one. Without compactness this fails: for the operator $M$ of Section 5(b), such approximate eigenvectors exist for every $\lambda \in [0,1]$, but no genuine eigenvector does.
+The first display is the same "approximate eigenvector" computation behind Part I, Lemma 2.3. Compactness upgrades an approximate eigenvector to a genuine one. Without compactness this fails: for the operator $M$ of Section 5(b), such approximate eigenvectors exist for every $\lambda \in [0,1]$, but no genuine eigenvector does.
 
 ### 7.3 Proof of Theorem 7.1
 
@@ -253,7 +253,7 @@ Comparing components gives $x_0 = 0$ and $\langle x, e_k\rangle = 0$ whenever $\
 $$
 \lambda_k^+ = \max_{\dim S = k}\ \min_{x \in S\setminus\{0\}} R_T(x),
 $$
-by the same proof as Part I, Theorem 6.8. The analogous formula holds for the negative eigenvalues. Weyl's inequality (Part I, Corollary 6.9) also carries over. This is the basic tool for comparing the spectrum of a kernel matrix with that of its limiting integral operator.
+by the same proof as Part I, Theorem 2.8. The analogous formula holds for the negative eigenvalues. Weyl's inequality (Part I, Corollary 2.9) also carries over. This is the basic tool for comparing the spectrum of a kernel matrix with that of its limiting integral operator.
 
 **Functional calculus.** For bounded $f$ with $f(0) = 0$, the operator $f(T) = \sum_k f(\lambda_k)\, e_k e_k^*$ is well defined. With $f(0)$ arbitrary, add $f(0)$ times the projection onto $\ker T$.
 

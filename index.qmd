@@ -11,11 +11,10 @@ Spectral methods study complex systems through the **eigenvalues and eigenvector
 |                   |                                                     |
 |-------------------|-----------------------------------------------------|
 | **Instructor**    | Lorenzo Orecchia                                    |
-| **Lectures**      | [TBD — days, time, room]{.tbd}                      |
-| **Office hours**  | [TBD]{.tbd}                                         |
-| **TA**            | [TBD]{.tbd}                                         |
-| **Discussion**    | [TBD — Ed / Canvas]{.tbd}                           |
-| **Prerequisites** | Linear algebra, probability, and algorithms at the advanced undergraduate level. |
+| **Lectures**      | T and Th 9.30-10.50am in JCL 011                    |
+| **Office hours**  | T 11am-12pm and TBD in JCL 315                      |
+| **Communication** | Slack                                               |
+| **Prerequisites** | Linear algebra, probability, and algorithms at the  advanced undergraduate level. |
 
 ## Tentative topics
 
@@ -50,9 +49,13 @@ Spectral methods study complex systems through the **eigenvalues and eigenvector
 ## Getting started
 
 - Lecture 1 slides: [Why Eigenvectors?](lectures/lecture01/lecture1.qmd)
-- Background reading: [Linear Algebra Review, Part I](notes/la-review-part1.qmd) (Sections 1 and 6 are the essentials)
+- Background reading: [Linear Algebra Review, Part I](notes/la-review-part1.qmd) (Sections 1 and 2 are the essentials)
 - See the [Schedule](schedule.qmd) for all lectures and readings.
 
 ## Grading
-
-[TBD — e.g. homework, scribe notes, final project.]{.tbd}
+| Component          | Weight |
+|-------------------|--------|
+| Project            | 30%    |
+| In-class final     | 30%    |
+| Oral final exam    | 30%    |
+| Participation      | 10%    |

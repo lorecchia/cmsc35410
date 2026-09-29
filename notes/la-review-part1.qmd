@@ -1,19 +1,19 @@
 ---
 title: "Linear Algebra Review, Part I"
 subtitle: "Diagonalization in finite dimensions"
-description: "Draft. Sections 1 and 6 are the essentials."
+description: "Draft. Sections 1 and 2 are the essentials."
 order: 1
 ---
 
 This note reviews what it means to diagonalize a linear map on a finite-dimensional space, and what can be said when that is impossible.
 
 - Section 1 fixes notation.
-- Sections 2–3 cover eigenvalues, the characteristic and minimal polynomials, and exact criteria for diagonalizability, including Cayley–Hamilton.
-- Section 4 proves the Schur triangularization and characterizes the unitarily diagonalizable (normal) matrices.
-- Section 5 develops the Jordan canonical form, the complete answer for non-diagonalizable matrices, together with a warning about its numerical instability.
-- Section 6 proves the **spectral theorem** for self-adjoint operators and derives the tools used throughout the course: Rayleigh quotients, Courant–Fischer, Weyl's inequality, and self-adjointness with respect to weighted inner products such as the degree inner product of a graph.
+- Section 2 proves the **spectral theorem** for self-adjoint operators and derives the tools used throughout the course: Rayleigh quotients, Courant–Fischer, Weyl's inequality, and self-adjointness with respect to weighted inner products such as the degree inner product of a graph.
+- Sections 3–4 drop symmetry. They cover eigenvalues, the characteristic and minimal polynomials, and exact criteria for diagonalizability, including Cayley–Hamilton.
+- Section 5 proves the Schur triangularization and characterizes the unitarily diagonalizable (normal) matrices.
+- Section 6 develops the Jordan canonical form, the complete answer for non-diagonalizable matrices, together with a warning about its numerical instability.
 
-Part II extends Section 6 to infinite dimensions, using the proof strategy of Section 6 almost verbatim, so that proof is worth reading carefully. Most of the course needs only Sections 1 and 6. Sections 2–5 matter whenever matrices are not symmetric: directed graphs, non-reversible Markov chains, and iterative methods.
+**On a first reading, Sections 1 and 2 are all you need**; most of the course uses nothing else. Part II extends Section 2 to infinite dimensions, using the proof strategy of Section 2 almost verbatim, so that proof is worth reading carefully. Sections 3–6 matter whenever matrices are not symmetric: directed graphs, non-reversible Markov chains, and iterative methods.
 
 ---
 
@@ -22,8 +22,9 @@ Part II extends Section 6 to infinite dimensions, using the proof strategy of Se
 - $\mathbb{F}$ denotes $\mathbb{R}$ or $\mathbb{C}$. For $z \in \mathbb{C}$, $\bar z$ is the complex conjugate.
 - $V$ is a finite-dimensional vector space over $\mathbb{F}$. A linear map $A : V \to V$ is identified, after choosing a basis, with a matrix in $\mathbb{F}^{n\times n}$. Matrices $A$ and $S^{-1}AS$ ($S$ invertible) are **similar**: they represent the same map in different bases.
 - $\mathbb{F}[t]$ is the ring of polynomials with coefficients in $\mathbb{F}$. A polynomial **splits** over $\mathbb{F}$ if it is a product of linear factors $(t - \lambda)$ with $\lambda \in \mathbb{F}$.
+- A scalar $\lambda \in \mathbb{F}$ is an **eigenvalue** of $A$ if $Av = \lambda v$ for some $v \ne 0$, called an **eigenvector**. The **eigenspace** of $\lambda$ is $E_\lambda = \ker(A - \lambda I)$, and the set of eigenvalues is the **spectrum** $\sigma(A)$. Section 3 develops these notions in general.
 
-The remaining conventions concern inner products, which are needed from Section 4 on.
+The remaining conventions concern inner products, which are needed in Sections 2 and 5.
 
 - An **inner product** on an $\mathbb{F}$-vector space $V$ is a map $\langle \cdot,\cdot\rangle : V\times V \to \mathbb{F}$ that is linear in the first argument, satisfies $\langle x, y\rangle = \overline{\langle y, x\rangle}$, and has $\langle x, x\rangle > 0$ for $x \neq 0$. (So it is conjugate-linear in the second argument.) The induced norm is $\|x\| = \sqrt{\langle x, x\rangle}$.
 - On $\mathbb{F}^n$ the standard inner product is $\langle x, y\rangle = \sum_i x_i \bar y_i = y^* x$, where $y^*$ is the conjugate transpose. Over $\mathbb{R}$, $y^* = y^\top$.
@@ -35,367 +36,19 @@ The remaining conventions concern inner products, which are needed from Section 
 - $A$ is **positive semidefinite** (PSD), written $A \succeq 0$, if it is self-adjoint and $\langle Ax, x\rangle \ge 0$ for all $x$. $A \succeq B$ means $A - B \succeq 0$.
 - The **Rayleigh quotient** of a self-adjoint $A$ is $R_A(x) = \dfrac{\langle Ax, x\rangle}{\langle x, x\rangle}$ for $x \ne 0$.
 
-**Example (why self-adjointness shows up everywhere in this course).** For an undirected graph $G = (V, E, w)$, the adjacency matrix $A$, the Laplacian $L = D - A$, and the normalized Laplacian $\mathcal{L} = I - D^{-1/2} A D^{-1/2}$ are all real symmetric. So are covariance matrices $\frac1m \sum_i x_i x_i^\top$ and kernel (Gram) matrices $K_{ij} = k(x_i, x_j)$. The random-walk matrix $P = D^{-1}A$ and the random-walk Laplacian $L_{\mathrm{rw}} = D^{-1}L = I - P$ are *not* symmetric. They are, however, self-adjoint for the degree-weighted inner product $\langle x, y\rangle_D = y^* D x$, and this is equivalent to the symmetry of $\mathcal{L}$ (Section 6.5).
+**Example (why self-adjointness shows up everywhere in this course).** For an undirected graph $G = (V, E, w)$, the adjacency matrix $A$, the Laplacian $L = D - A$, and the normalized Laplacian $\mathcal{L} = I - D^{-1/2} A D^{-1/2}$ are all real symmetric. So are covariance matrices $\frac1m \sum_i x_i x_i^\top$ and kernel (Gram) matrices $K_{ij} = k(x_i, x_j)$. The random-walk matrix $P = D^{-1}A$ and the random-walk Laplacian $L_{\mathrm{rw}} = D^{-1}L = I - P$ are *not* symmetric. They are, however, self-adjoint for the degree-weighted inner product $\langle x, y\rangle_D = y^* D x$, and this is equivalent to the symmetry of $\mathcal{L}$ (Section 2.5).
 
 ---
 
-## 2. Eigenvalues and the characteristic polynomial
-
-Throughout Sections 2–5, $V$ is a vector space over $\mathbb{F}$ of dimension $n \ge 1$ and $A : V \to V$ is linear. No inner product is needed until Section 4. Choosing a basis identifies $A$ with a matrix in $\mathbb{F}^{n\times n}$. Changing the basis replaces the matrix by a **similar** one, $S^{-1}AS$ with $S$ invertible. Every notion below is invariant under similarity, so it belongs to the linear map, not the matrix.
-
-### 2.1 Eigenvalues and multiplicities
-
-A scalar $\lambda \in \mathbb{F}$ is an **eigenvalue** of $A$ if $Av = \lambda v$ for some $v \ne 0$, called an **eigenvector**. The **eigenspace** is $E_\lambda = \ker(A - \lambda I)$. Its dimension $g_\lambda = \dim E_\lambda$ is the **geometric multiplicity** of $\lambda$. The set of eigenvalues is the **spectrum** $\sigma(A)$.
-
-The **characteristic polynomial** is
-$$
-p_A(t) = \det(tI - A) = t^n - (\operatorname{tr} A)\, t^{n-1} + \dots + (-1)^n \det A .
-$$
-It is monic of degree $n$. It is similarity invariant, since $\det(tI - S^{-1}AS) = \det\big(S^{-1}(tI - A)S\big) = \det(tI - A)$. And $\lambda$ is an eigenvalue iff $A - \lambda I$ is singular iff $p_A(\lambda) = 0$. The multiplicity $a_\lambda$ of $\lambda$ as a root of $p_A$ is its **algebraic multiplicity**. If $p_A$ **splits** over $\mathbb{F}$, i.e., factors into linear factors $p_A(t) = \prod_{\lambda \in \sigma(A)} (t - \lambda)^{a_\lambda}$, then comparing coefficients gives
-$$
-\operatorname{tr} A = \sum_\lambda a_\lambda \lambda, \qquad \det A = \prod_\lambda \lambda^{a_\lambda}.
-$$
-
-**Existence of eigenvalues depends on the field.**
-
-- Over $\mathbb{C}$, the fundamental theorem of algebra says $p_A$ always splits. So every linear map on a nonzero complex vector space has an eigenvalue.
-- Over $\mathbb{R}$, this fails. The rotation $R_\theta = \begin{pmatrix}\cos\theta & -\sin\theta \\ \sin\theta & \cos\theta\end{pmatrix}$ has $p(t) = t^2 - 2\cos\theta\, t + 1$, with no real roots unless $\theta \in \pi\mathbb{Z}$. The standard remedy is to regard a real matrix as a complex one. Its eigenvalues are then real or come in conjugate pairs.
-
-**Lemma 2.1.** Eigenvectors $v_1, \dots, v_k$ belonging to distinct eigenvalues $\lambda_1, \dots, \lambda_k$ are linearly independent.
-
-*Proof.* Suppose not, and take a nontrivial relation $\sum_{i\in I} c_i v_i = 0$ with the fewest nonzero terms. It has at least two terms. Pick $j \in I$ and apply $A - \lambda_j I$: this gives $\sum_{i \in I} c_i(\lambda_i - \lambda_j)v_i = 0$. The new relation is nontrivial, since $\lambda_i \ne \lambda_j$ for $i \ne j$, and has fewer terms. That contradicts minimality. $\blacksquare$
-
-**Lemma 2.2.** For every eigenvalue $\lambda$, $1 \le g_\lambda \le a_\lambda$.
-
-*Proof.* Extend a basis of $E_\lambda$ to a basis of $V$. In this basis, $A = \begin{pmatrix} \lambda I_{g} & * \\ 0 & C\end{pmatrix}$ with $g = g_\lambda$. So $p_A(t) = (t - \lambda)^{g}\, p_C(t)$, and $(t-\lambda)^g$ divides $p_A$. $\blacksquare$
-
-### 2.2 Diagonalizability
-
-$A$ is **diagonalizable** (over $\mathbb{F}$) if $V$ has a basis of eigenvectors of $A$. Equivalently, $A = S\Lambda S^{-1}$ with $\Lambda$ diagonal. The columns of $S$ are the eigenvectors.
-
-**Theorem 2.3.** $A$ is diagonalizable over $\mathbb{F}$ iff $p_A$ splits over $\mathbb{F}$ and $g_\lambda = a_\lambda$ for every $\lambda \in \sigma(A)$. In particular, if $A$ has $n$ distinct eigenvalues in $\mathbb{F}$, it is diagonalizable.
-
-*Proof.* (⇒) If $A = S\Lambda S^{-1}$, then $p_A(t) = \prod_i (t - \Lambda_{ii})$ splits, and $g_\lambda = \#\{i : \Lambda_{ii} = \lambda\} = a_\lambda$.
-
-(⇐) By Lemma 2.1, the sum $\sum_\lambda E_\lambda$ is direct. Its dimension is $\sum_\lambda g_\lambda = \sum_\lambda a_\lambda = \deg p_A = n$. So it is all of $V$, and the union of bases of the $E_\lambda$ is an eigenbasis. $\blacksquare$
-
-**Examples from graphs.** Let $\vec P_n$ be the directed path $1 \to 2 \to \dots \to n$ and $\vec C_n$ the directed cycle.
-
-- The adjacency matrix of $\vec P_n$ is nilpotent. Its only eigenvalue is $0$, with $a_0 = n$ but $g_0 = 1$, so it is **not diagonalizable** over any field.
-- The adjacency matrix of $\vec C_n$ is a permutation matrix with $p(t) = t^n - 1$. It has $n$ distinct complex eigenvalues (the $n$-th roots of unity), so it is diagonalizable over $\mathbb{C}$. For $n \ge 3$ it is not diagonalizable over $\mathbb{R}$.
-- Undirected graphs give symmetric matrices, which are always diagonalizable, in an orthonormal basis (Section 6).
-
-**Why diagonalizability matters.** If $A = S\Lambda S^{-1}$, then
-$$
-A^k = S\Lambda^k S^{-1}, \qquad e^{tA} = S e^{t\Lambda}S^{-1},
-$$
-so linear dynamics $x_{k+1} = Ax_k$ or $\dot x = Ax$ decouple into $n$ scalar ones. The catch for non-symmetric $A$ is that $S$ need not be orthogonal. An ill-conditioned $S$ (large $\kappa(S) = \|S\|\,\|S^{-1}\|$) makes these formulas numerically and quantitatively misleading. See Section 5.6.
-
----
-
-## 3. Polynomials in $A$ and the minimal polynomial
-
-### 3.1 The minimal polynomial
-
-For $q(t) = \sum_k c_k t^k \in \mathbb{F}[t]$, set $q(A) = \sum_k c_k A^k$. The map $q \mapsto q(A)$ respects sums and products. So all polynomials in $A$ commute with each other and with $A$. Two further facts:
-
-- If $Av = \lambda v$, then $q(A)v = q(\lambda)v$.
-- $q(S^{-1}AS) = S^{-1}q(A)S$.
-
-Some nonzero polynomial annihilates $A$: the $n^2 + 1$ matrices $I, A, \dots, A^{n^2}$ live in the $n^2$-dimensional space $\mathbb{F}^{n\times n}$, so they are linearly dependent.
-
-**Proposition 3.1.** There is a unique monic polynomial $m_A$ of least degree with $m_A(A) = 0$, the **minimal polynomial** of $A$. A polynomial $q$ satisfies $q(A) = 0$ iff $m_A$ divides $q$.
-
-*Proof.* Let $m$ be a monic annihilating polynomial of least degree. For any $q$ with $q(A) = 0$, divide: $q = sm + r$ with $\deg r < \deg m$. Then $r(A) = q(A) - s(A)m(A) = 0$, so $r = 0$ by minimality. Uniqueness: two such $m$ divide each other and are monic. $\blacksquare$
-
-**Proposition 3.2.** The roots of $m_A$ in $\mathbb{F}$ are exactly the eigenvalues of $A$ in $\mathbb{F}$.
-
-*Proof.* If $Av = \lambda v$ with $v \ne 0$, then $0 = m_A(A)v = m_A(\lambda)v$, so $m_A(\lambda) = 0$.
-
-Conversely, if $m_A(\lambda) = 0$, write $m_A(t) = (t - \lambda)q(t)$. Since $\deg q < \deg m_A$, $q(A) \ne 0$. Pick $w$ with $v = q(A)w \ne 0$. Then $(A - \lambda I)v = m_A(A)w = 0$. $\blacksquare$
-
-### 3.2 The primary decomposition
-
-The engine behind everything that follows is a statement about coprime polynomials.
-
-**Lemma 3.3 (Kernel splitting).** Suppose $q(A) = 0$ and $q = q_1q_2$ with $\gcd(q_1, q_2) = 1$. Then
-$$
-V = \ker q_1(A) \oplus \ker q_2(A).
-$$
-Both summands are $A$-invariant. The projection onto $\ker q_1(A)$ along $\ker q_2(A)$ is a polynomial in $A$.
-
-*Proof.* By Bézout, there are polynomials $a, b$ with $aq_1 + bq_2 = 1$, so $I = a(A)q_1(A) + b(A)q_2(A)$. For any $v$,
-$$
-v = \underbrace{b(A)q_2(A)v}_{=:v_1} + \underbrace{a(A)q_1(A)v}_{=:v_2}.
-$$
-Here $q_1(A)v_1 = b(A)q(A)v = 0$, so $v_1 \in \ker q_1(A)$. Similarly, $v_2 \in \ker q_2(A)$.
-
-If $v$ lies in both kernels, both terms vanish, so $v = 0$. The sum is therefore direct, and the projection onto the first summand is $b(A)q_2(A)$. Invariance: if $q_i(A)v = 0$, then $q_i(A)Av = Aq_i(A)v = 0$. $\blacksquare$
-
-**Corollary 3.4 (Primary decomposition).** If $q(A) = 0$ and $q = q_1 \cdots q_r$ with the $q_i$ pairwise coprime, then
-$$
-V = \ker q_1(A) \oplus \dots \oplus \ker q_r(A).
-$$
-Each summand is $A$-invariant, and the projections $P_i$ onto the summands are polynomials in $A$. In particular, they commute with $A$, with each other, and with anything that commutes with $A$.
-
-*Proof.* Induct on $r$, applying Lemma 3.3 to $q_1$ and $q_2\cdots q_r$ (which are coprime). $\blacksquare$
-
-### 3.3 Diagonalizability via the minimal polynomial
-
-**Theorem 3.5.** The following are equivalent:
-
-1. $A$ is diagonalizable over $\mathbb{F}$.
-2. $m_A$ splits over $\mathbb{F}$ with **distinct** roots: $m_A(t) = \prod_{\lambda \in \sigma(A)}(t - \lambda)$.
-3. $A$ is annihilated by some polynomial that splits over $\mathbb{F}$ with distinct roots.
-
-*Proof.*
-
-- (1)⇒(2): Let $q(t) = \prod_{\lambda\in\sigma(A)} (t-\lambda)$. Then $q(A)$ kills every eigenvector, hence every vector of an eigenbasis. So $q(A) = 0$ and $m_A$ divides $q$. By Proposition 3.2, every factor of $q$ appears in $m_A$, so $m_A = q$.
-- (2)⇒(3) is trivial.
-- (3)⇒(1): If $q(A) = 0$ with $q = \prod_{i}(t - \mu_i)$ and the $\mu_i$ distinct, the factors are pairwise coprime. Corollary 3.4 gives $V = \bigoplus_i \ker(A - \mu_i I)$, a direct sum of eigenspaces. $\blacksquare$
-
-**Corollary 3.6.**
-
-1. If $A$ is diagonalizable and $W$ is an $A$-invariant subspace, then $A|_W$ is diagonalizable. (Proof: $m_A(A|_W) = 0$, so criterion (3) applies.)
-2. Projections ($A^2 = A$) and involutions ($A^2 = I$) are diagonalizable over $\mathbb{R}$. Matrices with $A^k = I$ are diagonalizable over $\mathbb{C}$, since $t^k - 1$ has $k$ distinct complex roots. This covers every permutation matrix, and in particular $\vec C_n$.
-
-**Proposition 3.7 (Simultaneous diagonalization).** If $A$ and $B$ are diagonalizable and $AB = BA$, then they have a common eigenbasis.
-
-*Proof.* $B$ preserves each eigenspace $E_\lambda$ of $A$: if $Av = \lambda v$, then $A(Bv) = BAv = \lambda Bv$. By Corollary 3.6(1), $B|_{E_\lambda}$ is diagonalizable. Choose an eigenbasis of $B|_{E_\lambda}$ inside each $E_\lambda$. Its vectors are eigenvectors of $A$ too, and together they form a basis of $V = \bigoplus_\lambda E_\lambda$. $\blacksquare$
-
-### 3.4 The Cayley–Hamilton theorem
-
-**Theorem 3.8 (Cayley–Hamilton).** $p_A(A) = 0$. Consequently, $m_A$ divides $p_A$, and $\deg m_A \le n$.
-
-*Proof.* Let $\operatorname{adj}$ denote the adjugate (transposed cofactor matrix), so that $\operatorname{adj}(M)\,M = \det(M)\,I$. Apply this to $M = tI - A$:
-$$
-\operatorname{adj}(tI - A)\,(tI - A) = p_A(t)\, I .
-$$
-The entries of $\operatorname{adj}(tI - A)$ are polynomials of degree $\le n-1$ in $t$. Write $\operatorname{adj}(tI - A) = \sum_{k=0}^{n-1} B_k t^k$ with constant matrices $B_k$, and $p_A(t) = \sum_{k=0}^n c_k t^k$. Set $B_{-1} = B_n = 0$ and compare coefficients of $t^k$:
-$$
-B_{k-1} - B_kA = c_k I, \qquad k = 0, \dots, n.
-$$
-Multiply the $k$-th identity on the right by $A^k$ and sum over $k$. The left side telescopes:
-$$
-p_A(A) = \sum_{k=0}^n \big(B_{k-1}A^k - B_kA^{k+1}\big) = B_{-1} - B_nA^{n+1} = 0. \qquad\blacksquare
-$$
-
-The proof uses only polynomial identities, so it holds over any field. The tempting one-liner "substitute $t = A$ into $\det(tI - A)$" is not a proof, since $\det(A\cdot I - A)$ would be a scalar, whereas $p_A(A)$ is a matrix.
-
-**Corollary 3.9.** If $p_A(t) = \prod_\lambda (t - \lambda)^{a_\lambda}$, then
-$$
-m_A(t) = \prod_\lambda (t-\lambda)^{k_\lambda}, \qquad 1 \le k_\lambda \le a_\lambda.
-$$
-The exponents $k_\lambda$ are identified in Section 5 as the size of the largest Jordan block for $\lambda$.
-
-*Examples.* For $A = \operatorname{diag}(1,1,2)$: $p_A = (t-1)^2(t-2)$ and $m_A = (t-1)(t-2)$. For the $n\times n$ Jordan block with eigenvalue $\lambda$ (Section 5): $p_A = m_A = (t-\lambda)^n$.
-
-**Application: distinct eigenvalues bound the diameter.** Let $G$ be a connected graph with nonnegative edge weights, adjacency matrix $A$, and diameter $\mathrm{diam}(G)$. Then
-$$
-\mathrm{diam}(G) \le (\text{number of distinct eigenvalues of } A) - 1.
-$$
-
-*Proof.*
-
-- Since $A$ is symmetric, it is diagonalizable (Section 6). By Theorem 3.5, $\deg m_A$ equals the number of distinct eigenvalues.
-- Let $D = \mathrm{diam}(G)$. Fix $u$ and vertices $w_0 = u, w_1, \dots, w_D$ along a shortest path, so $d(u, w_k) = k$.
-- The entry $(A^j)_{u w_k}$ sums the weights of walks of length $j$ from $u$ to $w_k$. So it is $0$ for $j < k$ and positive for $j = k$.
-- If $\sum_{j=0}^{D} c_j A^j = 0$, look at entry $(u, w_D)$: only $j = D$ contributes, so $c_D = 0$. Then look at $(u, w_{D-1})$ to get $c_{D-1} = 0$, and so on.
-- So $I, A, \dots, A^D$ are linearly independent, and $\deg m_A \ge D + 1$. $\blacksquare$
-
-The same fact underlies Krylov methods. Conjugate gradient and Lanczos applied to a symmetric matrix terminate, in exact arithmetic, after at most (number of distinct eigenvalues) steps.
-
----
-
-## 4. Triangularization: the Schur decomposition and normal matrices
-
-Not every matrix is diagonalizable, but over $\mathbb{C}$ every matrix is triangularizable, even by a unitary change of basis. In this section $V$ carries an inner product (Section 1).
-
-**Theorem 4.1 (Schur).** Let $A \in \mathbb{C}^{n\times n}$. There is a unitary $U$ and an upper triangular $T$ with
-$$
-A = UTU^*.
-$$
-The diagonal entries of $T$ are the eigenvalues of $A$, repeated according to algebraic multiplicity, and they can be placed in any prescribed order. If $A$ is real and $p_A$ splits over $\mathbb{R}$, then $U$ can be taken real orthogonal and $T$ real.
-
-*Proof.* Induct on $n$; the case $n = 1$ is trivial. Let $\lambda$ be the eigenvalue to be placed first. (One exists by the fundamental theorem of algebra, or by the splitting hypothesis in the real case.) Let $v$ be a unit eigenvector, and complete it to a unitary matrix $[v\ W]$. Since $W^*Av = \lambda W^*v = 0$,
-$$
-[v\ W]^* A\, [v\ W] = \begin{pmatrix} \lambda & v^*AW \\ 0 & W^*AW \end{pmatrix}.
-$$
-Now $p_{W^*AW}(t) = p_A(t)/(t - \lambda)$. So by induction, $W^*AW = U_1T_1U_1^*$, with the remaining eigenvalues in the prescribed order. Then $U = [v\ \ WU_1]$ works. The diagonal of $T$ lists the eigenvalues with multiplicity because $p_A = p_T = \prod_i (t - T_{ii})$. $\blacksquare$
-
-Unlike the Jordan form below, the Schur form is computed stably in practice: it is what the QR algorithm produces.
-
-**Theorem 4.2 (Normal matrices).** $A \in \mathbb{C}^{n\times n}$ is unitarily diagonalizable ($A = U\Lambda U^*$ with $U$ unitary and $\Lambda$ diagonal) iff $A$ is **normal**: $AA^* = A^*A$.
-
-*Proof.* (⇒) Diagonal matrices commute with their adjoints, so $AA^* = U\Lambda\bar\Lambda U^* = A^*A$.
-
-(⇐) Write $A = UTU^*$ by Schur. Then $T$ is normal and upper triangular. Compare the $(1,1)$ entries of $T^*T$ and $TT^*$:
-$$
-|t_{11}|^2 = (T^*T)_{11} = (TT^*)_{11} = \sum_{j} |t_{1j}|^2 .
-$$
-So $t_{1j} = 0$ for $j > 1$. The lower-right $(n-1)\times(n-1)$ block is again normal and upper triangular, so induction shows $T$ is diagonal. $\blacksquare$
-
-**Corollary 4.3.** A Hermitian matrix is unitarily diagonalizable with real eigenvalues. (Here $T = T^*$ is upper triangular, so it is diagonal with real entries.) A real symmetric matrix therefore has real eigenvalues, so $p_A$ splits over $\mathbb{R}$, and the real case of Theorem 4.1 gives a real orthogonal eigenbasis.
-
-This is already the finite-dimensional spectral theorem. Section 6 proves it again, variationally. That proof avoids the fundamental theorem of algebra, produces the Courant–Fischer characterization along the way, and is the one that extends to infinite dimensions (Part II).
-
-**Examples of normal matrices.**
-
-- Hermitian and skew-Hermitian matrices.
-- Unitary matrices, including permutation matrices. The adjacency matrix of $\vec C_n$ is unitarily diagonalized by the discrete Fourier basis $\big(\omega^{jk}/\sqrt n\big)_{j}$ with $\omega = e^{2\pi i/n}$.
-- **Circulant matrices**, i.e., polynomials in the cyclic shift. These are the adjacency matrices of Cayley graphs of $\mathbb{Z}_n$, and they are all diagonalized by the same Fourier basis.
-
-The adjacency matrix of a directed graph is normal only in special cases. The directed path is not even diagonalizable.
-
----
-
-## 5. The Jordan canonical form
-
-When $A$ is not diagonalizable, the best one can do by similarity is block diagonal form with **Jordan blocks**. Throughout this section, assume $p_A$ splits over $\mathbb{F}$, which is automatic over $\mathbb{C}$. Write $p_A(t) = \prod_{\lambda\in\sigma(A)}(t-\lambda)^{a_\lambda}$.
-
-### 5.1 Generalized eigenspaces
-
-The **generalized eigenspace** of $\lambda \in \sigma(A)$ is
-$$
-G_\lambda = \ker (A - \lambda I)^{a_\lambda} \;\supseteq\; E_\lambda .
-$$
-
-**Theorem 5.1 (Generalized eigenspace decomposition).**
-
-1. $V = \bigoplus_{\lambda \in \sigma(A)} G_\lambda$, and each $G_\lambda$ is $A$-invariant.
-2. $\lambda$ is the only eigenvalue of $A|_{G_\lambda}$, and $\dim G_\lambda = a_\lambda$.
-3. The projections $P_\lambda$ onto $G_\lambda$ along $\bigoplus_{\mu\ne\lambda} G_\mu$ are polynomials in $A$, and $\sum_\lambda P_\lambda = I$.
-
-*Proof.*
-(1) and (3): By Cayley–Hamilton, $p_A(A) = 0$. The factors $(t - \lambda)^{a_\lambda}$ are pairwise coprime, so Corollary 3.4 applies.
-
-(2): If $v \in G_\lambda$ and $Av = \mu v$ with $v \ne 0$, then $0 = (A-\lambda I)^{a_\lambda}v = (\mu - \lambda)^{a_\lambda}v$, so $\mu = \lambda$. Hence $p_{A|_{G_\lambda}}(t) = (t - \lambda)^{\dim G_\lambda}$. In a basis adapted to the decomposition in (1), $A$ is block diagonal, so $p_A = \prod_\lambda p_{A|_{G_\lambda}}$. Comparing exponents gives $\dim G_\lambda = a_\lambda$. $\blacksquare$
-
-### 5.2 The Jordan–Chevalley decomposition
-
-**Theorem 5.2 (Jordan–Chevalley).** There are unique linear maps $S$ and $N$ with:
-
-- $A = S + N$;
-- $S$ diagonalizable and $N$ nilpotent ($N^k = 0$ for some $k$);
-- $SN = NS$.
-
-Moreover, $S$ and $N$ are polynomials in $A$.
-
-*Proof.* *Existence.* With $P_\lambda$ as in Theorem 5.1, set $S = \sum_\lambda \lambda P_\lambda$ and $N = A - S$. Both are polynomials in $A$, so they commute. $S$ acts as $\lambda I$ on $G_\lambda$, so it is diagonalizable. On $G_\lambda$, $N$ acts as $A - \lambda I$, and $(A - \lambda I)^{a_\lambda} = 0$ there. So $N^{\max_\lambda a_\lambda} = 0$.
-
-*Uniqueness.* Suppose $A = S' + N'$ is another such decomposition.
-
-- $S'$ and $N'$ commute with $S' + N' = A$, hence with every polynomial in $A$, in particular with $S$ and $N$.
-- So $S - S' = N' - N$. The left side is a difference of commuting diagonalizable maps, hence diagonalizable by Proposition 3.7. The right side is a difference of commuting nilpotent maps, hence nilpotent: expand $(N' - N)^{2k}$ with the binomial theorem.
-- A map that is both diagonalizable and nilpotent is $0$. $\blacksquare$
-
-$S = \sum_\lambda \lambda P_\lambda$ is the non-normal analogue of the spectral decomposition in Theorem 6.2. The differences are that the $P_\lambda$ are *oblique* projections, not orthogonal ones, and that there is a nilpotent correction $N$. When $A$ is normal, $N = 0$ and the $P_\lambda$ are orthogonal.
-
-### 5.3 Nilpotent maps
-
-For $\lambda \in \mathbb{F}$ and $s \ge 1$, the **Jordan block** $J_s(\lambda) \in \mathbb{F}^{s\times s}$ has $\lambda$ on the diagonal, $1$ on the superdiagonal, and $0$ elsewhere:
-$$
-J_s(\lambda) = \lambda I_s + N_s, \qquad N_s e_1 = 0,\quad N_s e_j = e_{j-1}\ (j \ge 2).
-$$
-$N_s$ is nilpotent, with $N_s^{s-1} \ne 0 = N_s^s$. So $\dim\ker N_s^k = \min(k, s)$.
-
-**Theorem 5.3 (Structure of nilpotent maps).** Let $N : V \to V$ be nilpotent. There are vectors $u_1, \dots, u_r \in V$ and integers $m_1, \dots, m_r \ge 0$ such that:
-
-- the vectors $N^{m_i}u_i, \dots, Nu_i, u_i$, for $i = 1, \dots, r$, form a basis of $V$;
-- $N^{m_i + 1}u_i = 0$ for each $i$.
-
-In this basis, listed chain by chain, $N = \bigoplus_i J_{m_i+1}(0)$.
-
-*Proof.* Induct on $\dim V$. If $N = 0$, any basis works with all $m_i = 0$. Otherwise, $N$ is not injective (it is nilpotent), so $\operatorname{range} N \subsetneq V$. $N$ maps $\operatorname{range} N$ into itself nilpotently.
-
-*Step 1: apply induction to $\operatorname{range} N$.* We get $v_1, \dots, v_s \in \operatorname{range} N$ and integers $\ell_i \ge 0$ such that the vectors $N^j v_i$ ($0 \le j \le \ell_i$) form a basis of $\operatorname{range} N$, and $N^{\ell_i+1}v_i = 0$. Write $v_i = Nu_i$.
-
-*Step 2: the lifted chains are independent.* Let $L$ be the list of vectors $N^j u_i$ for $0 \le j \le \ell_i + 1$. Suppose $\sum_{i,j} c_{ij} N^j u_i = 0$. Apply $N$:
-$$
-\sum_{i,j} c_{ij}N^{j+1}u_i = \sum_i \sum_{j=0}^{\ell_i} c_{ij} N^j v_i = 0,
-$$
-where the terms with $j = \ell_i + 1$ vanish because $N^{\ell_i+1}v_i = 0$. The remaining vectors are the basis of $\operatorname{range} N$, so $c_{ij} = 0$ for $j \le \ell_i$. What is left is $\sum_i c_{i,\ell_i+1} N^{\ell_i+1}u_i = \sum_i c_{i,\ell_i+1}N^{\ell_i}v_i = 0$. These vectors are also part of that basis, so the remaining coefficients vanish too.
-
-*Step 3: complete with kernel vectors.* Extend $L$ to a basis of $V$ by vectors $w_1, \dots, w_p$. Each $Nw_k$ lies in $\operatorname{range} N$, which is spanned by $N(L)$. So $Nw_k = Nx_k$ for some $x_k \in \operatorname{span} L$. Put $u_{s+k} = w_k - x_k$. Then $Nu_{s+k} = 0$, and $L, u_{s+1}, \dots, u_{s+p}$ still spans $V$ and has $\dim V$ elements, so it is a basis.
-
-The theorem holds with $m_i = \ell_i + 1$ for $i \le s$ and $m_{s+k} = 0$. For the matrix form, in the chain $N^{m}u, \dots, Nu, u$, $N$ sends each vector to the previous one and the first to $0$. That is exactly $N_{m+1}$. $\blacksquare$
-
-### 5.4 The Jordan canonical form
-
-**Theorem 5.4 (Jordan canonical form).** If $p_A$ splits over $\mathbb{F}$, there is a basis of $V$ in which
-$$
-A = \bigoplus_{\lambda\in\sigma(A)}\ \bigoplus_{i=1}^{g_\lambda} J_{s_{\lambda,i}}(\lambda).
-$$
-The block sizes are determined by $A$: for each $\lambda$ and $k \ge 1$,
-$$
-\#\{i : s_{\lambda,i} \ge k\} = \dim\ker(A - \lambda I)^k - \dim\ker(A-\lambda I)^{k-1}.
-$$
-Hence the Jordan form is unique up to the order of the blocks. Two matrices are similar iff they have the same Jordan form.
-
-*Proof.* *Existence.* By Theorem 5.1, it suffices to work on each $G_\lambda$. There, $N = (A - \lambda I)|_{G_\lambda}$ is nilpotent. Theorem 5.3 gives a basis of $G_\lambda$ in which $N = \bigoplus_i J_{s_i}(0)$, so $A|_{G_\lambda} = \lambda I + N = \bigoplus_i J_{s_i}(\lambda)$.
-
-*The counting formula.* $(A - \lambda I)^k$ is invertible on $G_\mu$ for $\mu \ne \lambda$. So only the $\lambda$-blocks contribute to its kernel, and $\dim\ker J_s(\lambda - \lambda)^k = \dim \ker N_s^k = \min(k,s)$. Hence
-$$
-\dim\ker(A-\lambda I)^k = \sum_i \min(k, s_{\lambda,i}).
-$$
-Taking differences in $k$ counts the blocks of size $\ge k$.
-
-The number of blocks for $\lambda$ is the $k=1$ count, $\dim E_\lambda = g_\lambda$.
-
-*Similarity.* The dimensions of $\ker(A - \lambda I)^k$ are similarity invariants, so similar matrices have the same Jordan form. The converse is clear. $\blacksquare$
-
-**Corollary 5.5 (Reading the invariants off the Jordan form).** For each $\lambda \in \sigma(A)$:
-
-- $a_\lambda$ is the total size of the $\lambda$-blocks;
-- $g_\lambda$ is the number of $\lambda$-blocks;
-- the exponent $k_\lambda$ of $(t-\lambda)$ in $m_A$ is the size of the largest $\lambda$-block.
-
-(The last follows because $m_A$ of a block diagonal matrix is the least common multiple of the blocks' minimal polynomials, and $m_{J_s(\lambda)} = (t-\lambda)^s$.) In particular, $A$ is diagonalizable iff every Jordan block is $1\times1$, iff $k_\lambda = 1$ for all $\lambda$, iff $g_\lambda = a_\lambda$ for all $\lambda$. This recovers Theorems 2.3 and 3.5.
-
-*Example.* $\vec P_n$ is a single block $J_n(0)$ (Exercise 5). A matrix with $p_A = (t-2)^4$, $\dim\ker(A - 2I) = 2$ and $\dim\ker(A-2I)^2 = 4$ has Jordan form $J_2(2)\oplus J_2(2)$.
-
-### 5.5 Powers and exponentials
-
-Since $\lambda I$ and $N_s$ commute and $N_s^s = 0$, the binomial theorem gives
-$$
-J_s(\lambda)^k = \sum_{j=0}^{s-1}\binom{k}{j}\lambda^{k-j}N_s^j, \qquad e^{tJ_s(\lambda)} = e^{t\lambda}\sum_{j=0}^{s-1}\frac{t^j}{j!}N_s^j .
-$$
-So the entries of $A^k$ are combinations of $k^j\lambda^k$ with $j <$ (block size). Consequences:
-
-- $A^k \to 0$ iff the **spectral radius** $\rho(A) = \max_{\lambda\in\sigma(A)}|\lambda|$ is less than $1$. (A block $J_s(\lambda)$ with $|\lambda| < 1$ still decays, because $k^{s-1}|\lambda|^k \to 0$.)
-- More precisely, if $\rho(A) > 0$, then $\|A^k\| \asymp k^{s-1}\rho(A)^k$ as $k\to\infty$, where $s$ is the largest block among the eigenvalues of modulus $\rho(A)$. The limit $\|A^k\|^{1/k} \to \rho(A)$ is Gelfand's formula.
-- For a Markov chain $P$, convergence to stationarity is governed by the eigenvalues with $|\lambda| < 1$. For a *non-reversible* chain, Jordan blocks contribute polynomial prefactors, and $\kappa(S)$ can produce long transients before the asymptotic rate kicks in. Reversible chains avoid both problems because $P$ is self-adjoint in $\ell^2(\pi)$ (Section 6.5).
-
-### 5.6 A warning: the Jordan form is unstable
-
-The Jordan form is a discontinuous function of the matrix. Let $A_\varepsilon = J_n(0) + \varepsilon\, e_ne_1^\top$. Then $p_{A_\varepsilon}(t) = t^n - \varepsilon$. So $A_\varepsilon$ has $n$ distinct eigenvalues $\varepsilon^{1/n}e^{2\pi ij/n}$ and is diagonalizable. For $n = 10$ and $\varepsilon = 10^{-10}$, a perturbation of size $10^{-10}$ moves the eigenvalues by $0.1$.
-
-Compare the Hermitian case, where Weyl's inequality (Corollary 6.9) says eigenvalues move by at most $\|E\|$. For diagonalizable matrices, the general statement interpolates between the two:
-
-**Theorem 5.6 (Bauer–Fike).** If $A = S\Lambda S^{-1}$ is diagonalizable, then every eigenvalue $\mu$ of $A + E$ satisfies
-$$
-\min_{\lambda\in\sigma(A)}|\mu - \lambda| \le \kappa(S)\,\|E\|, \qquad \kappa(S) = \|S\|\,\|S^{-1}\|.
-$$
-
-*Proof.* Assume $\mu \notin \sigma(A)$ and let $(A + E)v = \mu v$ with $v \ne 0$. Then
-$$
-v = -(A - \mu I)^{-1}Ev = -S(\Lambda - \mu I)^{-1}S^{-1}Ev.
-$$
-Taking norms, $1 \le \kappa(S)\,\|E\| \,/\min_\lambda|\lambda - \mu|$. $\blacksquare$
-
-For normal matrices $S$ is unitary, so $\kappa(S) = 1$. In practice, one therefore works with the Schur form, singular values, or pseudospectra (Trefethen & Embree) rather than the Jordan form. The Jordan form remains the right *theoretical* description of what $A$ does.
-
----
-
-## 6. The spectral theorem for self-adjoint operators
+## 2. The spectral theorem for self-adjoint operators
 
 Throughout this section, $V$ is a finite-dimensional inner product space over $\mathbb{F}$ with $n = \dim V \ge 1$, and $A : V \to V$ is linear.
 
-Corollary 4.3 already gives the spectral theorem as a consequence of the Schur decomposition. Here we prove it again from scratch, variationally. This proof does not use the fundamental theorem of algebra, it produces the Rayleigh-quotient characterization of eigenvalues on which the rest of the course depends, and it is the proof that generalizes to compact operators in Part II.
+The proof below is variational. It does not use the fundamental theorem of algebra, it produces the Rayleigh-quotient characterization of eigenvalues on which the rest of the course depends, and it is the proof that generalizes to compact operators in Part II. (Section 5 gives a second, algebraic proof via the Schur decomposition; see Corollary 5.3.)
 
-### 6.1 Two elementary facts
+### 2.1 Two elementary facts
 
-**Lemma 6.1.** Let $A$ be self-adjoint.
+**Lemma 2.1.** Let $A$ be self-adjoint.
 
 1. $\langle Ax, x\rangle \in \mathbb{R}$ for every $x$.
 2. Every eigenvalue of $A$ is real.
@@ -408,22 +61,22 @@ Corollary 4.3 already gives the spectral theorem as a consequence of the Schur d
 (3) If $Ax = \lambda x$ and $Ay = \mu y$ with $\lambda \ne \mu$ (both real by (2)), then $\lambda\langle x, y\rangle = \langle Ax, y\rangle = \langle x, Ay\rangle = \mu \langle x, y\rangle$, so $\langle x, y\rangle = 0$.
 (4) If $y \in W^\perp$ and $w \in W$, then $\langle Ay, w\rangle = \langle y, Aw\rangle = 0$ because $Aw \in W$. $\blacksquare$
 
-### 6.2 Statement
+### 2.2 Statement
 
-**Theorem 6.2 (Spectral theorem, finite dimensions).** Let $A : V \to V$ be self-adjoint. Then there is an orthonormal basis $v_1, \dots, v_n$ of $V$ consisting of eigenvectors of $A$, with real eigenvalues $\lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_n$. Equivalently:
+**Theorem 2.2 (Spectral theorem, finite dimensions).** Let $A : V \to V$ be self-adjoint. Then there is an orthonormal basis $v_1, \dots, v_n$ of $V$ consisting of eigenvectors of $A$, with real eigenvalues $\lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_n$. Equivalently:
 
 - **(Matrix form)** If $A \in \mathbb{F}^{n\times n}$ is Hermitian (real symmetric when $\mathbb{F} = \mathbb{R}$), then $A = Q \Lambda Q^*$, where $Q$ is unitary (real orthogonal when $\mathbb{F}=\mathbb{R}$) with columns $v_i$ and $\Lambda = \operatorname{diag}(\lambda_1, \dots, \lambda_n)$.
 - **(Spectral decomposition)** $A = \sum_{i=1}^n \lambda_i\, v_i v_i^*$. Grouping equal eigenvalues, $A = \sum_{\lambda \in \sigma(A)} \lambda P_\lambda$, where $P_\lambda$ is the orthogonal projection onto the eigenspace $\ker(A - \lambda I)$. These projections are mutually orthogonal and sum to $I$.
 
 Note that the real case does not follow from the complex case by a formality: we need the eigenvectors of a real symmetric matrix to be real. The proof below works verbatim over either field.
 
-### 6.3 Proof
+### 2.3 Proof
 
 The proof is variational. It never mentions the characteristic polynomial and so does not need the fundamental theorem of algebra. This is the version that generalizes to infinite dimensions.
 
-**Lemma 6.3 (Top eigenvector via the Rayleigh quotient).** Let $A$ be self-adjoint on $V \ne \{0\}$. The function $x \mapsto \langle Ax, x\rangle$ attains its maximum over the unit sphere $S = \{x : \|x\| = 1\}$. Any maximizer $x_\star$ is an eigenvector of $A$ with eigenvalue $\lambda_\star = \langle Ax_\star, x_\star\rangle = \max_{x \ne 0} R_A(x)$.
+**Lemma 2.3 (Top eigenvector via the Rayleigh quotient).** Let $A$ be self-adjoint on $V \ne \{0\}$. The function $x \mapsto \langle Ax, x\rangle$ attains its maximum over the unit sphere $S = \{x : \|x\| = 1\}$. Any maximizer $x_\star$ is an eigenvector of $A$ with eigenvalue $\lambda_\star = \langle Ax_\star, x_\star\rangle = \max_{x \ne 0} R_A(x)$.
 
-*Proof.* Choosing an orthonormal basis identifies $V$ isometrically with $\mathbb{F}^n$. The unit sphere is therefore closed and bounded, hence compact. The map $x \mapsto \langle Ax, x\rangle$ is continuous and real-valued (Lemma 6.1), so it attains a maximum $\lambda_\star$ at some $x_\star \in S$.
+*Proof.* Choosing an orthonormal basis identifies $V$ isometrically with $\mathbb{F}^n$. The unit sphere is therefore closed and bounded, hence compact. The map $x \mapsto \langle Ax, x\rangle$ is continuous and real-valued (Lemma 2.1), so it attains a maximum $\lambda_\star$ at some $x_\star \in S$.
 
 Fix any $y \perp x_\star$ and a scalar $s \in \mathbb{F}$. For real $t$, set $u(t) = x_\star + t s y$. Then $\|u(t)\|^2 = 1 + t^2 |s|^2 \|y\|^2$, and by maximality $\langle A u(t), u(t)\rangle \le \lambda_\star \|u(t)\|^2$. Expanding both sides:
 $$
@@ -433,26 +86,26 @@ Here we used $\langle Ay, x_\star\rangle = \overline{\langle Ax_\star, y\rangle}
 
 So $Ax_\star \perp \{x_\star\}^\perp$, which means $Ax_\star \in \operatorname{span}\{x_\star\}$. Write $Ax_\star = \mu x_\star$. Then $\mu = \langle Ax_\star, x_\star\rangle = \lambda_\star$. $\blacksquare$
 
-*Proof of Theorem 6.2.* Induct on $n = \dim V$. If $n = 1$, any unit vector works. For $n > 1$, Lemma 6.3 gives a unit eigenvector $v_1$ with eigenvalue $\lambda_1 = \max R_A$. The line $W = \operatorname{span}\{v_1\}$ is $A$-invariant, so by Lemma 6.1(4), $W^\perp$ is $A$-invariant too. The restriction $A|_{W^\perp}$ is self-adjoint on the $(n-1)$-dimensional inner product space $W^\perp$. By induction it has an orthonormal eigenbasis $v_2, \dots, v_n$ of $W^\perp$ with eigenvalues $\lambda_2 \ge \dots \ge \lambda_n$. Each $\lambda_j$ with $j \ge 2$ is a value of $R_A$, so $\lambda_j \le \lambda_1$. Then $v_1, \dots, v_n$ is the required basis.
+*Proof of Theorem 2.2.* Induct on $n = \dim V$. If $n = 1$, any unit vector works. For $n > 1$, Lemma 2.3 gives a unit eigenvector $v_1$ with eigenvalue $\lambda_1 = \max R_A$. The line $W = \operatorname{span}\{v_1\}$ is $A$-invariant, so by Lemma 2.1(4), $W^\perp$ is $A$-invariant too. The restriction $A|_{W^\perp}$ is self-adjoint on the $(n-1)$-dimensional inner product space $W^\perp$. By induction it has an orthonormal eigenbasis $v_2, \dots, v_n$ of $W^\perp$ with eigenvalues $\lambda_2 \ge \dots \ge \lambda_n$. Each $\lambda_j$ with $j \ge 2$ is a value of $R_A$, so $\lambda_j \le \lambda_1$. Then $v_1, \dots, v_n$ is the required basis.
 
 For the matrix form, let $Q = [v_1 \cdots v_n]$. Then $Q^*Q = I$ and $AQ = Q\Lambda$. For the spectral decomposition, expand $x = \sum_i \langle x, v_i\rangle v_i$ and apply $A$: $Ax = \sum_i \lambda_i \langle x, v_i\rangle v_i = \big(\sum_i \lambda_i v_i v_i^*\big) x$. $\blacksquare$
 
-**Remark 6.4.** The same proof shows that $\lambda_1 = \max_{\|x\|=1} \langle Ax, x\rangle$ and $\lambda_n = \min_{\|x\|=1} \langle Ax, x\rangle$. Part II (Section 7) replaces the compactness of the unit sphere, which fails in infinite dimensions, with the compactness of the *operator*.
+**Remark 2.4.** The same proof shows that $\lambda_1 = \max_{\|x\|=1} \langle Ax, x\rangle$ and $\lambda_n = \min_{\|x\|=1} \langle Ax, x\rangle$. Part II (Section 7) replaces the compactness of the unit sphere, which fails in infinite dimensions, with the compactness of the *operator*.
 
-**Remark 6.5 (Beyond self-adjoint).** By Theorem 4.2, a complex matrix is unitarily diagonalizable iff it is normal. Non-normal matrices may fail to be diagonalizable at all (Section 5). Even when they are diagonalizable, their eigenvalues can be highly sensitive to perturbation (Section 5.6). Directed graphs and non-reversible Markov chains produce such matrices, and there pseudospectra are often the better tool (Trefethen & Embree).
+**Remark 2.5 (Beyond self-adjoint).** By Theorem 5.2, a complex matrix is unitarily diagonalizable iff it is normal. Non-normal matrices may fail to be diagonalizable at all (Section 6). Even when they are diagonalizable, their eigenvalues can be highly sensitive to perturbation (Section 6.6). Directed graphs and non-reversible Markov chains produce such matrices, and there pseudospectra are often the better tool (Trefethen & Embree).
 
-### 6.4 Consequences
+### 2.4 Consequences
 
-Throughout, $A$ is self-adjoint with eigenpairs $(\lambda_i, v_i)$ as in Theorem 6.2, $\lambda_1 \ge \dots \ge \lambda_n$.
+Throughout, $A$ is self-adjoint with eigenpairs $(\lambda_i, v_i)$ as in Theorem 2.2, $\lambda_1 \ge \dots \ge \lambda_n$.
 
-**Corollary 6.6 (Functional calculus).** For any function $f : \mathbb{R} \to \mathbb{F}$, define $f(A) = \sum_i f(\lambda_i) v_i v_i^*$. This agrees with the obvious definition when $f$ is a polynomial, so, for example, $A^k = \sum_i \lambda_i^k v_i v_i^*$. Standard instances:
+**Corollary 2.6 (Functional calculus).** For any function $f : \mathbb{R} \to \mathbb{F}$, define $f(A) = \sum_i f(\lambda_i) v_i v_i^*$. This agrees with the obvious definition when $f$ is a polynomial, so, for example, $A^k = \sum_i \lambda_i^k v_i v_i^*$. Standard instances:
 
 - the heat kernel $e^{-tL}$;
 - the pseudoinverse $L^{+} = \sum_{\lambda_i \ne 0} \lambda_i^{-1} v_i v_i^*$;
 - the square root $A^{1/2}$ for $A \succeq 0$;
 - spectral projections $\mathbf{1}_{[a,b]}(A)$.
 
-**Corollary 6.7 (Quantities read off the spectrum).**
+**Corollary 2.7 (Quantities read off the spectrum).**
 
 - $\operatorname{tr} A = \sum_i \lambda_i$ and $\det A = \prod_i \lambda_i$.
 - $\|A\|_{\mathrm{op}} = \max_i |\lambda_i|$ and $\|A\|_F^2 = \sum_i \lambda_i^2$.
@@ -460,7 +113,7 @@ Throughout, $A$ is self-adjoint with eigenpairs $(\lambda_i, v_i)$ as in Theorem
 - $\operatorname{rank} A$ is the number of nonzero $\lambda_i$.
 - $\ker A$ and $\operatorname{range} A$ are orthogonal complements, spanned by the eigenvectors with zero and nonzero eigenvalues respectively.
 
-**Theorem 6.8 (Courant–Fischer min–max).** For $k = 1, \dots, n$,
+**Theorem 2.8 (Courant–Fischer min–max).** For $k = 1, \dots, n$,
 $$
 \lambda_k \;=\; \max_{\substack{S \subseteq V\\ \dim S = k}} \; \min_{x \in S\setminus\{0\}} R_A(x) \;=\; \min_{\substack{T \subseteq V\\ \dim T = n-k+1}} \; \max_{x \in T\setminus\{0\}} R_A(x).
 $$
@@ -475,31 +128,31 @@ In eigenvector coordinates, $x = \sum_i c_i v_i$ and $R_A(x) = \sum_i \lambda_i 
 
 **Example.** For a graph Laplacian $L$ with eigenvalues $0 = \mu_1 \le \mu_2 \le \dots \le \mu_n$, the *min*-version gives $\mu_2 = \min_{x \perp \mathbf{1},\, x \ne 0} \dfrac{\sum_{(u,v)\in E} w_{uv}(x_u - x_v)^2}{\sum_u x_u^2}$. This is the starting point for Cheeger's inequality and spectral partitioning.
 
-**Corollary 6.9 (Weyl's perturbation inequality).** If $A, B$ are self-adjoint with eigenvalues $\lambda_1(\cdot) \ge \dots \ge \lambda_n(\cdot)$, then for every $k$,
+**Corollary 2.9 (Weyl's perturbation inequality).** If $A, B$ are self-adjoint with eigenvalues $\lambda_1(\cdot) \ge \dots \ge \lambda_n(\cdot)$, then for every $k$,
 $$
 |\lambda_k(A) - \lambda_k(B)| \le \|A - B\|_{\mathrm{op}}.
 $$
 
-*Proof.* For every $x \ne 0$, $R_A(x) = R_B(x) + R_{A-B}(x) \le R_B(x) + \|A-B\|_{\mathrm{op}}$. Take max–min over $S$ in Theorem 6.8 to get $\lambda_k(A) \le \lambda_k(B) + \|A-B\|_{\mathrm{op}}$. Swap $A$ and $B$ for the other direction. $\blacksquare$
+*Proof.* For every $x \ne 0$, $R_A(x) = R_B(x) + R_{A-B}(x) \le R_B(x) + \|A-B\|_{\mathrm{op}}$. Take max–min over $S$ in Theorem 2.8 to get $\lambda_k(A) \le \lambda_k(B) + \|A-B\|_{\mathrm{op}}$. Swap $A$ and $B$ for the other direction. $\blacksquare$
 
 Weyl's inequality controls eigen*values*. Eigen*vectors* are controlled only relative to the gap separating their eigenvalue from the rest of the spectrum (Davis–Kahan $\sin\Theta$ theorem; see the separate supplement). We will return to this when analyzing spectral clustering.
 
-### 6.5 Self-adjointness for a weighted inner product
+### 2.5 Self-adjointness for a weighted inner product
 
-Theorem 6.2 is stated for an abstract inner product space. Nothing in it refers to the standard inner product on $\mathbb{F}^n$. This matters because several natural graph matrices are not symmetric, yet are self-adjoint for a *different* inner product.
+Theorem 2.2 is stated for an abstract inner product space. Nothing in it refers to the standard inner product on $\mathbb{F}^n$. This matters because several natural graph matrices are not symmetric, yet are self-adjoint for a *different* inner product.
 
 Let $M \in \mathbb{F}^{n\times n}$ be positive definite ($M = M^*$ and $M \succ 0$). Then $\langle x, y\rangle_M = y^* M x$ is an inner product on $\mathbb{F}^n$. The adjoint of $B$ with respect to it is $M^{-1}B^*M$, because
 $$
 \langle Bx, y\rangle_M = y^* M B x = (M^{-1} B^* M y)^* M x = \langle x, M^{-1}B^*My\rangle_M .
 $$
 
-**Proposition 6.10.** Let $M \succ 0$ and $B \in \mathbb{F}^{n\times n}$. The following are equivalent:
+**Proposition 2.10.** Let $M \succ 0$ and $B \in \mathbb{F}^{n\times n}$. The following are equivalent:
 
 1. $B$ is self-adjoint with respect to $\langle\cdot,\cdot\rangle_M$;
 2. $MB$ is self-adjoint (Hermitian) in the usual sense;
 3. $M^{1/2} B M^{-1/2}$ is self-adjoint in the usual sense.
 
-When they hold, $B$ has real eigenvalues $\lambda_1 \ge \dots \ge \lambda_n$, and there is a basis of eigenvectors that is orthonormal for $\langle\cdot,\cdot\rangle_M$. Explicitly, if $u_1, \dots, u_n$ is an orthonormal eigenbasis of $M^{1/2}BM^{-1/2}$, then $v_i = M^{-1/2}u_i$ satisfies $Bv_i = \lambda_i v_i$ and $v_i^* M v_j = \delta_{ij}$. Courant–Fischer (Theorem 6.8) holds with the Rayleigh quotient
+When they hold, $B$ has real eigenvalues $\lambda_1 \ge \dots \ge \lambda_n$, and there is a basis of eigenvectors that is orthonormal for $\langle\cdot,\cdot\rangle_M$. Explicitly, if $u_1, \dots, u_n$ is an orthonormal eigenbasis of $M^{1/2}BM^{-1/2}$, then $v_i = M^{-1/2}u_i$ satisfies $Bv_i = \lambda_i v_i$ and $v_i^* M v_j = \delta_{ij}$. Courant–Fischer (Theorem 2.8) holds with the Rayleigh quotient
 $$
 R^M_B(x) = \frac{\langle Bx, x\rangle_M}{\langle x, x\rangle_M} = \frac{x^* MB\, x}{x^* M x}.
 $$
@@ -508,15 +161,15 @@ $$
 
 - (1)⇔(2): (1) says $M^{-1}B^*M = B$, i.e., $B^*M = MB$. Since $(MB)^* = B^*M$, this is exactly (2).
 - (2)⇔(3): $M^{1/2}BM^{-1/2} = M^{-1/2}(MB)M^{-1/2}$. A congruence by the invertible Hermitian matrix $M^{-1/2}$ preserves being Hermitian, and so does its inverse.
-- The spectral statements: apply Theorem 6.2 to $C = M^{1/2}BM^{-1/2}$. From $Cu_i = \lambda_i u_i$ we get $B(M^{-1/2}u_i) = \lambda_i M^{-1/2}u_i$, and $v_i^*Mv_j = u_i^* u_j = \delta_{ij}$. Alternatively, apply Theorem 6.2 directly to the inner product space $(\mathbb{F}^n, \langle\cdot,\cdot\rangle_M)$. $\blacksquare$
+- The spectral statements: apply Theorem 2.2 to $C = M^{1/2}BM^{-1/2}$. From $Cu_i = \lambda_i u_i$ we get $B(M^{-1/2}u_i) = \lambda_i M^{-1/2}u_i$, and $v_i^*Mv_j = u_i^* u_j = \delta_{ij}$. Alternatively, apply Theorem 2.2 directly to the inner product space $(\mathbb{F}^n, \langle\cdot,\cdot\rangle_M)$. $\blacksquare$
 
-Conceptually, $U = M^{1/2}$ is an isometry from $(\mathbb{F}^n, \langle\cdot,\cdot\rangle_M)$ onto $(\mathbb{F}^n, \langle\cdot,\cdot\rangle)$, since $\langle Ux, Uy\rangle = y^*Mx = \langle x, y\rangle_M$. The operator $B$ in the first picture corresponds to $UBU^{-1} = M^{1/2}BM^{-1/2}$ in the second. Isometries preserve adjoints, so $B$ is self-adjoint in one picture iff it is in the other. Proposition 6.10 is this observation written in coordinates.
+Conceptually, $U = M^{1/2}$ is an isometry from $(\mathbb{F}^n, \langle\cdot,\cdot\rangle_M)$ onto $(\mathbb{F}^n, \langle\cdot,\cdot\rangle)$, since $\langle Ux, Uy\rangle = y^*Mx = \langle x, y\rangle_M$. The operator $B$ in the first picture corresponds to $UBU^{-1} = M^{1/2}BM^{-1/2}$ in the second. Isometries preserve adjoints, so $B$ is self-adjoint in one picture iff it is in the other. Proposition 2.10 is this observation written in coordinates.
 
 **Application: the random-walk and normalized Laplacians.** Let $G$ be a weighted graph with no isolated vertices, so $D \succ 0$. Define the **degree inner product** $\langle x, y\rangle_D = \sum_u d_u\, x_u \bar y_u$, and the **random-walk Laplacian**
 $$
 L_{\mathrm{rw}} = D^{-1}L = I - D^{-1}A.
 $$
-In the analysis-on-graphs convention, this is simply "the Laplacian": $(L_{\mathrm{rw}} f)(u) = f(u) - \frac{1}{d_u}\sum_v w_{uv} f(v)$. Apply Proposition 6.10 with $M = D$ and $B = L_{\mathrm{rw}}$:
+In the analysis-on-graphs convention, this is simply "the Laplacian": $(L_{\mathrm{rw}} f)(u) = f(u) - \frac{1}{d_u}\sum_v w_{uv} f(v)$. Apply Proposition 2.10 with $M = D$ and $B = L_{\mathrm{rw}}$:
 
 - $D L_{\mathrm{rw}} = L$, which is symmetric, so condition (2) holds. **So $L_{\mathrm{rw}}$ is self-adjoint for $\langle\cdot,\cdot\rangle_D$.**
 - $D^{1/2} L_{\mathrm{rw}} D^{-1/2} = D^{-1/2} L D^{-1/2} = \mathcal{L}$. So condition (3) is precisely **the symmetry of the normalized Laplacian in the standard inner product.**
@@ -538,12 +191,360 @@ Which picture to use is a matter of convenience. $\mathcal{L}$ is convenient for
 
 ---
 
+## 3. Eigenvalues and the characteristic polynomial
+
+Section 2 treated self-adjoint maps, where everything works out as well as possible. We now drop symmetry and ask what survives. Throughout Sections 3–6, $V$ is a vector space over $\mathbb{F}$ of dimension $n \ge 1$ and $A : V \to V$ is linear. No inner product is needed until Section 5. Choosing a basis identifies $A$ with a matrix in $\mathbb{F}^{n\times n}$. Changing the basis replaces the matrix by a **similar** one, $S^{-1}AS$ with $S$ invertible. Every notion below is invariant under similarity, so it belongs to the linear map, not the matrix.
+
+### 3.1 Eigenvalues and multiplicities
+
+A scalar $\lambda \in \mathbb{F}$ is an **eigenvalue** of $A$ if $Av = \lambda v$ for some $v \ne 0$, called an **eigenvector**. The **eigenspace** is $E_\lambda = \ker(A - \lambda I)$. Its dimension $g_\lambda = \dim E_\lambda$ is the **geometric multiplicity** of $\lambda$. The set of eigenvalues is the **spectrum** $\sigma(A)$.
+
+The **characteristic polynomial** is
+$$
+p_A(t) = \det(tI - A) = t^n - (\operatorname{tr} A)\, t^{n-1} + \dots + (-1)^n \det A .
+$$
+It is monic of degree $n$. It is similarity invariant, since $\det(tI - S^{-1}AS) = \det\big(S^{-1}(tI - A)S\big) = \det(tI - A)$. And $\lambda$ is an eigenvalue iff $A - \lambda I$ is singular iff $p_A(\lambda) = 0$. The multiplicity $a_\lambda$ of $\lambda$ as a root of $p_A$ is its **algebraic multiplicity**. If $p_A$ **splits** over $\mathbb{F}$, i.e., factors into linear factors $p_A(t) = \prod_{\lambda \in \sigma(A)} (t - \lambda)^{a_\lambda}$, then comparing coefficients gives
+$$
+\operatorname{tr} A = \sum_\lambda a_\lambda \lambda, \qquad \det A = \prod_\lambda \lambda^{a_\lambda}.
+$$
+
+**Existence of eigenvalues depends on the field.**
+
+- Over $\mathbb{C}$, the fundamental theorem of algebra says $p_A$ always splits. So every linear map on a nonzero complex vector space has an eigenvalue.
+- Over $\mathbb{R}$, this fails. The rotation $R_\theta = \begin{pmatrix}\cos\theta & -\sin\theta \\ \sin\theta & \cos\theta\end{pmatrix}$ has $p(t) = t^2 - 2\cos\theta\, t + 1$, with no real roots unless $\theta \in \pi\mathbb{Z}$. The standard remedy is to regard a real matrix as a complex one. Its eigenvalues are then real or come in conjugate pairs.
+
+**Lemma 3.1.** Eigenvectors $v_1, \dots, v_k$ belonging to distinct eigenvalues $\lambda_1, \dots, \lambda_k$ are linearly independent.
+
+*Proof.* Suppose not, and take a nontrivial relation $\sum_{i\in I} c_i v_i = 0$ with the fewest nonzero terms. It has at least two terms. Pick $j \in I$ and apply $A - \lambda_j I$: this gives $\sum_{i \in I} c_i(\lambda_i - \lambda_j)v_i = 0$. The new relation is nontrivial, since $\lambda_i \ne \lambda_j$ for $i \ne j$, and has fewer terms. That contradicts minimality. $\blacksquare$
+
+**Lemma 3.2.** For every eigenvalue $\lambda$, $1 \le g_\lambda \le a_\lambda$.
+
+*Proof.* Extend a basis of $E_\lambda$ to a basis of $V$. In this basis, $A = \begin{pmatrix} \lambda I_{g} & * \\ 0 & C\end{pmatrix}$ with $g = g_\lambda$. So $p_A(t) = (t - \lambda)^{g}\, p_C(t)$, and $(t-\lambda)^g$ divides $p_A$. $\blacksquare$
+
+### 3.2 Diagonalizability
+
+$A$ is **diagonalizable** (over $\mathbb{F}$) if $V$ has a basis of eigenvectors of $A$. Equivalently, $A = S\Lambda S^{-1}$ with $\Lambda$ diagonal. The columns of $S$ are the eigenvectors.
+
+**Theorem 3.3.** $A$ is diagonalizable over $\mathbb{F}$ iff $p_A$ splits over $\mathbb{F}$ and $g_\lambda = a_\lambda$ for every $\lambda \in \sigma(A)$. In particular, if $A$ has $n$ distinct eigenvalues in $\mathbb{F}$, it is diagonalizable.
+
+*Proof.* (⇒) If $A = S\Lambda S^{-1}$, then $p_A(t) = \prod_i (t - \Lambda_{ii})$ splits, and $g_\lambda = \#\{i : \Lambda_{ii} = \lambda\} = a_\lambda$.
+
+(⇐) By Lemma 3.1, the sum $\sum_\lambda E_\lambda$ is direct. Its dimension is $\sum_\lambda g_\lambda = \sum_\lambda a_\lambda = \deg p_A = n$. So it is all of $V$, and the union of bases of the $E_\lambda$ is an eigenbasis. $\blacksquare$
+
+**Examples from graphs.** Let $\vec P_n$ be the directed path $1 \to 2 \to \dots \to n$ and $\vec C_n$ the directed cycle.
+
+- The adjacency matrix of $\vec P_n$ is nilpotent. Its only eigenvalue is $0$, with $a_0 = n$ but $g_0 = 1$, so it is **not diagonalizable** over any field.
+- The adjacency matrix of $\vec C_n$ is a permutation matrix with $p(t) = t^n - 1$. It has $n$ distinct complex eigenvalues (the $n$-th roots of unity), so it is diagonalizable over $\mathbb{C}$. For $n \ge 3$ it is not diagonalizable over $\mathbb{R}$.
+- Undirected graphs give symmetric matrices, which are always diagonalizable, in an orthonormal basis (Section 2).
+
+**Why diagonalizability matters.** If $A = S\Lambda S^{-1}$, then
+$$
+A^k = S\Lambda^k S^{-1}, \qquad e^{tA} = S e^{t\Lambda}S^{-1},
+$$
+so linear dynamics $x_{k+1} = Ax_k$ or $\dot x = Ax$ decouple into $n$ scalar ones. The catch for non-symmetric $A$ is that $S$ need not be orthogonal. An ill-conditioned $S$ (large $\kappa(S) = \|S\|\,\|S^{-1}\|$) makes these formulas numerically and quantitatively misleading. See Section 6.6.
+
+---
+
+## 4. Polynomials in $A$ and the minimal polynomial
+
+### 4.1 The minimal polynomial
+
+For $q(t) = \sum_k c_k t^k \in \mathbb{F}[t]$, set $q(A) = \sum_k c_k A^k$. The map $q \mapsto q(A)$ respects sums and products. So all polynomials in $A$ commute with each other and with $A$. Two further facts:
+
+- If $Av = \lambda v$, then $q(A)v = q(\lambda)v$.
+- $q(S^{-1}AS) = S^{-1}q(A)S$.
+
+Some nonzero polynomial annihilates $A$: the $n^2 + 1$ matrices $I, A, \dots, A^{n^2}$ live in the $n^2$-dimensional space $\mathbb{F}^{n\times n}$, so they are linearly dependent.
+
+**Proposition 4.1.** There is a unique monic polynomial $m_A$ of least degree with $m_A(A) = 0$, the **minimal polynomial** of $A$. A polynomial $q$ satisfies $q(A) = 0$ iff $m_A$ divides $q$.
+
+*Proof.* Let $m$ be a monic annihilating polynomial of least degree. For any $q$ with $q(A) = 0$, divide: $q = sm + r$ with $\deg r < \deg m$. Then $r(A) = q(A) - s(A)m(A) = 0$, so $r = 0$ by minimality. Uniqueness: two such $m$ divide each other and are monic. $\blacksquare$
+
+**Proposition 4.2.** The roots of $m_A$ in $\mathbb{F}$ are exactly the eigenvalues of $A$ in $\mathbb{F}$.
+
+*Proof.* If $Av = \lambda v$ with $v \ne 0$, then $0 = m_A(A)v = m_A(\lambda)v$, so $m_A(\lambda) = 0$.
+
+Conversely, if $m_A(\lambda) = 0$, write $m_A(t) = (t - \lambda)q(t)$. Since $\deg q < \deg m_A$, $q(A) \ne 0$. Pick $w$ with $v = q(A)w \ne 0$. Then $(A - \lambda I)v = m_A(A)w = 0$. $\blacksquare$
+
+### 4.2 The primary decomposition
+
+The engine behind everything that follows is a statement about coprime polynomials.
+
+**Lemma 4.3 (Kernel splitting).** Suppose $q(A) = 0$ and $q = q_1q_2$ with $\gcd(q_1, q_2) = 1$. Then
+$$
+V = \ker q_1(A) \oplus \ker q_2(A).
+$$
+Both summands are $A$-invariant. The projection onto $\ker q_1(A)$ along $\ker q_2(A)$ is a polynomial in $A$.
+
+*Proof.* By Bézout, there are polynomials $a, b$ with $aq_1 + bq_2 = 1$, so $I = a(A)q_1(A) + b(A)q_2(A)$. For any $v$,
+$$
+v = \underbrace{b(A)q_2(A)v}_{=:v_1} + \underbrace{a(A)q_1(A)v}_{=:v_2}.
+$$
+Here $q_1(A)v_1 = b(A)q(A)v = 0$, so $v_1 \in \ker q_1(A)$. Similarly, $v_2 \in \ker q_2(A)$.
+
+If $v$ lies in both kernels, both terms vanish, so $v = 0$. The sum is therefore direct, and the projection onto the first summand is $b(A)q_2(A)$. Invariance: if $q_i(A)v = 0$, then $q_i(A)Av = Aq_i(A)v = 0$. $\blacksquare$
+
+**Corollary 4.4 (Primary decomposition).** If $q(A) = 0$ and $q = q_1 \cdots q_r$ with the $q_i$ pairwise coprime, then
+$$
+V = \ker q_1(A) \oplus \dots \oplus \ker q_r(A).
+$$
+Each summand is $A$-invariant, and the projections $P_i$ onto the summands are polynomials in $A$. In particular, they commute with $A$, with each other, and with anything that commutes with $A$.
+
+*Proof.* Induct on $r$, applying Lemma 4.3 to $q_1$ and $q_2\cdots q_r$ (which are coprime). $\blacksquare$
+
+### 4.3 Diagonalizability via the minimal polynomial
+
+**Theorem 4.5.** The following are equivalent:
+
+1. $A$ is diagonalizable over $\mathbb{F}$.
+2. $m_A$ splits over $\mathbb{F}$ with **distinct** roots: $m_A(t) = \prod_{\lambda \in \sigma(A)}(t - \lambda)$.
+3. $A$ is annihilated by some polynomial that splits over $\mathbb{F}$ with distinct roots.
+
+*Proof.*
+
+- (1)⇒(2): Let $q(t) = \prod_{\lambda\in\sigma(A)} (t-\lambda)$. Then $q(A)$ kills every eigenvector, hence every vector of an eigenbasis. So $q(A) = 0$ and $m_A$ divides $q$. By Proposition 4.2, every factor of $q$ appears in $m_A$, so $m_A = q$.
+- (2)⇒(3) is trivial.
+- (3)⇒(1): If $q(A) = 0$ with $q = \prod_{i}(t - \mu_i)$ and the $\mu_i$ distinct, the factors are pairwise coprime. Corollary 4.4 gives $V = \bigoplus_i \ker(A - \mu_i I)$, a direct sum of eigenspaces. $\blacksquare$
+
+**Corollary 4.6.**
+
+1. If $A$ is diagonalizable and $W$ is an $A$-invariant subspace, then $A|_W$ is diagonalizable. (Proof: $m_A(A|_W) = 0$, so criterion (3) applies.)
+2. Projections ($A^2 = A$) and involutions ($A^2 = I$) are diagonalizable over $\mathbb{R}$. Matrices with $A^k = I$ are diagonalizable over $\mathbb{C}$, since $t^k - 1$ has $k$ distinct complex roots. This covers every permutation matrix, and in particular $\vec C_n$.
+
+**Proposition 4.7 (Simultaneous diagonalization).** If $A$ and $B$ are diagonalizable and $AB = BA$, then they have a common eigenbasis.
+
+*Proof.* $B$ preserves each eigenspace $E_\lambda$ of $A$: if $Av = \lambda v$, then $A(Bv) = BAv = \lambda Bv$. By Corollary 4.6(1), $B|_{E_\lambda}$ is diagonalizable. Choose an eigenbasis of $B|_{E_\lambda}$ inside each $E_\lambda$. Its vectors are eigenvectors of $A$ too, and together they form a basis of $V = \bigoplus_\lambda E_\lambda$. $\blacksquare$
+
+### 4.4 The Cayley–Hamilton theorem
+
+**Theorem 4.8 (Cayley–Hamilton).** $p_A(A) = 0$. Consequently, $m_A$ divides $p_A$, and $\deg m_A \le n$.
+
+*Proof.* Let $\operatorname{adj}$ denote the adjugate (transposed cofactor matrix), so that $\operatorname{adj}(M)\,M = \det(M)\,I$. Apply this to $M = tI - A$:
+$$
+\operatorname{adj}(tI - A)\,(tI - A) = p_A(t)\, I .
+$$
+The entries of $\operatorname{adj}(tI - A)$ are polynomials of degree $\le n-1$ in $t$. Write $\operatorname{adj}(tI - A) = \sum_{k=0}^{n-1} B_k t^k$ with constant matrices $B_k$, and $p_A(t) = \sum_{k=0}^n c_k t^k$. Set $B_{-1} = B_n = 0$ and compare coefficients of $t^k$:
+$$
+B_{k-1} - B_kA = c_k I, \qquad k = 0, \dots, n.
+$$
+Multiply the $k$-th identity on the right by $A^k$ and sum over $k$. The left side telescopes:
+$$
+p_A(A) = \sum_{k=0}^n \big(B_{k-1}A^k - B_kA^{k+1}\big) = B_{-1} - B_nA^{n+1} = 0. \qquad\blacksquare
+$$
+
+The proof uses only polynomial identities, so it holds over any field. The tempting one-liner "substitute $t = A$ into $\det(tI - A)$" is not a proof, since $\det(A\cdot I - A)$ would be a scalar, whereas $p_A(A)$ is a matrix.
+
+**Corollary 4.9.** If $p_A(t) = \prod_\lambda (t - \lambda)^{a_\lambda}$, then
+$$
+m_A(t) = \prod_\lambda (t-\lambda)^{k_\lambda}, \qquad 1 \le k_\lambda \le a_\lambda.
+$$
+The exponents $k_\lambda$ are identified in Section 6 as the size of the largest Jordan block for $\lambda$.
+
+*Examples.* For $A = \operatorname{diag}(1,1,2)$: $p_A = (t-1)^2(t-2)$ and $m_A = (t-1)(t-2)$. For the $n\times n$ Jordan block with eigenvalue $\lambda$ (Section 6): $p_A = m_A = (t-\lambda)^n$.
+
+**Application: distinct eigenvalues bound the diameter.** Let $G$ be a connected graph with nonnegative edge weights, adjacency matrix $A$, and diameter $\mathrm{diam}(G)$. Then
+$$
+\mathrm{diam}(G) \le (\text{number of distinct eigenvalues of } A) - 1.
+$$
+
+*Proof.*
+
+- Since $A$ is symmetric, it is diagonalizable (Section 2). By Theorem 4.5, $\deg m_A$ equals the number of distinct eigenvalues.
+- Let $D = \mathrm{diam}(G)$. Fix $u$ and vertices $w_0 = u, w_1, \dots, w_D$ along a shortest path, so $d(u, w_k) = k$.
+- The entry $(A^j)_{u w_k}$ sums the weights of walks of length $j$ from $u$ to $w_k$. So it is $0$ for $j < k$ and positive for $j = k$.
+- If $\sum_{j=0}^{D} c_j A^j = 0$, look at entry $(u, w_D)$: only $j = D$ contributes, so $c_D = 0$. Then look at $(u, w_{D-1})$ to get $c_{D-1} = 0$, and so on.
+- So $I, A, \dots, A^D$ are linearly independent, and $\deg m_A \ge D + 1$. $\blacksquare$
+
+The same fact underlies Krylov methods. Conjugate gradient and Lanczos applied to a symmetric matrix terminate, in exact arithmetic, after at most (number of distinct eigenvalues) steps.
+
+---
+
+## 5. Triangularization: the Schur decomposition and normal matrices
+
+Not every matrix is diagonalizable, but over $\mathbb{C}$ every matrix is triangularizable, even by a unitary change of basis. In this section $V$ carries an inner product (Section 1).
+
+**Theorem 5.1 (Schur).** Let $A \in \mathbb{C}^{n\times n}$. There is a unitary $U$ and an upper triangular $T$ with
+$$
+A = UTU^*.
+$$
+The diagonal entries of $T$ are the eigenvalues of $A$, repeated according to algebraic multiplicity, and they can be placed in any prescribed order. If $A$ is real and $p_A$ splits over $\mathbb{R}$, then $U$ can be taken real orthogonal and $T$ real.
+
+*Proof.* Induct on $n$; the case $n = 1$ is trivial. Let $\lambda$ be the eigenvalue to be placed first. (One exists by the fundamental theorem of algebra, or by the splitting hypothesis in the real case.) Let $v$ be a unit eigenvector, and complete it to a unitary matrix $[v\ W]$. Since $W^*Av = \lambda W^*v = 0$,
+$$
+[v\ W]^* A\, [v\ W] = \begin{pmatrix} \lambda & v^*AW \\ 0 & W^*AW \end{pmatrix}.
+$$
+Now $p_{W^*AW}(t) = p_A(t)/(t - \lambda)$. So by induction, $W^*AW = U_1T_1U_1^*$, with the remaining eigenvalues in the prescribed order. Then $U = [v\ \ WU_1]$ works. The diagonal of $T$ lists the eigenvalues with multiplicity because $p_A = p_T = \prod_i (t - T_{ii})$. $\blacksquare$
+
+Unlike the Jordan form below, the Schur form is computed stably in practice: it is what the QR algorithm produces.
+
+**Theorem 5.2 (Normal matrices).** $A \in \mathbb{C}^{n\times n}$ is unitarily diagonalizable ($A = U\Lambda U^*$ with $U$ unitary and $\Lambda$ diagonal) iff $A$ is **normal**: $AA^* = A^*A$.
+
+*Proof.* (⇒) Diagonal matrices commute with their adjoints, so $AA^* = U\Lambda\bar\Lambda U^* = A^*A$.
+
+(⇐) Write $A = UTU^*$ by Schur. Then $T$ is normal and upper triangular. Compare the $(1,1)$ entries of $T^*T$ and $TT^*$:
+$$
+|t_{11}|^2 = (T^*T)_{11} = (TT^*)_{11} = \sum_{j} |t_{1j}|^2 .
+$$
+So $t_{1j} = 0$ for $j > 1$. The lower-right $(n-1)\times(n-1)$ block is again normal and upper triangular, so induction shows $T$ is diagonal. $\blacksquare$
+
+**Corollary 5.3.** A Hermitian matrix is unitarily diagonalizable with real eigenvalues. (Here $T = T^*$ is upper triangular, so it is diagonal with real entries.) A real symmetric matrix therefore has real eigenvalues, so $p_A$ splits over $\mathbb{R}$, and the real case of Theorem 5.1 gives a real orthogonal eigenbasis.
+
+This is a second proof of the spectral theorem (Theorem 2.2), at least over $\mathbb{C}$ and for real symmetric matrices. The variational proof of Section 2 is the more useful one: it avoids the fundamental theorem of algebra, produces the Courant–Fischer characterization along the way, and extends to infinite dimensions (Part II).
+
+**Examples of normal matrices.**
+
+- Hermitian and skew-Hermitian matrices.
+- Unitary matrices, including permutation matrices. The adjacency matrix of $\vec C_n$ is unitarily diagonalized by the discrete Fourier basis $\big(\omega^{jk}/\sqrt n\big)_{j}$ with $\omega = e^{2\pi i/n}$.
+- **Circulant matrices**, i.e., polynomials in the cyclic shift. These are the adjacency matrices of Cayley graphs of $\mathbb{Z}_n$, and they are all diagonalized by the same Fourier basis.
+
+The adjacency matrix of a directed graph is normal only in special cases. The directed path is not even diagonalizable.
+
+---
+
+## 6. The Jordan canonical form
+
+When $A$ is not diagonalizable, the best one can do by similarity is block diagonal form with **Jordan blocks**. Throughout this section, assume $p_A$ splits over $\mathbb{F}$, which is automatic over $\mathbb{C}$. Write $p_A(t) = \prod_{\lambda\in\sigma(A)}(t-\lambda)^{a_\lambda}$.
+
+### 6.1 Generalized eigenspaces
+
+The **generalized eigenspace** of $\lambda \in \sigma(A)$ is
+$$
+G_\lambda = \ker (A - \lambda I)^{a_\lambda} \;\supseteq\; E_\lambda .
+$$
+
+**Theorem 6.1 (Generalized eigenspace decomposition).**
+
+1. $V = \bigoplus_{\lambda \in \sigma(A)} G_\lambda$, and each $G_\lambda$ is $A$-invariant.
+2. $\lambda$ is the only eigenvalue of $A|_{G_\lambda}$, and $\dim G_\lambda = a_\lambda$.
+3. The projections $P_\lambda$ onto $G_\lambda$ along $\bigoplus_{\mu\ne\lambda} G_\mu$ are polynomials in $A$, and $\sum_\lambda P_\lambda = I$.
+
+*Proof.*
+(1) and (3): By Cayley–Hamilton, $p_A(A) = 0$. The factors $(t - \lambda)^{a_\lambda}$ are pairwise coprime, so Corollary 4.4 applies.
+
+(2): If $v \in G_\lambda$ and $Av = \mu v$ with $v \ne 0$, then $0 = (A-\lambda I)^{a_\lambda}v = (\mu - \lambda)^{a_\lambda}v$, so $\mu = \lambda$. Hence $p_{A|_{G_\lambda}}(t) = (t - \lambda)^{\dim G_\lambda}$. In a basis adapted to the decomposition in (1), $A$ is block diagonal, so $p_A = \prod_\lambda p_{A|_{G_\lambda}}$. Comparing exponents gives $\dim G_\lambda = a_\lambda$. $\blacksquare$
+
+### 6.2 The Jordan–Chevalley decomposition
+
+**Theorem 6.2 (Jordan–Chevalley).** There are unique linear maps $S$ and $N$ with:
+
+- $A = S + N$;
+- $S$ diagonalizable and $N$ nilpotent ($N^k = 0$ for some $k$);
+- $SN = NS$.
+
+Moreover, $S$ and $N$ are polynomials in $A$.
+
+*Proof.* *Existence.* With $P_\lambda$ as in Theorem 6.1, set $S = \sum_\lambda \lambda P_\lambda$ and $N = A - S$. Both are polynomials in $A$, so they commute. $S$ acts as $\lambda I$ on $G_\lambda$, so it is diagonalizable. On $G_\lambda$, $N$ acts as $A - \lambda I$, and $(A - \lambda I)^{a_\lambda} = 0$ there. So $N^{\max_\lambda a_\lambda} = 0$.
+
+*Uniqueness.* Suppose $A = S' + N'$ is another such decomposition.
+
+- $S'$ and $N'$ commute with $S' + N' = A$, hence with every polynomial in $A$, in particular with $S$ and $N$.
+- So $S - S' = N' - N$. The left side is a difference of commuting diagonalizable maps, hence diagonalizable by Proposition 4.7. The right side is a difference of commuting nilpotent maps, hence nilpotent: expand $(N' - N)^{2k}$ with the binomial theorem.
+- A map that is both diagonalizable and nilpotent is $0$. $\blacksquare$
+
+$S = \sum_\lambda \lambda P_\lambda$ is the non-normal analogue of the spectral decomposition in Theorem 2.2. The differences are that the $P_\lambda$ are *oblique* projections, not orthogonal ones, and that there is a nilpotent correction $N$. When $A$ is normal, $N = 0$ and the $P_\lambda$ are orthogonal.
+
+### 6.3 Nilpotent maps
+
+For $\lambda \in \mathbb{F}$ and $s \ge 1$, the **Jordan block** $J_s(\lambda) \in \mathbb{F}^{s\times s}$ has $\lambda$ on the diagonal, $1$ on the superdiagonal, and $0$ elsewhere:
+$$
+J_s(\lambda) = \lambda I_s + N_s, \qquad N_s e_1 = 0,\quad N_s e_j = e_{j-1}\ (j \ge 2).
+$$
+$N_s$ is nilpotent, with $N_s^{s-1} \ne 0 = N_s^s$. So $\dim\ker N_s^k = \min(k, s)$.
+
+**Theorem 6.3 (Structure of nilpotent maps).** Let $N : V \to V$ be nilpotent. There are vectors $u_1, \dots, u_r \in V$ and integers $m_1, \dots, m_r \ge 0$ such that:
+
+- the vectors $N^{m_i}u_i, \dots, Nu_i, u_i$, for $i = 1, \dots, r$, form a basis of $V$;
+- $N^{m_i + 1}u_i = 0$ for each $i$.
+
+In this basis, listed chain by chain, $N = \bigoplus_i J_{m_i+1}(0)$.
+
+*Proof.* Induct on $\dim V$. If $N = 0$, any basis works with all $m_i = 0$. Otherwise, $N$ is not injective (it is nilpotent), so $\operatorname{range} N \subsetneq V$. $N$ maps $\operatorname{range} N$ into itself nilpotently.
+
+*Step 1: apply induction to $\operatorname{range} N$.* We get $v_1, \dots, v_s \in \operatorname{range} N$ and integers $\ell_i \ge 0$ such that the vectors $N^j v_i$ ($0 \le j \le \ell_i$) form a basis of $\operatorname{range} N$, and $N^{\ell_i+1}v_i = 0$. Write $v_i = Nu_i$.
+
+*Step 2: the lifted chains are independent.* Let $L$ be the list of vectors $N^j u_i$ for $0 \le j \le \ell_i + 1$. Suppose $\sum_{i,j} c_{ij} N^j u_i = 0$. Apply $N$:
+$$
+\sum_{i,j} c_{ij}N^{j+1}u_i = \sum_i \sum_{j=0}^{\ell_i} c_{ij} N^j v_i = 0,
+$$
+where the terms with $j = \ell_i + 1$ vanish because $N^{\ell_i+1}v_i = 0$. The remaining vectors are the basis of $\operatorname{range} N$, so $c_{ij} = 0$ for $j \le \ell_i$. What is left is $\sum_i c_{i,\ell_i+1} N^{\ell_i+1}u_i = \sum_i c_{i,\ell_i+1}N^{\ell_i}v_i = 0$. These vectors are also part of that basis, so the remaining coefficients vanish too.
+
+*Step 3: complete with kernel vectors.* Extend $L$ to a basis of $V$ by vectors $w_1, \dots, w_p$. Each $Nw_k$ lies in $\operatorname{range} N$, which is spanned by $N(L)$. So $Nw_k = Nx_k$ for some $x_k \in \operatorname{span} L$. Put $u_{s+k} = w_k - x_k$. Then $Nu_{s+k} = 0$, and $L, u_{s+1}, \dots, u_{s+p}$ still spans $V$ and has $\dim V$ elements, so it is a basis.
+
+The theorem holds with $m_i = \ell_i + 1$ for $i \le s$ and $m_{s+k} = 0$. For the matrix form, in the chain $N^{m}u, \dots, Nu, u$, $N$ sends each vector to the previous one and the first to $0$. That is exactly $N_{m+1}$. $\blacksquare$
+
+### 6.4 The Jordan canonical form
+
+**Theorem 6.4 (Jordan canonical form).** If $p_A$ splits over $\mathbb{F}$, there is a basis of $V$ in which
+$$
+A = \bigoplus_{\lambda\in\sigma(A)}\ \bigoplus_{i=1}^{g_\lambda} J_{s_{\lambda,i}}(\lambda).
+$$
+The block sizes are determined by $A$: for each $\lambda$ and $k \ge 1$,
+$$
+\#\{i : s_{\lambda,i} \ge k\} = \dim\ker(A - \lambda I)^k - \dim\ker(A-\lambda I)^{k-1}.
+$$
+Hence the Jordan form is unique up to the order of the blocks. Two matrices are similar iff they have the same Jordan form.
+
+*Proof.* *Existence.* By Theorem 6.1, it suffices to work on each $G_\lambda$. There, $N = (A - \lambda I)|_{G_\lambda}$ is nilpotent. Theorem 6.3 gives a basis of $G_\lambda$ in which $N = \bigoplus_i J_{s_i}(0)$, so $A|_{G_\lambda} = \lambda I + N = \bigoplus_i J_{s_i}(\lambda)$.
+
+*The counting formula.* $(A - \lambda I)^k$ is invertible on $G_\mu$ for $\mu \ne \lambda$. So only the $\lambda$-blocks contribute to its kernel, and $\dim\ker J_s(\lambda - \lambda)^k = \dim \ker N_s^k = \min(k,s)$. Hence
+$$
+\dim\ker(A-\lambda I)^k = \sum_i \min(k, s_{\lambda,i}).
+$$
+Taking differences in $k$ counts the blocks of size $\ge k$.
+
+The number of blocks for $\lambda$ is the $k=1$ count, $\dim E_\lambda = g_\lambda$.
+
+*Similarity.* The dimensions of $\ker(A - \lambda I)^k$ are similarity invariants, so similar matrices have the same Jordan form. The converse is clear. $\blacksquare$
+
+**Corollary 6.5 (Reading the invariants off the Jordan form).** For each $\lambda \in \sigma(A)$:
+
+- $a_\lambda$ is the total size of the $\lambda$-blocks;
+- $g_\lambda$ is the number of $\lambda$-blocks;
+- the exponent $k_\lambda$ of $(t-\lambda)$ in $m_A$ is the size of the largest $\lambda$-block.
+
+(The last follows because $m_A$ of a block diagonal matrix is the least common multiple of the blocks' minimal polynomials, and $m_{J_s(\lambda)} = (t-\lambda)^s$.) In particular, $A$ is diagonalizable iff every Jordan block is $1\times1$, iff $k_\lambda = 1$ for all $\lambda$, iff $g_\lambda = a_\lambda$ for all $\lambda$. This recovers Theorems 3.3 and 4.5.
+
+*Example.* $\vec P_n$ is a single block $J_n(0)$ (Exercise 5). A matrix with $p_A = (t-2)^4$, $\dim\ker(A - 2I) = 2$ and $\dim\ker(A-2I)^2 = 4$ has Jordan form $J_2(2)\oplus J_2(2)$.
+
+### 6.5 Powers and exponentials
+
+Since $\lambda I$ and $N_s$ commute and $N_s^s = 0$, the binomial theorem gives
+$$
+J_s(\lambda)^k = \sum_{j=0}^{s-1}\binom{k}{j}\lambda^{k-j}N_s^j, \qquad e^{tJ_s(\lambda)} = e^{t\lambda}\sum_{j=0}^{s-1}\frac{t^j}{j!}N_s^j .
+$$
+So the entries of $A^k$ are combinations of $k^j\lambda^k$ with $j <$ (block size). Consequences:
+
+- $A^k \to 0$ iff the **spectral radius** $\rho(A) = \max_{\lambda\in\sigma(A)}|\lambda|$ is less than $1$. (A block $J_s(\lambda)$ with $|\lambda| < 1$ still decays, because $k^{s-1}|\lambda|^k \to 0$.)
+- More precisely, if $\rho(A) > 0$, then $\|A^k\| \asymp k^{s-1}\rho(A)^k$ as $k\to\infty$, where $s$ is the largest block among the eigenvalues of modulus $\rho(A)$. The limit $\|A^k\|^{1/k} \to \rho(A)$ is Gelfand's formula.
+- For a Markov chain $P$, convergence to stationarity is governed by the eigenvalues with $|\lambda| < 1$. For a *non-reversible* chain, Jordan blocks contribute polynomial prefactors, and $\kappa(S)$ can produce long transients before the asymptotic rate kicks in. Reversible chains avoid both problems because $P$ is self-adjoint in $\ell^2(\pi)$ (Section 2.5).
+
+### 6.6 A warning: the Jordan form is unstable
+
+The Jordan form is a discontinuous function of the matrix. Let $A_\varepsilon = J_n(0) + \varepsilon\, e_ne_1^\top$. Then $p_{A_\varepsilon}(t) = t^n - \varepsilon$. So $A_\varepsilon$ has $n$ distinct eigenvalues $\varepsilon^{1/n}e^{2\pi ij/n}$ and is diagonalizable. For $n = 10$ and $\varepsilon = 10^{-10}$, a perturbation of size $10^{-10}$ moves the eigenvalues by $0.1$.
+
+Compare the Hermitian case, where Weyl's inequality (Corollary 2.9) says eigenvalues move by at most $\|E\|$. For diagonalizable matrices, the general statement interpolates between the two:
+
+**Theorem 6.6 (Bauer–Fike).** If $A = S\Lambda S^{-1}$ is diagonalizable, then every eigenvalue $\mu$ of $A + E$ satisfies
+$$
+\min_{\lambda\in\sigma(A)}|\mu - \lambda| \le \kappa(S)\,\|E\|, \qquad \kappa(S) = \|S\|\,\|S^{-1}\|.
+$$
+
+*Proof.* Assume $\mu \notin \sigma(A)$ and let $(A + E)v = \mu v$ with $v \ne 0$. Then
+$$
+v = -(A - \mu I)^{-1}Ev = -S(\Lambda - \mu I)^{-1}S^{-1}Ev.
+$$
+Taking norms, $1 \le \kappa(S)\,\|E\| \,/\min_\lambda|\lambda - \mu|$. $\blacksquare$
+
+For normal matrices $S$ is unitary, so $\kappa(S) = 1$. In practice, one therefore works with the Schur form, singular values, or pseudospectra (Trefethen & Embree) rather than the Jordan form. The Jordan form remains the right *theoretical* description of what $A$ does.
+
+---
+
 ## 7. Exercises
 
-1. Show that a real matrix that is diagonalizable by a real orthogonal matrix must be symmetric. Conclude that Theorem 6.2 characterizes real symmetric matrices.
-2. Prove the min–max half of Theorem 6.8 directly, without passing to $-A$.
+1. Show that a real matrix that is diagonalizable by a real orthogonal matrix must be symmetric. Conclude that Theorem 2.2 characterizes real symmetric matrices.
+2. Prove the min–max half of Theorem 2.8 directly, without passing to $-A$.
 3. Let $A \succeq 0$. Show that $A$ has a unique PSD square root. *(Hint: any PSD square root commutes with $A$, so it preserves each eigenspace of $A$.)*
-4. Using Section 6.5, prove that the random-walk matrix $P = D^{-1}A$ of a connected graph has eigenvalues in $[-1,1]$, that $1$ is a simple eigenvalue, and that $-1$ is an eigenvalue iff the graph is bipartite.
+4. Using Section 2.5, prove that the random-walk matrix $P = D^{-1}A$ of a connected graph has eigenvalues in $[-1,1]$, that $1$ is a simple eigenvalue, and that $-1$ is an eigenvalue iff the graph is bipartite.
 5. Compute the characteristic polynomial, minimal polynomial, and Jordan form of the adjacency matrices of the directed path $\vec P_n$ and the directed cycle $\vec C_n$. Find an eigenbasis of $\vec C_n$ over $\mathbb{C}$.
 6. Assume $p_A$ splits. Show that $A$ is diagonalizable iff $\ker(A - \lambda I)^2 = \ker(A - \lambda I)$ for every $\lambda \in \sigma(A)$.
 7. Show that every square matrix is similar to its transpose. *(Hint: $J_s(\lambda)^\top$ is similar to $J_s(\lambda)$ via the reversal permutation.)*
@@ -555,8 +556,8 @@ Which picture to use is a matter of convenience. $\mathcal{L}$ is convenient for
 
 ## References
 
-- S. Axler, *Linear Algebra Done Right*. The determinant-free viewpoint of Section 6, generalized eigenspaces, and the proof of Theorem 5.3.
-- K. Hoffman & R. Kunze, *Linear Algebra*. Minimal polynomials and the primary decomposition (Section 3).
+- S. Axler, *Linear Algebra Done Right*. The determinant-free viewpoint of Section 2, generalized eigenspaces, and the proof of Theorem 6.3.
+- K. Hoffman & R. Kunze, *Linear Algebra*. Minimal polynomials and the primary decomposition (Section 4).
 - R. Horn & C. Johnson, *Matrix Analysis*. Schur, Jordan, Courant–Fischer, Weyl, Bauer–Fike, and much more.
-- A. E. Brouwer & W. H. Haemers, *Spectra of Graphs*. Includes the diameter bound of Section 3.4.
-- L. N. Trefethen & M. Embree, *Spectra and Pseudospectra*. The non-normal case (Section 5.6, Remark 6.5).
+- A. E. Brouwer & W. H. Haemers, *Spectra of Graphs*. Includes the diameter bound of Section 4.4.
+- L. N. Trefethen & M. Embree, *Spectra and Pseudospectra*. The non-normal case (Section 6.6, Remark 2.5).
