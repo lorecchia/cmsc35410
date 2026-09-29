@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Draft. For the spectral clustering lecture.">
+
+<title>The Davis–Kahan sin Θ Theorem – CMSC 35410</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ec6c034766f78be6d2b3c979ae054acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-79f87882548c91cf1952f391da7ff80a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-ec6c034766f78be6d2b3c979ae054acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">CMSC 35410</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../schedule.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../notes.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../homework.html"> 
+<span class="menu-text">Homework</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../resources.html"> 
+<span class="menu-text">Resources</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/lorecchia/cmsc35410"> <i class="bi bi-github" role="img" aria-label="GitHub repository">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#motivating-example" id="toc-motivating-example" class="nav-link active" data-scroll-target="#motivating-example">1. Motivating example</a></li>
+  <li><a href="#distances-between-subspaces" id="toc-distances-between-subspaces" class="nav-link" data-scroll-target="#distances-between-subspaces">2. Distances between subspaces</a></li>
+  <li><a href="#the-theorem" id="toc-the-theorem" class="nav-link" data-scroll-target="#the-theorem">3. The theorem</a>
+  <ul class="collapse">
+  <li><a href="#the-sylvester-lemma" id="toc-the-sylvester-lemma" class="nav-link" data-scroll-target="#the-sylvester-lemma">3.1 The Sylvester lemma</a></li>
+  <li><a href="#proof-of-theorem-3.1" id="toc-proof-of-theorem-3.1" class="nav-link" data-scroll-target="#proof-of-theorem-3.1">3.2 Proof of Theorem 3.1</a></li>
+  <li><a href="#a-version-with-the-gap-measured-on-a-alone" id="toc-a-version-with-the-gap-measured-on-a-alone" class="nav-link" data-scroll-target="#a-version-with-the-gap-measured-on-a-alone">3.3 A version with the gap measured on <span class="math inline">\(A\)</span> alone</a></li>
+  </ul></li>
+  <li><a href="#application-sketch-why-spectral-clustering-works" id="toc-application-sketch-why-spectral-clustering-works" class="nav-link" data-scroll-target="#application-sketch-why-spectral-clustering-works">4. Application sketch: why spectral clustering works</a></li>
+  <li><a href="#sources-and-how-they-fit-together" id="toc-sources-and-how-they-fit-together" class="nav-link" data-scroll-target="#sources-and-how-they-fit-together">5. Sources and how they fit together</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">6. Exercises</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/notes/davis-kahan.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">The Davis–Kahan sin Θ Theorem</h1>
+<p class="subtitle lead">Supplement to the linear algebra review</p>
+</div>
+
+<div>
+  <div class="description">
+    Draft. For the spectral clustering lecture.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Weyl’s inequality (Review Part I, Corollary 6.9) says that eigen<em>values</em> of a self-adjoint matrix move by at most <span class="math inline">\(\|E\|\)</span> under a perturbation <span class="math inline">\(E\)</span>. Eigen<em>vectors</em> are more fragile. If two eigenvalues are close, an arbitrarily small perturbation can rotate the corresponding eigenvectors by <span class="math inline">\(90°\)</span>. The Davis–Kahan theorem says this is the only obstruction: an <strong>invariant subspace</strong> is stable, with error controlled by <span class="math inline">\(\|E\|\)</span> divided by the <strong>eigengap</strong> separating it from the rest of the spectrum.</p>
+<p>Notation follows Part I of the review: <span class="math inline">\(\mathbb{F} \in \{\mathbb{R}, \mathbb{C}\}\)</span>, <span class="math inline">\(M^*\)</span> is the conjugate transpose, and <span class="math inline">\(\|\cdot\|\)</span> is the operator (spectral) norm unless marked otherwise.</p>
+<hr>
+<section id="motivating-example" class="level2">
+<h2 class="anchored" data-anchor-id="motivating-example">1. Motivating example</h2>
+<p>Let <span class="math inline">\(A = \operatorname{diag}(1+\varepsilon, 1)\)</span> and <span class="math inline">\(\hat A = \begin{pmatrix} 1 + \varepsilon/2 &amp; \varepsilon/2 \\ \varepsilon/2 &amp; 1 + \varepsilon/2\end{pmatrix}\)</span>.</p>
+<ul>
+<li>The top eigenvector of <span class="math inline">\(A\)</span> is <span class="math inline">\(e_1\)</span>.</li>
+<li>The top eigenvector of <span class="math inline">\(\hat A\)</span> is <span class="math inline">\((e_1 + e_2)/\sqrt2\)</span>.</li>
+<li>The perturbation <span class="math inline">\(\hat A - A = \frac{\varepsilon}{2}\begin{pmatrix}-1 &amp; 1 \\ 1 &amp; 1\end{pmatrix}\)</span> has norm <span class="math inline">\(\varepsilon/\sqrt2\)</span>, which is tiny.</li>
+<li>Yet the top eigenvector rotated by <span class="math inline">\(45°\)</span>.</li>
+</ul>
+<p>The perturbation is on the same scale as the eigengap <span class="math inline">\(\varepsilon\)</span>, so no eigenvector stability can be expected. By contrast, the two-dimensional eigenspace <span class="math inline">\(\operatorname{span}\{e_1, e_2\}\)</span> did not move at all.</p>
+<p><strong>Lesson:</strong> bound the distance between <em>subspaces</em>, and measure the perturbation relative to the gap.</p>
+<hr>
+</section>
+<section id="distances-between-subspaces" class="level2">
+<h2 class="anchored" data-anchor-id="distances-between-subspaces">2. Distances between subspaces</h2>
+<p>Let <span class="math inline">\(V, \hat V \in \mathbb{F}^{n\times k}\)</span> have orthonormal columns (<span class="math inline">\(V^*V = \hat V^*\hat V = I_k\)</span>), spanning subspaces <span class="math inline">\(\mathcal V\)</span> and <span class="math inline">\(\hat{\mathcal V}\)</span>.</p>
+<p><strong>Principal angles.</strong> The singular values of <span class="math inline">\(\hat V^* V \in \mathbb{F}^{k\times k}\)</span> lie in <span class="math inline">\([0,1]\)</span>. Write them as <span class="math inline">\(\cos\theta_1 \ge \dots \ge \cos\theta_k\)</span>, with <span class="math inline">\(\theta_i \in [0, \pi/2]\)</span>. The <span class="math inline">\(\theta_i\)</span> are the <strong>principal angles</strong> between <span class="math inline">\(\mathcal V\)</span> and <span class="math inline">\(\hat{\mathcal V}\)</span>. They do not depend on the choice of orthonormal bases. Set <span class="math display">\[
+\sin\Theta(V, \hat V) = \operatorname{diag}(\sin\theta_1, \dots, \sin\theta_k).
+\]</span></p>
+<p><strong>Lemma 2.1.</strong> Let <span class="math inline">\(\hat V_\perp \in \mathbb{F}^{n\times(n-k)}\)</span> complete <span class="math inline">\(\hat V\)</span> to a unitary matrix <span class="math inline">\([\hat V\ \hat V_\perp]\)</span>.</p>
+<ol type="1">
+<li>The singular values of <span class="math inline">\(\hat V_\perp^* V\)</span> are <span class="math inline">\(\sin\theta_1, \dots, \sin\theta_k\)</span>, padded with zeros if <span class="math inline">\(n - k &gt; k\)</span>.</li>
+<li><span class="math inline">\(\|VV^* - \hat V \hat V^*\| = \|\sin\Theta\| = \sin\theta_1\)</span>, and <span class="math inline">\(\|VV^* - \hat V\hat V^*\|_F = \sqrt2\,\|\sin\Theta\|_F\)</span>.</li>
+<li>There is a unitary <span class="math inline">\(O \in \mathbb{F}^{k\times k}\)</span> with <span class="math inline">\(\|\hat V O - V\|_F \le \sqrt2\,\|\sin\Theta\|_F\)</span>.</li>
+</ol>
+<p><em>Proof.</em> (1) Since <span class="math inline">\(\hat V\hat V^* + \hat V_\perp \hat V_\perp^* = I\)</span>, <span class="math display">\[
+I_k = V^*V = (\hat V^*V)^*(\hat V^*V) + (\hat V_\perp^* V)^*(\hat V_\perp^* V).
+\]</span> So the eigenvalues of <span class="math inline">\((\hat V_\perp^*V)^*(\hat V_\perp^*V)\)</span> are <span class="math inline">\(1 - \cos^2\theta_i = \sin^2\theta_i\)</span>.</p>
+<ol start="2" type="1">
+<li><p>In the orthonormal basis <span class="math inline">\([\hat V\ \hat V_\perp]\)</span>, a direct computation from (1) shows that <span class="math inline">\(VV^* - \hat V\hat V^*\)</span> has eigenvalues <span class="math inline">\(\pm\sin\theta_i\)</span>, plus zeros. Both identities follow. (Exercise: carry out the <span class="math inline">\(2\times 2\)</span> block computation.)</p></li>
+<li><p>Take an SVD <span class="math inline">\(\hat V^*V = U (\cos\Theta) W^*\)</span> and set <span class="math inline">\(O = UW^*\)</span>. Then <span class="math display">\[
+\|\hat VO - V\|_F^2 = 2k - 2\,\mathrm{Re}\operatorname{tr}(O^*\hat V^*V) = 2\sum_i (1 - \cos\theta_i) \le 2\sum_i \sin^2\theta_i,
+\]</span> using <span class="math inline">\(1 - c \le 1 - c^2\)</span> for <span class="math inline">\(c \in [0,1]\)</span>. <span class="math inline">\(\blacksquare\)</span></p></li>
+</ol>
+<p>Part (3) is what spectral clustering needs. The embedding computed from data, the rows of <span class="math inline">\(\hat V\)</span>, matches the ideal embedding (the rows of <span class="math inline">\(V\)</span>) <strong>up to a rotation <span class="math inline">\(O\)</span></strong>. A rotation does not affect <span class="math inline">\(k\)</span>-means, since it preserves all pairwise distances.</p>
+<hr>
+</section>
+<section id="the-theorem" class="level2">
+<h2 class="anchored" data-anchor-id="the-theorem">3. The theorem</h2>
+<p><strong>Theorem 3.1 (Davis–Kahan <span class="math inline">\(\sin\Theta\)</span> theorem).</strong> Let <span class="math inline">\(A\)</span> and <span class="math inline">\(\hat A = A + E\)</span> be self-adjoint <span class="math inline">\(n\times n\)</span> matrices.</p>
+<ul>
+<li>Let <span class="math inline">\(V \in \mathbb{F}^{n\times k}\)</span> have orthonormal columns with <span class="math inline">\(AV = V\Lambda_1\)</span>, where <span class="math inline">\(\Lambda_1\)</span> is diagonal with entries in an interval <span class="math inline">\([a, b]\)</span>.</li>
+<li>Let <span class="math inline">\(\hat V_\perp \in \mathbb{F}^{n\times(n-k)}\)</span> have orthonormal columns with <span class="math inline">\(\hat A \hat V_\perp = \hat V_\perp \hat\Lambda_2\)</span>, where <span class="math inline">\(\hat\Lambda_2\)</span> is diagonal with every entry outside <span class="math inline">\((a - \delta, b + \delta)\)</span>, for some <span class="math inline">\(\delta &gt; 0\)</span>.</li>
+</ul>
+<p>Let <span class="math inline">\(\hat V\)</span> be the orthonormal complement of <span class="math inline">\(\hat V_\perp\)</span>. It spans the remaining <span class="math inline">\(k\)</span> eigenvectors of <span class="math inline">\(\hat A\)</span>. Then for the operator norm and for the Frobenius norm, <span class="math display">\[
+\|\sin\Theta(V, \hat V)\| \;\le\; \frac{\|EV\|}{\delta} \;\le\; \frac{\|E\|}{\delta},
+\qquad
+\|\sin\Theta(V, \hat V)\|_F \;\le\; \frac{\|EV\|_F}{\delta}.
+\]</span></p>
+<p>In words: if the <em>unperturbed</em> eigenvalues of interest sit in <span class="math inline">\([a,b]\)</span>, and the <em>perturbed</em> eigenvalues we discard stay at distance <span class="math inline">\(\delta\)</span> from that interval, then the subspace moves by at most <span class="math inline">\(\|E\|/\delta\)</span>.</p>
+<section id="the-sylvester-lemma" class="level3">
+<h3 class="anchored" data-anchor-id="the-sylvester-lemma">3.1 The Sylvester lemma</h3>
+<p><strong>Lemma 3.2.</strong> Let <span class="math inline">\(\Lambda \in \mathbb{F}^{k\times k}\)</span> and <span class="math inline">\(D \in \mathbb{F}^{m\times m}\)</span> be self-adjoint. Suppose the eigenvalues of <span class="math inline">\(\Lambda\)</span> lie in <span class="math inline">\([a,b]\)</span> and those of <span class="math inline">\(D\)</span> lie outside <span class="math inline">\((a - \delta, b+\delta)\)</span>. Then for every <span class="math inline">\(X \in \mathbb{F}^{m\times k}\)</span> and <span class="math inline">\(\|\cdot\| \in \{\|\cdot\|_{\mathrm{op}}, \|\cdot\|_F\}\)</span>, <span class="math display">\[
+\|DX - X\Lambda\| \ge \delta\,\|X\|.
+\]</span></p>
+<p><em>Proof.</em> Let <span class="math inline">\(c = (a+b)/2\)</span> and <span class="math inline">\(r = (b-a)/2\)</span>. Then <span class="math inline">\(\|\Lambda - cI\| \le r\)</span>. Every eigenvalue of <span class="math inline">\(D - cI\)</span> has absolute value at least <span class="math inline">\(r + \delta\)</span>, so <span class="math inline">\(D - cI\)</span> is invertible with <span class="math inline">\(\|(D - cI)^{-1}\| \le 1/(r+\delta)\)</span>.</p>
+<p>Set <span class="math inline">\(Y = DX - X\Lambda = (D - cI)X - X(\Lambda - cI)\)</span>. Then <span class="math inline">\(X = (D-cI)^{-1}\big(Y + X(\Lambda - cI)\big)\)</span>. Using <span class="math inline">\(\|PQ\| \le \|P\|_{\mathrm{op}}\|Q\|\)</span> and <span class="math inline">\(\|QP\| \le \|Q\|\,\|P\|_{\mathrm{op}}\)</span>, which hold for both norms, <span class="math display">\[
+\|X\| \le \frac{\|Y\| + r\|X\|}{r + \delta}.
+\]</span> Rearranging gives <span class="math inline">\(\delta\|X\| \le \|Y\|\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+<p>The centering trick is what makes the lemma work in operator norm. For the Frobenius norm alone there is a one-line proof when <span class="math inline">\(D\)</span> and <span class="math inline">\(\Lambda\)</span> are diagonal: <span class="math inline">\((DX - X\Lambda)_{ij} = (d_i - \lambda_j)X_{ij}\)</span> and <span class="math inline">\(|d_i - \lambda_j| \ge \delta\)</span>.</p>
+</section>
+<section id="proof-of-theorem-3.1" class="level3">
+<h3 class="anchored" data-anchor-id="proof-of-theorem-3.1">3.2 Proof of Theorem 3.1</h3>
+<p>Let <span class="math inline">\(X = \hat V_\perp^* V\)</span>. By Lemma 2.1(1), <span class="math inline">\(\|X\| = \|\sin\Theta\|\)</span> and <span class="math inline">\(\|X\|_F = \|\sin\Theta\|_F\)</span>. Multiply the identity <span class="math inline">\(\hat A V - V\Lambda_1 = (A + E)V - V\Lambda_1 = EV\)</span> on the left by <span class="math inline">\(\hat V_\perp^*\)</span>, and use <span class="math inline">\(\hat V_\perp^*\hat A = \hat\Lambda_2\hat V_\perp^*\)</span> (valid because <span class="math inline">\(\hat A\)</span> is self-adjoint). This gives the <strong>Sylvester equation</strong> <span class="math display">\[
+\hat\Lambda_2 X - X\Lambda_1 = \hat V_\perp^* E V.
+\]</span> By Lemma 3.2, <span class="math inline">\(\delta\|X\| \le \|\hat V_\perp^* EV\| \le \|EV\|\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+<p>The whole proof is two lines once the Sylvester equation is written down. The eigengap enters only through Lemma 3.2.</p>
+</section>
+<section id="a-version-with-the-gap-measured-on-a-alone" class="level3">
+<h3 class="anchored" data-anchor-id="a-version-with-the-gap-measured-on-a-alone">3.3 A version with the gap measured on <span class="math inline">\(A\)</span> alone</h3>
+<p>In applications, <span class="math inline">\(A\)</span> is an idealized (population) matrix whose spectrum we know, and <span class="math inline">\(\hat A\)</span> is observed. The natural gap is that of <span class="math inline">\(A\)</span>. For the top-<span class="math inline">\(k\)</span> eigenspace, let <span class="math display">\[
+\delta_0 = \lambda_k(A) - \lambda_{k+1}(A) &gt; 0,
+\]</span> where <span class="math inline">\(\lambda_1(\cdot) \ge \dots \ge \lambda_n(\cdot)\)</span>.</p>
+<p><strong>Corollary 3.3.</strong> Let <span class="math inline">\(V\)</span> and <span class="math inline">\(\hat V\)</span> span the top-<span class="math inline">\(k\)</span> eigenspaces of <span class="math inline">\(A\)</span> and <span class="math inline">\(\hat A = A + E\)</span>. Then <span class="math display">\[
+\|\sin\Theta(V,\hat V)\| \le \frac{2\|E\|}{\delta_0}, \qquad \|\sin\Theta(V, \hat V)\|_F \le \frac{2\sqrt k\,\|E\|}{\delta_0}.
+\]</span></p>
+<p><em>Proof.</em> Suppose first <span class="math inline">\(\|E\| \le \delta_0/2\)</span>. Apply Theorem 3.1 with <span class="math inline">\([a,b] = [\lambda_k(A), \lambda_1(A)]\)</span>. By Weyl, every discarded eigenvalue of <span class="math inline">\(\hat A\)</span> satisfies <span class="math inline">\(\lambda_j(\hat A) \le \lambda_{k+1}(A) + \|E\| = a - (\delta_0 - \|E\|)\)</span>. So <span class="math inline">\(\delta = \delta_0 - \|E\| \ge \delta_0/2\)</span> works.</p>
+<p>If instead <span class="math inline">\(\|E\| &gt; \delta_0/2\)</span>, the operator-norm bound exceeds <span class="math inline">\(1 \ge \|\sin\Theta\|\)</span>, so it holds trivially.</p>
+<p>The Frobenius bound follows from <span class="math inline">\(\|\sin\Theta\|_F \le \sqrt k\,\|\sin\Theta\|\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+<p>Yu, Wang &amp; Samworth (2015) prove the sharper <span class="math inline">\(\|\sin\Theta\|_F \le 2\min(\sqrt k\,\|E\|, \|E\|_F)/\delta_0\)</span> and handle eigenvalues in the middle of the spectrum, not just the top <span class="math inline">\(k\)</span>. Combined with Lemma 2.1(3), for some unitary <span class="math inline">\(O\)</span>, <span class="math display">\[
+\|\hat VO - V\|_F \le \frac{2\sqrt{2k}\,\|E\|}{\delta_0}.
+\]</span></p>
+<hr>
+</section>
+</section>
+<section id="application-sketch-why-spectral-clustering-works" class="level2">
+<h2 class="anchored" data-anchor-id="application-sketch-why-spectral-clustering-works">4. Application sketch: why spectral clustering works</h2>
+<p>This is the template shared by Ng–Jordan–Weiss, the analysis in von Luxburg’s tutorial, and the stochastic block model analyses of Rohe–Chatterjee–Yu and Lei–Rinaldo.</p>
+<ol type="1">
+<li><strong>Ideal matrix.</strong> Take <span class="math inline">\(k\)</span> clusters with no edges between them, or a population matrix <span class="math inline">\(A = \mathbb{E}[\hat A]\)</span> with block structure. Then the top-<span class="math inline">\(k\)</span> eigenvectors of the appropriate matrix have <strong>rows that take only <span class="math inline">\(k\)</span> distinct values</strong>, one per cluster.
+<ul>
+<li>Unnormalized block model: node <span class="math inline">\(i\)</span> in cluster <span class="math inline">\(j\)</span> has row <span class="math inline">\(\propto e_j^\top/\sqrt{n_j}\)</span>, up to a rotation.</li>
+<li>Normalized Laplacian (Ng–Jordan–Weiss): rows are rescaled by the square roots of the degrees. After row-normalization, they become <span class="math inline">\(k\)</span> mutually orthogonal unit vectors.</li>
+</ul>
+Let <span class="math inline">\(\Delta\)</span> be the minimum distance between distinct rows.</li>
+<li><strong>Eigengap.</strong> Compute or lower-bound <span class="math inline">\(\delta_0 = \lambda_k(A) - \lambda_{k+1}(A)\)</span>. For a disconnected ideal graph, this is controlled by the spectral gaps of the individual clusters.</li>
+<li><strong>Perturbation size.</strong> Bound <span class="math inline">\(\|E\| = \|\hat A - A\|\)</span>. In the deterministic setting, <span class="math inline">\(E\)</span> is the between-cluster weight. In the random setting, a matrix concentration inequality gives <span class="math inline">\(\|E\| = O(\sqrt{\text{max expected degree}})\)</span> with high probability.</li>
+<li><strong>Davis–Kahan.</strong> <span class="math inline">\(\|\hat VO - V\|_F \le 2\sqrt{2k}\,\|E\|/\delta_0\)</span>.</li>
+<li><strong>Rounding.</strong> Call node <span class="math inline">\(i\)</span> <em>bad</em> if its row satisfies <span class="math inline">\(\|(\hat VO)_i - V_i\| \ge \Delta/2\)</span>. By Markov’s inequality on the squared row errors, <span class="math display">\[
+\#\text{bad nodes} \le \frac{4\,\|\hat VO - V\|_F^2}{\Delta^2} \le \frac{32\,k\,\|E\|^2}{\Delta^2\,\delta_0^2}.
+\]</span> Assigning each good node to the nearest <em>true</em> center labels it correctly. For the centers found by (approximate) <span class="math inline">\(k\)</span>-means, an extra argument is needed, which loses constant factors (Lei &amp; Rinaldo 2015, Lemma 5.3).</li>
+</ol>
+<p>The row-wise conclusion in step 5 comes from a Frobenius bound via Markov. Bounding every row individually needs <span class="math inline">\(\ell_{2\to\infty}\)</span> or entrywise perturbation theory (Cape–Tang–Priebe; Abbe–Fan–Wang–Zhong), which is a natural “further directions” pointer.</p>
+<hr>
+</section>
+<section id="sources-and-how-they-fit-together" class="level2">
+<h2 class="anchored" data-anchor-id="sources-and-how-they-fit-together">5. Sources and how they fit together</h2>
+<p><em>Notes for planning the lecture. Titles, venues, and years are from memory. The Ng–Jordan–Weiss citation of Stewart &amp; Sun in particular should be checked before it goes on a syllabus.</em></p>
+<p><strong>The original theorem.</strong></p>
+<ul>
+<li><strong>C. Davis &amp; W. M. Kahan, “The rotation of eigenvectors by a perturbation. III,” <em>SIAM J. Numer. Anal.</em> 7 (1970).</strong> The source of the <span class="math inline">\(\sin\Theta\)</span>, <span class="math inline">\(\tan\Theta\)</span>, <span class="math inline">\(\sin 2\Theta\)</span> family of theorems, stated for operators on Hilbert space. Heavy going; better cited than assigned.</li>
+<li><strong>G. W. Stewart &amp; J.-G. Sun, <em>Matrix Perturbation Theory</em> (Academic Press, 1990).</strong> The standard matrix-analysis reference for invariant-subspace perturbation. This is what Ng–Jordan–Weiss cite.</li>
+<li><strong>R. Bhatia, <em>Matrix Analysis</em> (GTM 169), Ch. VII.</strong> Clean proofs of the <span class="math inline">\(\sin\Theta\)</span> theorems via Sylvester equations, including the operator-norm subtleties. The proof above follows this route.</li>
+</ul>
+<p><strong>Ng, Jordan &amp; Weiss — the classical application.</strong> “On Spectral Clustering: Analysis and an Algorithm” (NIPS 2001).</p>
+<ul>
+<li>Introduces the now-standard algorithm: normalized affinity <span class="math inline">\(D^{-1/2}AD^{-1/2}\)</span>, top-<span class="math inline">\(k\)</span> eigenvectors, row-normalization, <span class="math inline">\(k\)</span>-means.</li>
+<li>The analysis treats the observed affinity matrix as a perturbation of the ideal block-diagonal one. It applies a Stewart–Sun subspace bound (a Davis–Kahan <span class="math inline">\(\sin\Theta\)</span> theorem, not cited under that name) with an eigengap supplied by assumptions (A1)–(A4) on within-cluster connectivity and between-cluster weight.</li>
+<li>Conclusion: the row-normalized embedding clusters tightly around <span class="math inline">\(k\)</span> mutually orthogonal points.</li>
+<li>Row-normalization is exactly what makes the ideal rows orthogonal unit vectors despite degree heterogeneity.</li>
+<li>Good for the lecture as the historical origin. The assumptions are somewhat opaque, so a cleaner restatement is worth doing in class.</li>
+</ul>
+<p><strong>von Luxburg, “A Tutorial on Spectral Clustering,” <em>Statistics and Computing</em> (2007).</strong></p>
+<ul>
+<li>The perturbation-theory section states Davis–Kahan explicitly and explains why the eigengap between <span class="math inline">\(\lambda_k\)</span> and <span class="math inline">\(\lambda_{k+1}\)</span> is the right quantity.</li>
+<li>Also discusses when the argument is shaky: the ideal eigenvectors must be piecewise constant, and the perturbation must be small in operator norm.</li>
+<li>Probably the easiest version to present, and a good reading assignment.</li>
+</ul>
+<p><strong>Stochastic block model analyses — the modern template.</strong></p>
+<ul>
+<li><strong>Rohe, Chatterjee &amp; Yu, “Spectral clustering and the high-dimensional stochastic blockmodel,” <em>Annals of Statistics</em> (2011).</strong> Normalized Laplacian under the SBM, with the number of clusters allowed to grow. Uses concentration + Davis–Kahan + counting misclustered nodes.</li>
+<li><strong>Lei &amp; Rinaldo, “Consistency of spectral clustering in stochastic block models,” <em>Annals of Statistics</em> (2015).</strong> Sharper, cleaner version for the adjacency matrix. Includes the approximate-<span class="math inline">\(k\)</span>-means rounding lemma used in step 5 above. Best source for a complete, rigorous end-to-end proof.</li>
+</ul>
+<p><strong>Yu, Wang &amp; Samworth, “A useful variant of the Davis–Kahan theorem for statisticians,” <em>Biometrika</em> (2015).</strong></p>
+<ul>
+<li>Requires an eigengap only for the population matrix <span class="math inline">\(A\)</span>, not for the noisy <span class="math inline">\(\hat A\)</span>. This is exactly what applications need, since the observed spectrum is not under our control.</li>
+<li>Also gives the <span class="math inline">\(\min(\sqrt k\|E\|, \|E\|_F)\)</span> form, and a version for singular vectors (Wedin-type).</li>
+<li>Short, and a good reading.</li>
+</ul>
+<p><strong>Peng, Sun &amp; Zanetti, “Partitioning well-clustered graphs: spectral clustering works!” (COLT 2015; journal version in <em>SIAM J. Comput.</em>).</strong></p>
+<ul>
+<li>A contrasting, worst-case (non-probabilistic) approach. Assumes a gap between <span class="math inline">\(\lambda_{k+1}\)</span> of the normalized Laplacian and the <span class="math inline">\(k\)</span>-way expansion constant <span class="math inline">\(\rho(k)\)</span>.</li>
+<li>Proves a <strong>structure theorem</strong>: the bottom-<span class="math inline">\(k\)</span> eigenvectors are close to cluster indicator vectors, and vice versa. This is argued directly, not through a black-box Davis–Kahan bound.</li>
+<li>Connects naturally to the higher-order Cheeger inequality (Lee–Oveis Gharan–Trevisan) and fits a course with a spectral graph theory emphasis.</li>
+<li>Useful to contrast with the Davis–Kahan route: which quantity plays the role of the eigengap, and why.</li>
+</ul>
+<p><strong>Further directions (row-wise / entrywise control).</strong></p>
+<ul>
+<li><strong>Cape, Tang &amp; Priebe, “The two-to-infinity norm and singular subspace geometry…,” <em>Annals of Statistics</em> (2019).</strong></li>
+<li><strong>Abbe, Fan, Wang &amp; Zhong, “Entrywise eigenvector analysis of random matrices with low expected rank,” <em>Annals of Statistics</em> (2020).</strong></li>
+<li>These give per-row bounds, and hence exact recovery results, where Davis–Kahan plus Markov only bounds the <em>number</em> of misclustered nodes.</li>
+</ul>
+<p><strong>Suggested lecture arc.</strong></p>
+<ol type="1">
+<li>Motivating example (Section 1).</li>
+<li>Principal angles (Section 2).</li>
+<li>Davis–Kahan proof via the Sylvester equation (Section 3).</li>
+<li>Ng–Jordan–Weiss as the historical application.</li>
+<li>The clean five-step template (Section 4), with Lei–Rinaldo as the rigorous version.</li>
+<li>Peng–Sun–Zanetti as the graph-theoretic alternative.</li>
+<li>Pointer to entrywise theory.</li>
+</ol>
+<p>Assign von Luxburg plus Yu–Wang–Samworth as reading.</p>
+<hr>
+</section>
+<section id="exercises" class="level2">
+<h2 class="anchored" data-anchor-id="exercises">6. Exercises</h2>
+<ol type="1">
+<li>Complete the proof of Lemma 2.1(2): compute <span class="math inline">\(VV^* - \hat V\hat V^*\)</span> in the basis <span class="math inline">\([\hat V\ \hat V_\perp]\)</span> and find its eigenvalues.</li>
+<li>Show that the gap condition in Theorem 3.1 cannot be dropped: for every <span class="math inline">\(\varepsilon &gt; 0\)</span>, construct <span class="math inline">\(A, E\)</span> with <span class="math inline">\(\|E\| = \varepsilon\)</span> and <span class="math inline">\(\|\sin\Theta\| = 1\)</span> for the top eigenvectors.</li>
+<li>Show that the constant in Theorem 3.1 is sharp: find <span class="math inline">\(2\times2\)</span> examples with <span class="math inline">\(\|\sin\Theta\|\)</span> arbitrarily close to <span class="math inline">\(\|E\|/\delta\)</span>.</li>
+<li>Let <span class="math inline">\(G\)</span> be the disjoint union of two copies of a <span class="math inline">\(d\)</span>-regular expander on <span class="math inline">\(n/2\)</span> vertices, whose second adjacency eigenvalue is <span class="math inline">\(\lambda &lt; d\)</span>. Add an arbitrary set of edges between the copies with maximum degree <span class="math inline">\(d'\)</span>. Use Corollary 3.3 (with <span class="math inline">\(k = 2\)</span>) and the rounding argument of Section 4 to bound the number of misclassified vertices in terms of <span class="math inline">\(n\)</span>, <span class="math inline">\(d'\)</span>, and <span class="math inline">\(d - \lambda\)</span>. <em>(Hint: <span class="math inline">\(\|E\| \le d'\)</span>.)</em></li>
+<li><em>(SVD version.)</em> State and prove an analogue of Theorem 3.1 for left and right singular subspaces of a rectangular matrix, by applying it to the self-adjoint dilation <span class="math inline">\(\begin{pmatrix} 0 &amp; M \\ M^* &amp; 0\end{pmatrix}\)</span>.</li>
+</ol>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/lorecchia\.github\.io\/cmsc35410");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/notes/davis-kahan.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Draft. Hilbert spaces, compact operators, the Laplacian.">
+
+<title>Linear Algebra Review, Part II – CMSC 35410</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ec6c034766f78be6d2b3c979ae054acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-79f87882548c91cf1952f391da7ff80a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-ec6c034766f78be6d2b3c979ae054acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">CMSC 35410</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../schedule.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../notes.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../homework.html"> 
+<span class="menu-text">Homework</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../resources.html"> 
+<span class="menu-text">Resources</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/lorecchia/cmsc35410"> <i class="bi bi-github" role="img" aria-label="GitHub repository">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#why-we-need-it" id="toc-why-we-need-it" class="nav-link active" data-scroll-target="#why-we-need-it">Why we need it</a></li>
+  <li><a href="#normed-spaces-and-completeness" id="toc-normed-spaces-and-completeness" class="nav-link" data-scroll-target="#normed-spaces-and-completeness">1. Normed spaces and completeness</a></li>
+  <li><a href="#hilbert-spaces" id="toc-hilbert-spaces" class="nav-link" data-scroll-target="#hilbert-spaces">2. Hilbert spaces</a></li>
+  <li><a href="#orthonormal-bases" id="toc-orthonormal-bases" class="nav-link" data-scroll-target="#orthonormal-bases">3. Orthonormal bases</a></li>
+  <li><a href="#bounded-operators-and-adjoints" id="toc-bounded-operators-and-adjoints" class="nav-link" data-scroll-target="#bounded-operators-and-adjoints">4. Bounded operators and adjoints</a></li>
+  <li><a href="#what-goes-wrong-in-infinite-dimensions" id="toc-what-goes-wrong-in-infinite-dimensions" class="nav-link" data-scroll-target="#what-goes-wrong-in-infinite-dimensions">5. What goes wrong in infinite dimensions</a></li>
+  <li><a href="#compact-operators" id="toc-compact-operators" class="nav-link" data-scroll-target="#compact-operators">6. Compact operators</a></li>
+  <li><a href="#the-spectral-theorem-for-compact-self-adjoint-operators" id="toc-the-spectral-theorem-for-compact-self-adjoint-operators" class="nav-link" data-scroll-target="#the-spectral-theorem-for-compact-self-adjoint-operators">7. The spectral theorem for compact self-adjoint operators</a>
+  <ul class="collapse">
+  <li><a href="#statement" id="toc-statement" class="nav-link" data-scroll-target="#statement">7.1 Statement</a></li>
+  <li><a href="#the-key-lemma-the-top-eigenvalue-exists" id="toc-the-key-lemma-the-top-eigenvalue-exists" class="nav-link" data-scroll-target="#the-key-lemma-the-top-eigenvalue-exists">7.2 The key lemma: the top eigenvalue exists</a></li>
+  <li><a href="#proof-of-theorem-7.1" id="toc-proof-of-theorem-7.1" class="nav-link" data-scroll-target="#proof-of-theorem-7.1">7.3 Proof of Theorem 7.1</a></li>
+  <li><a href="#consequences-and-extensions" id="toc-consequences-and-extensions" class="nav-link" data-scroll-target="#consequences-and-extensions">7.4 Consequences and extensions</a></li>
+  </ul></li>
+  <li><a href="#unbounded-operators" id="toc-unbounded-operators" class="nav-link" data-scroll-target="#unbounded-operators">8. Unbounded operators</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">9. Exercises</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/notes/la-review-part2.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Linear Algebra Review, Part II</h1>
+<p class="subtitle lead">Linear algebra in infinite dimensions</p>
+</div>
+
+<div>
+  <div class="description">
+    Draft. Hilbert spaces, compact operators, the Laplacian.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This note is a crash course in linear algebra in infinite dimensions: Hilbert spaces, bounded operators, the ways infinite dimensions differ from finite ones, compact operators, the spectral theorem for compact self-adjoint operators, and a brief look at unbounded operators such as the Laplacian. It assumes Part I, especially the variational proof of the spectral theorem (Part I, Section 6), which Section 7 below follows almost verbatim.</p>
+<section id="why-we-need-it" class="level2">
+<h2 class="anchored" data-anchor-id="why-we-need-it">Why we need it</h2>
+<p>Many objects in spectral ML are finite-dimensional <em>samples</em> of infinite-dimensional ones:</p>
+<ul>
+<li>A kernel matrix <span class="math inline">\(K_{ij} = k(x_i, x_j)\)</span> on <span class="math inline">\(m\)</span> sample points approximates the integral operator <span class="math inline">\((T_k f)(x) = \int k(x, y) f(y)\, d\mu(y)\)</span> on <span class="math inline">\(L^2(\mu)\)</span>.</li>
+<li>A graph Laplacian built on points sampled from a manifold approximates the Laplace–Beltrami operator.</li>
+<li>A graphon is the limit object of a sequence of dense graphs, and its adjacency “matrix” is an integral operator.</li>
+<li>An infinite graph (a lattice, a tree) has an adjacency operator on <span class="math inline">\(\ell^2(V)\)</span>.</li>
+</ul>
+<p>To ask whether the spectrum of the sample converges to the spectrum of the limit, we first need to know what the spectrum of the limit is. The good news: for the operators above that are <strong>compact and self-adjoint</strong>, the answer looks almost exactly like Part I, Theorem 6.2. The bad news: most other intuitions from finite dimensions fail. This part explains which ones and why.</p>
+<hr>
+</section>
+<section id="normed-spaces-and-completeness" class="level2">
+<h2 class="anchored" data-anchor-id="normed-spaces-and-completeness">1. Normed spaces and completeness</h2>
+<p>A <strong>norm</strong> on a vector space <span class="math inline">\(X\)</span> is a function <span class="math inline">\(\|\cdot\|: X \to [0,\infty)\)</span> that is positive definite, homogeneous (<span class="math inline">\(\|cx\| = |c|\,\|x\|\)</span>), and satisfies the triangle inequality. A normed space is a <strong>Banach space</strong> if it is complete: every Cauchy sequence converges.</p>
+<p>Examples:</p>
+<ul>
+<li><span class="math inline">\(\ell^p = \{(x_k)_{k\ge1} : \sum_k |x_k|^p &lt; \infty\}\)</span> with <span class="math inline">\(\|x\|_p = (\sum_k |x_k|^p)^{1/p}\)</span>, for <span class="math inline">\(1 \le p &lt; \infty\)</span>.</li>
+<li><span class="math inline">\(\ell^\infty\)</span>, the bounded sequences, with the sup norm.</li>
+<li><span class="math inline">\(C([0,1])\)</span>, the continuous functions, with <span class="math inline">\(\|f\|_\infty = \sup_t |f(t)|\)</span>.</li>
+<li><span class="math inline">\(L^p(\mu)\)</span>, the (equivalence classes of) measurable functions with <span class="math inline">\(\int |f|^p\, d\mu &lt; \infty\)</span>.</li>
+</ul>
+<p><strong>Finite vs.&nbsp;infinite dimensions.</strong></p>
+<ul>
+<li>In finite dimensions, all norms are equivalent, every subspace is closed, and every linear map is continuous. None of these holds in infinite dimensions.</li>
+<li><span class="math inline">\(C([0,1])\)</span> with the norm <span class="math inline">\(\|f\|_2 = (\int_0^1 |f|^2)^{1/2}\)</span> is a normed space but <em>not</em> complete. Its completion is <span class="math inline">\(L^2([0,1])\)</span>. This is one reason <span class="math inline">\(L^2\)</span>, with its “functions defined only almost everywhere”, is the natural setting.</li>
+<li>In infinite dimensions, “subspace” and “closed subspace” are different notions, and most theorems need the second. For instance, the finitely supported sequences <span class="math inline">\(c_{00} \subset \ell^2\)</span> form a proper subspace that is <strong>dense</strong>: its closure is all of <span class="math inline">\(\ell^2\)</span>.</li>
+</ul>
+<hr>
+</section>
+<section id="hilbert-spaces" class="level2">
+<h2 class="anchored" data-anchor-id="hilbert-spaces">2. Hilbert spaces</h2>
+<p>A <strong>Hilbert space</strong> <span class="math inline">\(H\)</span> is an inner product space that is complete in the induced norm. Examples:</p>
+<ul>
+<li><span class="math inline">\(\mathbb{F}^n\)</span>.</li>
+<li><span class="math inline">\(\ell^2\)</span> (or <span class="math inline">\(\ell^2(V)\)</span> for a countable set <span class="math inline">\(V\)</span>) with <span class="math inline">\(\langle x, y\rangle = \sum_k x_k \bar y_k\)</span>.</li>
+<li><span class="math inline">\(L^2(\mu)\)</span> with <span class="math inline">\(\langle f, g\rangle = \int f \bar g\, d\mu\)</span>.</li>
+<li>Reproducing kernel Hilbert spaces (RKHS), which we will meet with kernel methods.</li>
+</ul>
+<p><span class="math inline">\(\ell^p\)</span> and <span class="math inline">\(L^p\)</span> for <span class="math inline">\(p \ne 2\)</span> are Banach but not Hilbert spaces; their norms fail the parallelogram law.</p>
+<p><strong>Theorem 2.1 (Projection theorem).</strong> Let <span class="math inline">\(M \subseteq H\)</span> be a <strong>closed</strong> subspace. Every <span class="math inline">\(x \in H\)</span> has a unique nearest point <span class="math inline">\(P_M x \in M\)</span>, characterized by <span class="math inline">\(x - P_M x \perp M\)</span>. The map <span class="math inline">\(P_M\)</span> is linear, <span class="math inline">\(P_M^2 = P_M = P_M^*\)</span>, and <span class="math inline">\(\|P_M\| \le 1\)</span>. Moreover, <span class="math inline">\(H = M \oplus M^\perp\)</span> and <span class="math inline">\((M^\perp)^\perp = M\)</span>.</p>
+<p><em>Proof sketch.</em> Let <span class="math inline">\(d = \inf_{m \in M}\|x - m\|\)</span> and pick <span class="math inline">\(m_k \in M\)</span> with <span class="math inline">\(\|x - m_k\| \to d\)</span>. By the parallelogram law applied to <span class="math inline">\(x - m_j\)</span> and <span class="math inline">\(x - m_k\)</span>, <span class="math display">\[
+\|m_j - m_k\|^2 = 2\|x-m_j\|^2 + 2\|x-m_k\|^2 - 4\big\|x - \tfrac{m_j+m_k}{2}\big\|^2 \le 2\|x-m_j\|^2 + 2\|x-m_k\|^2 - 4d^2 \to 0.
+\]</span> So <span class="math inline">\((m_k)\)</span> is Cauchy. Completeness of <span class="math inline">\(H\)</span> and closedness of <span class="math inline">\(M\)</span> give a limit <span class="math inline">\(m_\star \in M\)</span> with <span class="math inline">\(\|x - m_\star\| = d\)</span>. The orthogonality characterization follows from the same first-order argument as in Part I, Lemma 6.3. <span class="math inline">\(\blacksquare\)</span></p>
+<p>Closedness is essential. For <span class="math inline">\(M = c_{00} \subset \ell^2\)</span> we get <span class="math inline">\(M^\perp = \{0\}\)</span>, yet <span class="math inline">\(M \ne \ell^2\)</span>, so <span class="math inline">\(H \ne M \oplus M^\perp\)</span>.</p>
+<p><strong>Theorem 2.2 (Riesz representation).</strong> Every continuous linear functional <span class="math inline">\(\varphi : H \to \mathbb{F}\)</span> has the form <span class="math inline">\(\varphi(x) = \langle x, y\rangle\)</span> for a unique <span class="math inline">\(y \in H\)</span>, and <span class="math inline">\(\|\varphi\| = \|y\|\)</span>.</p>
+<p><em>Proof sketch.</em> If <span class="math inline">\(\varphi = 0\)</span>, take <span class="math inline">\(y = 0\)</span>. Otherwise <span class="math inline">\(\ker \varphi\)</span> is a closed proper subspace, so by Theorem 2.1 there is a unit vector <span class="math inline">\(z \perp \ker\varphi\)</span>. For any <span class="math inline">\(x\)</span>, the vector <span class="math inline">\(\varphi(x) z - \varphi(z) x\)</span> lies in <span class="math inline">\(\ker\varphi\)</span> and is therefore orthogonal to <span class="math inline">\(z\)</span>. Expanding gives <span class="math inline">\(\varphi(x) = \langle x, \overline{\varphi(z)}\, z\rangle\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+<hr>
+</section>
+<section id="orthonormal-bases" class="level2">
+<h2 class="anchored" data-anchor-id="orthonormal-bases">3. Orthonormal bases</h2>
+<p>An orthonormal set <span class="math inline">\(\{e_\alpha\}\)</span> in <span class="math inline">\(H\)</span> is an <strong>orthonormal basis</strong> (or Hilbert basis) if its linear span is <strong>dense</strong> in <span class="math inline">\(H\)</span>. This is <em>not</em> a basis in the linear-algebra (Hamel) sense: we allow infinite sums that converge in norm. (A Hamel basis of an infinite-dimensional Banach space is always uncountable and practically useless.)</p>
+<p><strong>Theorem 3.1.</strong> Let <span class="math inline">\(\{e_k\}_{k \ge 1}\)</span> be an orthonormal sequence in <span class="math inline">\(H\)</span>.</p>
+<ol type="1">
+<li><strong>(Bessel’s inequality)</strong> <span class="math inline">\(\sum_k |\langle x, e_k\rangle|^2 \le \|x\|^2\)</span> for every <span class="math inline">\(x\)</span>.</li>
+<li>For any scalars <span class="math inline">\((c_k)\)</span>, the series <span class="math inline">\(\sum_k c_k e_k\)</span> converges in <span class="math inline">\(H\)</span> iff <span class="math inline">\(\sum_k |c_k|^2 &lt; \infty\)</span>.</li>
+<li>The following are equivalent:
+<ul>
+<li><ol type="a">
+<li><span class="math inline">\(\{e_k\}\)</span> is an orthonormal basis;</li>
+</ol></li>
+<li><ol start="2" type="a">
+<li><span class="math inline">\(\{e_k\}^\perp = \{0\}\)</span>;</li>
+</ol></li>
+<li><ol start="3" type="a">
+<li><span class="math inline">\(x = \sum_k \langle x, e_k\rangle e_k\)</span> for every <span class="math inline">\(x\)</span>;</li>
+</ol></li>
+<li><ol start="4" type="a">
+<li><strong>(Parseval)</strong> <span class="math inline">\(\|x\|^2 = \sum_k |\langle x, e_k\rangle|^2\)</span> for every <span class="math inline">\(x\)</span>.</li>
+</ol></li>
+</ul></li>
+</ol>
+<p><em>Proof sketch.</em> (1) comes from <span class="math inline">\(0 \le \|x - \sum_{k\le n}\langle x, e_k\rangle e_k\|^2 = \|x\|^2 - \sum_{k \le n}|\langle x, e_k\rangle|^2\)</span>. (2) holds because partial sums are Cauchy iff the tails <span class="math inline">\(\sum_{k&gt;n}|c_k|^2\)</span> vanish, which is Pythagoras plus completeness. For (3): by (1) and (2), <span class="math inline">\(y = \sum_k \langle x, e_k\rangle e_k\)</span> exists and <span class="math inline">\(x - y \perp\)</span> every <span class="math inline">\(e_k\)</span>. This gives (b)⇒(c). The implications (c)⇒(d), (c)⇒(a), and (a)⇒(b) are routine. For (d)⇒(c), apply Pythagoras to <span class="math inline">\(\|x - \sum_{k\le n}\langle x, e_k\rangle e_k\|^2\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+<p>A Hilbert space is <strong>separable</strong> (has a countable dense subset) iff it has a countable orthonormal basis, obtained by Gram–Schmidt applied to a dense sequence. Every infinite-dimensional separable Hilbert space is isometrically isomorphic to <span class="math inline">\(\ell^2\)</span> via <span class="math inline">\(x \mapsto (\langle x, e_k\rangle)_k\)</span>. Examples of orthonormal bases:</p>
+<ul>
+<li>the standard basis <span class="math inline">\(\{\delta_k\}\)</span> of <span class="math inline">\(\ell^2\)</span>;</li>
+<li>the Fourier basis <span class="math inline">\(\{e^{ikt}/\sqrt{2\pi}\}_{k\in\mathbb{Z}}\)</span> of <span class="math inline">\(L^2([0,2\pi])\)</span>;</li>
+<li>the Hermite functions in <span class="math inline">\(L^2(\mathbb{R})\)</span>;</li>
+<li>the Laplacian eigenfunctions on a compact manifold (a consequence of Section 8).</li>
+</ul>
+<p>All spaces in this course are separable.</p>
+<hr>
+</section>
+<section id="bounded-operators-and-adjoints" class="level2">
+<h2 class="anchored" data-anchor-id="bounded-operators-and-adjoints">4. Bounded operators and adjoints</h2>
+<p>For normed spaces <span class="math inline">\(X, Y\)</span>, a linear map <span class="math inline">\(T : X \to Y\)</span> is <strong>bounded</strong> if <span class="math inline">\(\|T\| := \sup_{\|x\| \le 1}\|Tx\| &lt; \infty\)</span>.</p>
+<p><strong>Proposition 4.1.</strong> A linear map is continuous iff it is continuous at <span class="math inline">\(0\)</span> iff it is bounded.</p>
+<p>In finite dimensions every linear map is bounded. In infinite dimensions this fails, and some of the most important operators, including differentiation and Laplacians, are <strong>unbounded</strong>. Section 8 discusses them. Until then, “operator” means bounded operator.</p>
+<p>Let <span class="math inline">\(B(H)\)</span> denote the bounded operators on a Hilbert space <span class="math inline">\(H\)</span>. For <span class="math inline">\(T \in B(H)\)</span> and fixed <span class="math inline">\(y\)</span>, the functional <span class="math inline">\(x \mapsto \langle Tx, y\rangle\)</span> is continuous. By Riesz, it equals <span class="math inline">\(\langle x, T^*y\rangle\)</span> for a unique <span class="math inline">\(T^*y\)</span>. This defines the <strong>adjoint</strong> <span class="math inline">\(T^* \in B(H)\)</span>, with <span class="math inline">\(\|T^*\| = \|T\|\)</span> and <span class="math inline">\(\|T^*T\| = \|T\|^2\)</span>. The definitions of self-adjoint, PSD, orthogonal projection (<span class="math inline">\(P = P^2 = P^*\)</span>), and unitary (<span class="math inline">\(U^*U = UU^* = I\)</span>) carry over unchanged, and Part I, Lemma 6.1 holds verbatim for self-adjoint <span class="math inline">\(T \in B(H)\)</span> provided <span class="math inline">\(W\)</span> is a closed invariant subspace.</p>
+<p>A useful fact about self-adjoint operators, whose proof uses only the parallelogram law:</p>
+<p><strong>Lemma 4.2.</strong> If <span class="math inline">\(T \in B(H)\)</span> is self-adjoint, then <span class="math inline">\(\|T\| = \sup_{\|x\|=1} |\langle Tx, x\rangle|\)</span>.</p>
+<p><em>Proof.</em> Let <span class="math inline">\(M\)</span> denote the supremum. Cauchy–Schwarz gives <span class="math inline">\(M \le \|T\|\)</span>. For the reverse, expand using self-adjointness to get, for all <span class="math inline">\(x, y\)</span>, <span class="math display">\[
+4\,\mathrm{Re}\,\langle Tx, y\rangle = \langle T(x+y), x+y\rangle - \langle T(x-y), x-y\rangle \le M\big(\|x+y\|^2 + \|x-y\|^2\big) = 2M\big(\|x\|^2 + \|y\|^2\big).
+\]</span> For <span class="math inline">\(\|x\| = 1\)</span> with <span class="math inline">\(Tx \ne 0\)</span>, put <span class="math inline">\(y = Tx/\|Tx\|\)</span>. The left side becomes <span class="math inline">\(4\|Tx\|\)</span> and the right side <span class="math inline">\(4M\)</span>. So <span class="math inline">\(\|Tx\| \le M\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+<hr>
+</section>
+<section id="what-goes-wrong-in-infinite-dimensions" class="level2">
+<h2 class="anchored" data-anchor-id="what-goes-wrong-in-infinite-dimensions">5. What goes wrong in infinite dimensions</h2>
+<p>Keep the following examples in mind. They are exactly what the compactness hypothesis in Section 7 rules out.</p>
+<p><strong>(a) Injective does not imply surjective.</strong> The <em>right shift</em> <span class="math inline">\(S(x_1, x_2, \dots) = (0, x_1, x_2, \dots)\)</span> on <span class="math inline">\(\ell^2\)</span> is an isometry (<span class="math inline">\(\|Sx\| = \|x\|\)</span>), so it is injective, but it is not surjective. Its adjoint is the <em>left shift</em> <span class="math inline">\(S^*(x_1, x_2, \dots) = (x_2, x_3, \dots)\)</span>, which is surjective but not injective. There is no rank–nullity theorem.</p>
+<p><strong>(b) A self-adjoint operator may have no eigenvalues.</strong> Let <span class="math inline">\((Mf)(t) = t\,f(t)\)</span> on <span class="math inline">\(L^2([0,1])\)</span>. Then <span class="math inline">\(M\)</span> is bounded, self-adjoint, and PSD, with <span class="math inline">\(\|M\| = 1\)</span>. If <span class="math inline">\(Mf = \lambda f\)</span>, then <span class="math inline">\((t - \lambda) f(t) = 0\)</span> almost everywhere, which forces <span class="math inline">\(f = 0\)</span> in <span class="math inline">\(L^2\)</span>. So <span class="math inline">\(M\)</span> has <strong>no eigenvectors at all</strong>. Yet <span class="math inline">\(M\)</span> is clearly “diagonal” with “eigenvalues” <span class="math inline">\(t \in [0,1]\)</span>. It is diagonal in a continuous sense, with generalized eigenfunctions <span class="math inline">\(\delta_\lambda \notin L^2\)</span>. The right shift <span class="math inline">\(S\)</span> also has no eigenvalues.</p>
+<p><strong>(c) The spectrum is more than the eigenvalues.</strong> For <span class="math inline">\(T \in B(H)\)</span>, define the <strong>spectrum</strong> <span class="math display">\[
+\sigma(T) = \{\lambda \in \mathbb{C} : T - \lambda I \text{ is not a bijection } H \to H\}.
+\]</span> (By the bounded inverse theorem, a bounded bijection automatically has a bounded inverse.) The set of eigenvalues, or <strong>point spectrum</strong>, is only a subset of <span class="math inline">\(\sigma(T)\)</span>. In example (b), <span class="math inline">\(\sigma(M) = [0,1]\)</span>, but <span class="math inline">\(M\)</span> has no eigenvalues: <span class="math inline">\(M - \lambda I\)</span> is injective but not surjective for <span class="math inline">\(\lambda \in [0,1]\)</span>.</p>
+<p>Standard facts about the spectrum:</p>
+<ul>
+<li><span class="math inline">\(\sigma(T)\)</span> is a nonempty compact subset of <span class="math inline">\(\mathbb{C}\)</span> contained in <span class="math inline">\(\{|\lambda| \le \|T\|\}\)</span>.</li>
+<li>If <span class="math inline">\(T\)</span> is self-adjoint, then <span class="math inline">\(\sigma(T) \subseteq [m, M]\)</span>, where <span class="math inline">\(m = \inf_{\|x\|=1}\langle Tx, x\rangle\)</span> and <span class="math inline">\(M = \sup_{\|x\|=1}\langle Tx, x\rangle\)</span>. Both <span class="math inline">\(m\)</span> and <span class="math inline">\(M\)</span> belong to <span class="math inline">\(\sigma(T)\)</span>.</li>
+</ul>
+<p>In finite dimensions the spectrum is exactly the set of eigenvalues.</p>
+<p><strong>(d) The unit ball is not compact.</strong> An orthonormal sequence <span class="math inline">\((e_k)\)</span> satisfies <span class="math inline">\(\|e_j - e_k\| = \sqrt 2\)</span> for <span class="math inline">\(j \ne k\)</span>, so it has no convergent subsequence. This is exactly the step in Part I, Lemma 6.3 that fails: <span class="math inline">\(\sup_{\|x\|=1}\langle Tx, x\rangle\)</span> need not be attained. In example (b), the supremum <span class="math inline">\(1\)</span> is approached by functions concentrating near <span class="math inline">\(t = 1\)</span> but never reached.</p>
+<p><strong>(e) Weak vs.&nbsp;strong convergence.</strong> A sequence <span class="math inline">\(x_k\)</span> <strong>converges weakly</strong> to <span class="math inline">\(x\)</span>, written <span class="math inline">\(x_k \rightharpoonup x\)</span>, if <span class="math inline">\(\langle x_k, y\rangle \to \langle x, y\rangle\)</span> for every <span class="math inline">\(y\)</span>. By Bessel’s inequality, every orthonormal sequence satisfies <span class="math inline">\(e_k \rightharpoonup 0\)</span>, even though <span class="math inline">\(\|e_k\| = 1\)</span>. Bounded sequences in a Hilbert space always have weakly convergent subsequences. The phenomenon in (d) is that weak limits can lose mass.</p>
+<hr>
+</section>
+<section id="compact-operators" class="level2">
+<h2 class="anchored" data-anchor-id="compact-operators">6. Compact operators</h2>
+<p><strong>Definition.</strong> <span class="math inline">\(T \in B(H)\)</span> is <strong>compact</strong> if the image of every bounded sequence has a convergent subsequence. Equivalently, the closure of <span class="math inline">\(T(\text{unit ball})\)</span> is compact.</p>
+<p>A compact operator converts the weak convergence of Section 5(e) into norm convergence: if <span class="math inline">\(x_k \rightharpoonup x\)</span>, then <span class="math inline">\(Tx_k \to Tx\)</span>. Intuitively, a compact operator is one that is “almost finite-dimensional”.</p>
+<p><strong>Proposition 6.1.</strong></p>
+<ol type="1">
+<li>Every <strong>finite-rank</strong> bounded operator (one with <span class="math inline">\(\dim \operatorname{range} T &lt; \infty\)</span>) is compact.</li>
+<li>If <span class="math inline">\(T_n\)</span> are compact and <span class="math inline">\(\|T_n - T\| \to 0\)</span>, then <span class="math inline">\(T\)</span> is compact. Consequently, norm limits of finite-rank operators are compact. On a Hilbert space the converse also holds: every compact operator is such a limit.</li>
+<li>If <span class="math inline">\(T\)</span> is compact and <span class="math inline">\(A, B\)</span> are bounded, then <span class="math inline">\(ATB\)</span> is compact. <span class="math inline">\(T^*\)</span> is compact iff <span class="math inline">\(T\)</span> is.</li>
+<li>On an infinite-dimensional <span class="math inline">\(H\)</span>, the identity operator is <strong>not</strong> compact (Section 5(d)). Hence a compact operator on an infinite-dimensional space is never invertible, and <span class="math inline">\(0 \in \sigma(T)\)</span>.</li>
+</ol>
+<p><em>Proof of (2).</em> Let <span class="math inline">\((x_k)\)</span> be bounded by <span class="math inline">\(1\)</span>. By a diagonal argument, pass to a subsequence along which <span class="math inline">\((T_n x_k)_k\)</span> converges for every <span class="math inline">\(n\)</span>. Then <span class="math display">\[
+\|Tx_j - Tx_k\| \le 2\|T - T_n\| + \|T_n x_j - T_n x_k\|.
+\]</span> Choose <span class="math inline">\(n\)</span> so the first term is small, then take <span class="math inline">\(j, k\)</span> large to make the second term small. So <span class="math inline">\((Tx_k)\)</span> is Cauchy, hence convergent. <span class="math inline">\(\blacksquare\)</span></p>
+<p><strong>Examples.</strong></p>
+<ul>
+<li><strong>Diagonal operators.</strong> For <span class="math inline">\(d = (d_k)\)</span> bounded, <span class="math inline">\(D(x)_k = d_k x_k\)</span> on <span class="math inline">\(\ell^2\)</span> is compact iff <span class="math inline">\(d_k \to 0\)</span>. (If <span class="math inline">\(d_k \to 0\)</span>, the truncations are finite-rank approximations. If <span class="math inline">\(|d_k| \ge \delta\)</span> infinitely often, the vectors <span class="math inline">\(De_k\)</span> along those <span class="math inline">\(k\)</span> are pairwise at distance <span class="math inline">\(\ge \sqrt2\,\delta\)</span>.) The multiplication operator <span class="math inline">\(M\)</span> of Section 5(b) is not compact.</li>
+<li><strong>Hilbert–Schmidt integral operators.</strong> Let <span class="math inline">\((X, \mu)\)</span> be a <span class="math inline">\(\sigma\)</span>-finite measure space and <span class="math inline">\(K \in L^2(\mu \otimes \mu)\)</span>. Define <span class="math display">\[
+(T_K f)(x) = \int_X K(x,y)\, f(y)\, d\mu(y).
+\]</span> By Cauchy–Schwarz, <span class="math inline">\(|T_K f(x)|^2 \le \int |K(x,y)|^2 d\mu(y) \cdot \|f\|^2\)</span>. Integrating in <span class="math inline">\(x\)</span> gives <span class="math inline">\(\|T_K\| \le \|K\|_{L^2(\mu\otimes\mu)}\)</span>. Finite sums <span class="math inline">\(\sum_i a_i(x) b_i(y)\)</span> are dense in <span class="math inline">\(L^2(\mu \otimes\mu)\)</span>, and each such kernel gives a finite-rank operator. So <span class="math inline">\(T_K\)</span> is a norm limit of finite-rank operators, hence compact. It is self-adjoint iff <span class="math inline">\(K(x,y) = \overline{K(y,x)}\)</span> almost everywhere. <strong>Every kernel-method integral operator and every graphon operator is of this form.</strong></li>
+</ul>
+<hr>
+</section>
+<section id="the-spectral-theorem-for-compact-self-adjoint-operators" class="level2">
+<h2 class="anchored" data-anchor-id="the-spectral-theorem-for-compact-self-adjoint-operators">7. The spectral theorem for compact self-adjoint operators</h2>
+<p>Throughout, <span class="math inline">\(H \ne \{0\}\)</span> is a Hilbert space over <span class="math inline">\(\mathbb{F}\)</span> and <span class="math inline">\(T \in B(H)\)</span> is compact and self-adjoint.</p>
+<section id="statement" class="level3">
+<h3 class="anchored" data-anchor-id="statement">7.1 Statement</h3>
+<p><strong>Theorem 7.1 (Spectral theorem, compact self-adjoint operators).</strong> There exist a finite or countably infinite orthonormal sequence <span class="math inline">\((e_k)\)</span> in <span class="math inline">\(H\)</span> and nonzero real numbers <span class="math inline">\((\lambda_k)\)</span> with <span class="math inline">\(|\lambda_1| \ge |\lambda_2| \ge \cdots\)</span> such that:</p>
+<ol type="1">
+<li><p><span class="math inline">\(T e_k = \lambda_k e_k\)</span> for every <span class="math inline">\(k\)</span>.</p></li>
+<li><p>If the sequence is infinite, then <span class="math inline">\(\lambda_k \to 0\)</span>.</p></li>
+<li><p>For every <span class="math inline">\(x \in H\)</span>, <span class="math display">\[
+Tx = \sum_k \lambda_k \langle x, e_k\rangle\, e_k,
+\]</span> with convergence in operator norm: <span class="math inline">\(\big\|T - \sum_{k \le n}\lambda_k e_k e_k^*\big\| = |\lambda_{n+1}| \to 0\)</span>.</p></li>
+<li><p><span class="math inline">\(H = \ker T \oplus \overline{\operatorname{span}}\{e_k\}\)</span>, an orthogonal direct sum.</p></li>
+<li><p>The nonzero eigenvalues of <span class="math inline">\(T\)</span> are exactly the <span class="math inline">\(\lambda_k\)</span>. Each has finite multiplicity, and its eigenspace is spanned by the <span class="math inline">\(e_k\)</span> with <span class="math inline">\(\lambda_k\)</span> equal to it.</p></li>
+</ol>
+<p>In particular, if <span class="math inline">\(H\)</span> is separable, then combining <span class="math inline">\((e_k)\)</span> with an orthonormal basis of <span class="math inline">\(\ker T\)</span> gives an <strong>orthonormal basis of <span class="math inline">\(H\)</span> consisting of eigenvectors of <span class="math inline">\(T\)</span></strong>.</p>
+<p>Compare with Part I, Theorem 6.2. The only new features are that there may be infinitely many eigenvalues, that they can accumulate only at <span class="math inline">\(0\)</span>, and that <span class="math inline">\(\ker T\)</span> may be infinite-dimensional. The spectrum is <span class="math inline">\(\sigma(T) = \{\lambda_k\} \cup \{0\}\)</span> when <span class="math inline">\(H\)</span> is infinite-dimensional.</p>
+</section>
+<section id="the-key-lemma-the-top-eigenvalue-exists" class="level3">
+<h3 class="anchored" data-anchor-id="the-key-lemma-the-top-eigenvalue-exists">7.2 The key lemma: the top eigenvalue exists</h3>
+<p>In Part I, Lemma 6.3, compactness of the unit sphere guaranteed that the maximum of the Rayleigh quotient is attained. Here, compactness of <span class="math inline">\(T\)</span> plays that role.</p>
+<p><strong>Lemma 7.2.</strong> If <span class="math inline">\(T\)</span> is compact and self-adjoint, then <span class="math inline">\(\|T\|\)</span> or <span class="math inline">\(-\|T\|\)</span> is an eigenvalue of <span class="math inline">\(T\)</span>.</p>
+<p><em>Proof.</em> If <span class="math inline">\(T = 0\)</span>, every nonzero vector is an eigenvector with eigenvalue <span class="math inline">\(0\)</span>. Assume <span class="math inline">\(T \ne 0\)</span>. By Lemma 4.2 there are unit vectors <span class="math inline">\(x_n\)</span> with <span class="math inline">\(|\langle Tx_n, x_n\rangle| \to \|T\|\)</span>. These numbers are real, so passing to a subsequence we may assume <span class="math inline">\(\langle Tx_n, x_n\rangle \to \lambda\)</span>, where <span class="math inline">\(\lambda \in \{\|T\|, -\|T\|\}\)</span> and <span class="math inline">\(\lambda \ne 0\)</span>. Then <span class="math display">\[
+\|Tx_n - \lambda x_n\|^2 = \|Tx_n\|^2 - 2\lambda\langle Tx_n, x_n\rangle + \lambda^2 \le 2\lambda^2 - 2\lambda \langle Tx_n, x_n\rangle \longrightarrow 0,
+\]</span> using <span class="math inline">\(\|Tx_n\| \le \|T\| = |\lambda|\)</span>. By compactness, a further subsequence has <span class="math inline">\(Tx_n \to y\)</span> for some <span class="math inline">\(y\)</span>. Then <span class="math inline">\(\lambda x_n = Tx_n - (Tx_n - \lambda x_n) \to y\)</span>, so <span class="math inline">\(x_n \to y/\lambda\)</span> and <span class="math inline">\(\|y\| = |\lambda| \ne 0\)</span>. By continuity of <span class="math inline">\(T\)</span>, <span class="math display">\[
+Ty = \lim_n T(\lambda x_n) = \lambda \lim_n Tx_n = \lambda y. \qquad\blacksquare
+\]</span></p>
+<p>The first display is the same “approximate eigenvector” computation behind Part I, Lemma 6.3. Compactness upgrades an approximate eigenvector to a genuine one. Without compactness this fails: for the operator <span class="math inline">\(M\)</span> of Section 5(b), such approximate eigenvectors exist for every <span class="math inline">\(\lambda \in [0,1]\)</span>, but no genuine eigenvector does.</p>
+</section>
+<section id="proof-of-theorem-7.1" class="level3">
+<h3 class="anchored" data-anchor-id="proof-of-theorem-7.1">7.3 Proof of Theorem 7.1</h3>
+<p><strong>Construction.</strong> Set <span class="math inline">\(H_1 = H\)</span>. We build <span class="math inline">\(e_1, e_2, \dots\)</span> inductively. Suppose <span class="math inline">\(e_1, \dots, e_{n-1}\)</span> have been constructed, with <span class="math inline">\(Te_k = \lambda_k e_k\)</span>, and let <span class="math display">\[
+H_n = \{e_1, \dots, e_{n-1}\}^\perp.
+\]</span> This is a closed subspace, hence a Hilbert space. It is <span class="math inline">\(T\)</span>-invariant: if <span class="math inline">\(x \perp e_k\)</span> for all <span class="math inline">\(k &lt; n\)</span>, then <span class="math inline">\(\langle Tx, e_k\rangle = \langle x, Te_k\rangle = \lambda_k\langle x, e_k\rangle = 0\)</span>. The restriction <span class="math inline">\(T_n = T|_{H_n}\)</span> is therefore compact and self-adjoint on <span class="math inline">\(H_n\)</span>.</p>
+<ul>
+<li>If <span class="math inline">\(T_n = 0\)</span> (this includes the case <span class="math inline">\(H_n = \{0\}\)</span>), stop. The sequence is finite, of length <span class="math inline">\(n - 1\)</span>.</li>
+<li>Otherwise, Lemma 7.2 gives a unit vector <span class="math inline">\(e_n \in H_n\)</span> with <span class="math inline">\(Te_n = \lambda_n e_n\)</span> and <span class="math inline">\(|\lambda_n| = \|T_n\| &gt; 0\)</span>.</li>
+</ul>
+<p>Since <span class="math inline">\(H_{n+1} \subseteq H_n\)</span>, we have <span class="math inline">\(|\lambda_{n+1}| = \|T_{n+1}\| \le \|T_n\| = |\lambda_n|\)</span>. By construction the <span class="math inline">\(e_k\)</span> are orthonormal. This proves (1).</p>
+<p><strong>(2) The eigenvalues tend to <span class="math inline">\(0\)</span>.</strong> Suppose the sequence is infinite and <span class="math inline">\(|\lambda_k| \ge \delta &gt; 0\)</span> for all <span class="math inline">\(k\)</span>. Then for <span class="math inline">\(j \ne k\)</span>, <span class="math display">\[
+\|Te_j - Te_k\|^2 = \lambda_j^2 + \lambda_k^2 \ge 2\delta^2,
+\]</span> so <span class="math inline">\((Te_k)\)</span> has no convergent subsequence even though <span class="math inline">\((e_k)\)</span> is bounded. This contradicts compactness.</p>
+<p><strong>(3) The expansion.</strong> Fix <span class="math inline">\(x\)</span> and let <span class="math inline">\(P_n x = \sum_{k \le n}\langle x, e_k\rangle e_k\)</span>. Then <span class="math inline">\(x - P_n x \in H_{n+1}\)</span> and <span class="math inline">\(\|x - P_n x\| \le \|x\|\)</span>. Since <span class="math inline">\(T P_n x = \sum_{k\le n}\lambda_k \langle x, e_k\rangle e_k\)</span>, <span class="math display">\[
+\Big\|Tx - \sum_{k\le n}\lambda_k\langle x, e_k\rangle e_k\Big\| = \|T_{n+1}(x - P_nx)\| \le |\lambda_{n+1}|\,\|x\|.
+\]</span> If the sequence stops at <span class="math inline">\(N\)</span>, set <span class="math inline">\(\lambda_{N+1} := 0\)</span> (because <span class="math inline">\(T_{N+1} = 0\)</span>). In either case the right side tends to <span class="math inline">\(0\)</span> by (2). This proves the pointwise expansion and the operator-norm bound <span class="math inline">\(\le |\lambda_{n+1}|\)</span>. Equality follows by testing on <span class="math inline">\(x = e_{n+1}\)</span>.</p>
+<p><strong>(4) The kernel.</strong> If <span class="math inline">\(x \perp e_k\)</span> for all <span class="math inline">\(k\)</span>, then (3) gives <span class="math inline">\(Tx = 0\)</span>. Conversely, if <span class="math inline">\(Tx = 0\)</span>, then <span class="math inline">\(\langle x, e_k\rangle = \lambda_k^{-1}\langle x, Te_k\rangle = \lambda_k^{-1}\langle Tx, e_k\rangle = 0\)</span>. Hence <span class="math inline">\(\ker T = \{e_k\}^\perp\)</span>. Since <span class="math inline">\(\{e_k\}^\perp = \big(\overline{\operatorname{span}}\{e_k\}\big)^\perp\)</span>, Theorem 2.1 gives <span class="math inline">\(H = \ker T \oplus \overline{\operatorname{span}}\{e_k\}\)</span>.</p>
+<p><strong>(5) No other nonzero eigenvalues, and finite multiplicity.</strong> Let <span class="math inline">\(Tx = \mu x\)</span> with <span class="math inline">\(\mu \ne 0\)</span> and <span class="math inline">\(x \neq 0\)</span>. By (4), write <span class="math inline">\(x = x_0 + \sum_k \langle x, e_k\rangle e_k\)</span> with <span class="math inline">\(x_0 \in \ker T\)</span>. Applying <span class="math inline">\(T\)</span> and using (3), <span class="math display">\[
+\mu x_0 + \sum_k \mu\langle x, e_k\rangle e_k = \sum_k \lambda_k\langle x, e_k\rangle e_k.
+\]</span> Comparing components gives <span class="math inline">\(x_0 = 0\)</span> and <span class="math inline">\(\langle x, e_k\rangle = 0\)</span> whenever <span class="math inline">\(\lambda_k \ne \mu\)</span>. Since <span class="math inline">\(x \ne 0\)</span>, some <span class="math inline">\(\lambda_k\)</span> equals <span class="math inline">\(\mu\)</span>, and <span class="math inline">\(x\)</span> lies in the span of <span class="math inline">\(\{e_k : \lambda_k = \mu\}\)</span>. That set is finite because <span class="math inline">\(\lambda_k \to 0\)</span> and <span class="math inline">\(\mu \ne 0\)</span>.</p>
+<p><strong>Separable case.</strong> <span class="math inline">\(\ker T\)</span> is a closed subspace of a separable Hilbert space, so it has a countable orthonormal basis. Its union with <span class="math inline">\((e_k)\)</span> is orthonormal (by (4)) and has dense span (by (4)), so it is an orthonormal basis of <span class="math inline">\(H\)</span> by Theorem 3.1. <span class="math inline">\(\blacksquare\)</span></p>
+</section>
+<section id="consequences-and-extensions" class="level3">
+<h3 class="anchored" data-anchor-id="consequences-and-extensions">7.4 Consequences and extensions</h3>
+<p><strong>Min–max for compact operators.</strong> Order the positive eigenvalues as <span class="math inline">\(\lambda_1^+ \ge \lambda_2^+ \ge \dots &gt; 0\)</span>, with multiplicity. If there are at least <span class="math inline">\(k\)</span> of them, then <span class="math display">\[
+\lambda_k^+ = \max_{\dim S = k}\ \min_{x \in S\setminus\{0\}} R_T(x),
+\]</span> by the same proof as Part I, Theorem 6.8. The analogous formula holds for the negative eigenvalues. Weyl’s inequality (Part I, Corollary 6.9) also carries over. This is the basic tool for comparing the spectrum of a kernel matrix with that of its limiting integral operator.</p>
+<p><strong>Functional calculus.</strong> For bounded <span class="math inline">\(f\)</span> with <span class="math inline">\(f(0) = 0\)</span>, the operator <span class="math inline">\(f(T) = \sum_k f(\lambda_k)\, e_k e_k^*\)</span> is well defined. With <span class="math inline">\(f(0)\)</span> arbitrary, add <span class="math inline">\(f(0)\)</span> times the projection onto <span class="math inline">\(\ker T\)</span>.</p>
+<p><strong>Mercer’s theorem.</strong> Let <span class="math inline">\(X\)</span> be a compact metric space and <span class="math inline">\(\mu\)</span> a finite Borel measure with full support. Let <span class="math inline">\(k\)</span> be a continuous, symmetric, positive semidefinite kernel, meaning every Gram matrix <span class="math inline">\([k(x_i,x_j)]\)</span> is PSD. Then <span class="math inline">\(T_k\)</span> is compact, self-adjoint, and PSD on <span class="math inline">\(L^2(\mu)\)</span>. Its eigenfunctions <span class="math inline">\(\varphi_k\)</span> for positive eigenvalues can be chosen continuous, and <span class="math display">\[
+k(x,y) = \sum_k \lambda_k\, \varphi_k(x)\,\overline{\varphi_k(y)},
+\]</span> with absolute and uniform convergence on <span class="math inline">\(X \times X\)</span>. Consequently, <span class="math inline">\(\sum_k \lambda_k = \int k(x,x)\, d\mu(x) &lt; \infty\)</span>, i.e., <span class="math inline">\(T_k\)</span> is trace class. The map <span class="math inline">\(x \mapsto (\sqrt{\lambda_k}\,\varphi_k(x))_k \in \ell^2\)</span> is an explicit feature map for <span class="math inline">\(k\)</span>.</p>
+<p><strong>Beyond compact operators.</strong> Every bounded self-adjoint operator admits a spectral theorem, but in general it is unitarily equivalent to a <em>multiplication operator</em> like <span class="math inline">\(M\)</span> in Section 5(b) on some <span class="math inline">\(L^2(\nu)\)</span>, not to a diagonal matrix. Equivalently, it has a projection-valued spectral measure. The spectrum then splits into a <em>discrete</em> part (isolated eigenvalues of finite multiplicity) and an <em>essential</em> part. For compact operators the essential spectrum is at most <span class="math inline">\(\{0\}\)</span>. The essential spectrum is what makes, for instance, the unnormalized graph Laplacian’s spectral clustering inconsistent in some regimes (von Luxburg–Belkin–Bousquet). See Reed &amp; Simon Vol. I or Teschl for the general theory.</p>
+<hr>
+</section>
+</section>
+<section id="unbounded-operators" class="level2">
+<h2 class="anchored" data-anchor-id="unbounded-operators">8. Unbounded operators</h2>
+<p>There are two quite different kinds of unbounded linear operators. Only the second kind matters in practice.</p>
+<p><strong>(i) Everywhere-defined but discontinuous maps.</strong> Every infinite-dimensional normed space <span class="math inline">\(X\)</span> carries linear maps <span class="math inline">\(T : X \to X\)</span> (or linear functionals <span class="math inline">\(X \to \mathbb{F}\)</span>) that are defined on all of <span class="math inline">\(X\)</span> but are not bounded.</p>
+<p><em>Construction:</em></p>
+<ol type="1">
+<li>Pick linearly independent unit vectors <span class="math inline">\(b_1, b_2, \dots\)</span>.</li>
+<li>Extend them to a Hamel basis of <span class="math inline">\(X\)</span>. This uses Zorn’s lemma.</li>
+<li>Set <span class="math inline">\(f(b_k) = k\)</span>, set <span class="math inline">\(f = 0\)</span> on the remaining basis vectors, and extend linearly.</li>
+</ol>
+<p>Then <span class="math inline">\(|f(b_k)|/\|b_k\| = k \to \infty\)</span>. Such maps are pathological: they cannot be written down explicitly, and their graphs are not closed. By the <strong>closed graph theorem</strong>, an everywhere-defined linear map between Banach spaces with a closed graph is automatically bounded. These maps never arise in applications, and we will not see them again.</p>
+<p><strong>(ii) Densely defined operators.</strong> The unbounded operators of analysis are defined only on a dense subspace <span class="math inline">\(\operatorname{dom}(T) \subsetneq H\)</span>, called the <strong>domain</strong>. Examples:</p>
+<ul>
+<li><strong>Diagonal operator on <span class="math inline">\(\ell^2\)</span>:</strong> <span class="math inline">\((Tx)_k = k\,x_k\)</span>, with <span class="math inline">\(\operatorname{dom}(T) = \{x : \sum_k k^2|x_k|^2 &lt; \infty\}\)</span>. The domain contains <span class="math inline">\(c_{00}\)</span>, so it is dense, and <span class="math inline">\(\|Te_k\| = k\)</span>.</li>
+<li><strong>Differentiation on <span class="math inline">\(L^2([0,1])\)</span>:</strong> <span class="math inline">\(Tf = f'\)</span>, with domain, say, <span class="math inline">\(C^1([0,1])\)</span> or the Sobolev space <span class="math inline">\(H^1\)</span>. Since <span class="math inline">\(T e^{2\pi i k t} = 2\pi i k\, e^{2\pi i k t}\)</span>, <span class="math inline">\(T\)</span> has no finite norm.</li>
+<li><strong>Multiplication by <span class="math inline">\(t\)</span> on <span class="math inline">\(L^2(\mathbb{R})\)</span>:</strong> <span class="math inline">\(\operatorname{dom} = \{f : tf \in L^2\}\)</span>. This is the unbounded cousin of the operator <span class="math inline">\(M\)</span> in Section 5(b).</li>
+<li><strong>The Laplace–Beltrami operator</strong> <span class="math inline">\(\Delta\)</span> on <span class="math inline">\(L^2\)</span> of a Riemannian manifold. This is the continuum limit of graph Laplacians built on sampled points.</li>
+<li><strong>The graph Laplacian of an infinite graph with unbounded degrees</strong>, acting on <span class="math inline">\(\ell^2(V)\)</span>. For bounded degree <span class="math inline">\(d_{\max}\)</span>, one has <span class="math inline">\(\|L\| \le 2d_{\max}\)</span>, so <span class="math inline">\(L\)</span> is bounded. Without a degree bound, <span class="math inline">\(\|L\delta_u\| \ge d_u\)</span> is unbounded.</li>
+</ul>
+<p><strong>Symmetry forces unboundedness to live on a proper domain.</strong></p>
+<p><strong>Theorem 8.1 (Hellinger–Toeplitz).</strong> If <span class="math inline">\(T : H \to H\)</span> is linear, defined on <em>all</em> of <span class="math inline">\(H\)</span>, and symmetric (<span class="math inline">\(\langle Tx, y\rangle = \langle x, Ty\rangle\)</span> for all <span class="math inline">\(x, y\)</span>), then <span class="math inline">\(T\)</span> is bounded.</p>
+<p><em>Proof.</em> We check that the graph of <span class="math inline">\(T\)</span> is closed. Suppose <span class="math inline">\(x_n \to x\)</span> and <span class="math inline">\(Tx_n \to y\)</span>. For every <span class="math inline">\(z\)</span>, <span class="math display">\[
+\langle y, z\rangle = \lim_n \langle Tx_n, z\rangle = \lim_n \langle x_n, Tz\rangle = \langle x, Tz\rangle = \langle Tx, z\rangle,
+\]</span> so <span class="math inline">\(y = Tx\)</span>. The closed graph theorem then gives boundedness. <span class="math inline">\(\blacksquare\)</span></p>
+<p>So an unbounded “self-adjoint” operator like <span class="math inline">\(\Delta\)</span> <em>cannot</em> be defined on all of <span class="math inline">\(L^2\)</span>. The domain is part of the data.</p>
+<p><strong>Symmetric vs.&nbsp;self-adjoint.</strong> For densely defined <span class="math inline">\(T\)</span>, the adjoint <span class="math inline">\(T^*\)</span> is defined on <span class="math display">\[
+\operatorname{dom}(T^*) = \{y : x \mapsto \langle Tx, y\rangle \text{ is bounded on } \operatorname{dom}(T)\},
+\]</span> with <span class="math inline">\(T^*y\)</span> given by Riesz representation. Two notions separate:</p>
+<ul>
+<li><span class="math inline">\(T\)</span> is <strong>symmetric</strong> if <span class="math inline">\(\langle Tx, y\rangle = \langle x, Ty\rangle\)</span> for all <span class="math inline">\(x, y \in \operatorname{dom}(T)\)</span>, i.e., <span class="math inline">\(T^*\)</span> extends <span class="math inline">\(T\)</span>.</li>
+<li><span class="math inline">\(T\)</span> is <strong>self-adjoint</strong> if <span class="math inline">\(T = T^*\)</span>, <em>including equality of domains</em>.</li>
+</ul>
+<p>In finite dimensions, and for bounded operators, the two notions coincide. Here they do not, and the difference is real.</p>
+<p><em>Example.</em> <span class="math inline">\(T = -\frac{d^2}{dx^2}\)</span> on <span class="math inline">\(C_c^\infty((0,1))\)</span> is symmetric but not self-adjoint. It has several self-adjoint extensions, corresponding to <strong>boundary conditions</strong>, and they have different spectra:</p>
+<ul>
+<li>Dirichlet, <span class="math inline">\(f(0) = f(1) = 0\)</span>: eigenvalues <span class="math inline">\((k\pi)^2\)</span> for <span class="math inline">\(k \ge 1\)</span>, eigenfunctions <span class="math inline">\(\sin(k\pi x)\)</span>.</li>
+<li>Neumann, <span class="math inline">\(f'(0) = f'(1) = 0\)</span>: eigenvalues <span class="math inline">\((k\pi)^2\)</span> for <span class="math inline">\(k \ge 0\)</span>, eigenfunctions <span class="math inline">\(\cos(k\pi x)\)</span>.</li>
+</ul>
+<p>The same phenomenon appears for Laplacians on non-compact manifolds and on some infinite graphs. Whether the Laplacian is essentially self-adjoint (has a unique self-adjoint extension) is a genuine question there; see Grigor’yan or Schmüdgen. For a self-adjoint unbounded operator, the spectrum is still real and closed, but it is unbounded. A spectral theorem holds in the multiplication-operator form of Section 7.4.</p>
+<p><strong>Taming unbounded operators with compact resolvents.</strong> The standard way to bring unbounded operators within reach of Section 7 is to invert them. Suppose <span class="math inline">\(T \succeq 0\)</span> is self-adjoint and its <strong>resolvent</strong> <span class="math inline">\((I + T)^{-1}\)</span> is compact. The resolvent is then bounded, self-adjoint, and injective. Theorem 7.1 gives an orthonormal eigenbasis <span class="math inline">\((e_k)\)</span> of <span class="math inline">\(H\)</span> with <span class="math inline">\((I+T)^{-1}e_k = \nu_k e_k\)</span> and <span class="math inline">\(\nu_k \downarrow 0\)</span>. Hence <span class="math display">\[
+T e_k = \mu_k e_k, \qquad \mu_k = \nu_k^{-1} - 1, \qquad 0 \le \mu_1 \le \mu_2 \le \dots \to \infty.
+\]</span> This is exactly the spectral picture of the Laplacian on a compact manifold: a discrete spectrum going to infinity, and an <span class="math inline">\(L^2\)</span> eigenbasis.</p>
+<p><em>Concrete instance.</em> For the Dirichlet Laplacian <span class="math inline">\(T = -\frac{d^2}{dx^2}\)</span> on <span class="math inline">\([0,1]\)</span>, <span class="math inline">\(T\)</span> itself is invertible. Its inverse is the integral operator with the <strong>Green’s function</strong> <span class="math display">\[
+G(x,y) = \min(x,y) - xy,
+\]</span> a continuous symmetric kernel, so <span class="math inline">\(T^{-1}\)</span> is a compact Hilbert–Schmidt operator (Section 6). Compare Exercise 4, where <span class="math inline">\(\min(x,y)\)</span> plays the same role for mixed boundary conditions.</p>
+<p><strong>Why this matters in the course.</strong></p>
+<ul>
+<li>Graph Laplacians on <span class="math inline">\(m\)</span> sampled points converge to <span class="math inline">\(\Delta\)</span>, an unbounded operator. So spectral convergence results (Belkin–Niyogi, García Trillos et al.) are stated eigenvalue-by-eigenvalue, or through bounded functions of the operator.</li>
+<li>Diffusion maps work with the <strong>heat semigroup</strong> <span class="math inline">\(e^{-t\Delta} = \sum_k e^{-t\mu_k} e_k e_k^*\)</span>. For <span class="math inline">\(t &gt; 0\)</span>, this is a bounded, compact, self-adjoint operator, even though <span class="math inline">\(\Delta\)</span> is not.</li>
+<li>Passing to a bounded function of an unbounded operator — resolvent, heat semigroup, or spectral projection — is the recurring technique.</li>
+</ul>
+<hr>
+</section>
+<section id="exercises" class="level2">
+<h2 class="anchored" data-anchor-id="exercises">9. Exercises</h2>
+<ol type="1">
+<li>Show that <span class="math inline">\(c_{00}\)</span> is dense in <span class="math inline">\(\ell^2\)</span>, and that <span class="math inline">\(c_{00}^\perp = \{0\}\)</span>.</li>
+<li>Compute <span class="math inline">\(\sigma(S)\)</span> for the right shift on <span class="math inline">\(\ell^2\)</span> over <span class="math inline">\(\mathbb{C}\)</span>. <em>(Answer: the closed unit disk. Show that <span class="math inline">\(S^*\)</span> has every <span class="math inline">\(|\lambda| &lt; 1\)</span> as an eigenvalue.)</em></li>
+<li>Show that the Volterra operator <span class="math inline">\((Vf)(t) = \int_0^t f(s)\,ds\)</span> on <span class="math inline">\(L^2([0,1])\)</span> is compact but has no nonzero eigenvalues. Why does this not contradict Theorem 7.1?</li>
+<li>Let <span class="math inline">\(k(x,y) = \min(x,y)\)</span> on <span class="math inline">\([0,1]\)</span> with Lebesgue measure. Find the eigenvalues and eigenfunctions of <span class="math inline">\(T_k\)</span>. <em>(Hint: differentiate <span class="math inline">\(T_k\varphi = \lambda\varphi\)</span> twice and use the boundary conditions <span class="math inline">\(\varphi(0) = 0\)</span>, <span class="math inline">\(\varphi'(1) = 0\)</span>.)</em> Verify Mercer’s theorem numerically by comparing with the eigenvalues of the <span class="math inline">\(m \times m\)</span> matrix <span class="math inline">\(\frac1m[\min(i/m, j/m)]_{i,j}\)</span>.</li>
+<li>Let <span class="math inline">\(G\)</span> be an infinite graph with edge weights and weighted degrees bounded by <span class="math inline">\(d_{\max}\)</span>. Show that <span class="math inline">\(L = D - A\)</span> defines a bounded self-adjoint operator on <span class="math inline">\(\ell^2(V)\)</span> with <span class="math inline">\(0 \preceq L \preceq 2d_{\max} I\)</span>. <em>(Hint: <span class="math inline">\(\langle Lx, x\rangle = \sum_{\{u,v\}} w_{uv}(x_u - x_v)^2\)</span> and Lemma 4.2.)</em></li>
+</ol>
+<hr>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li>E. Kreyszig, <em>Introductory Functional Analysis with Applications</em>. The gentlest ramp-up to Sections 1–6.</li>
+<li>H. Brezis, <em>Functional Analysis, Sobolev Spaces and PDEs</em>, Ch. 6. Compact self-adjoint operators and elliptic eigenvalue problems.</li>
+<li>P. Lax, <em>Functional Analysis</em>. Compact and self-adjoint spectral theory, with applications.</li>
+<li>G. Teschl, <em>Mathematical Methods in Quantum Mechanics</em> (free online), and M. Reed &amp; B. Simon, <em>Methods of Modern Mathematical Physics</em>, Vol. I. The general spectral theorem.</li>
+<li>K. Schmüdgen, <em>Unbounded Self-adjoint Operators on Hilbert Space</em> (GTM 265). Domains, extensions, and quadratic forms (Section 8).</li>
+<li>A. Grigor’yan, <em>Introduction to Analysis on Graphs</em>. Laplacians on infinite graphs, including essential self-adjointness.</li>
+<li>I. Steinwart &amp; A. Christmann, <em>Support Vector Machines</em>, Ch. 4. Mercer’s theorem and RKHS integral operators.</li>
+<li>L. Rosasco, M. Belkin &amp; E. De Vito, “On Learning with Integral Operators,” <em>JMLR</em> 2010. Kernel matrices as empirical integral operators.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/lorecchia\.github\.io\/cmsc35410");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/notes/la-review-part2.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Draft. Sections 1 and 6 are the essentials.">
+
+<title>Linear Algebra Review, Part I – CMSC 35410</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ec6c034766f78be6d2b3c979ae054acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-79f87882548c91cf1952f391da7ff80a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-ec6c034766f78be6d2b3c979ae054acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">CMSC 35410</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../schedule.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../notes.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../homework.html"> 
+<span class="menu-text">Homework</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../resources.html"> 
+<span class="menu-text">Resources</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/lorecchia/cmsc35410"> <i class="bi bi-github" role="img" aria-label="GitHub repository">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#notation-and-conventions" id="toc-notation-and-conventions" class="nav-link active" data-scroll-target="#notation-and-conventions">1. Notation and conventions</a></li>
+  <li><a href="#eigenvalues-and-the-characteristic-polynomial" id="toc-eigenvalues-and-the-characteristic-polynomial" class="nav-link" data-scroll-target="#eigenvalues-and-the-characteristic-polynomial">2. Eigenvalues and the characteristic polynomial</a>
+  <ul class="collapse">
+  <li><a href="#eigenvalues-and-multiplicities" id="toc-eigenvalues-and-multiplicities" class="nav-link" data-scroll-target="#eigenvalues-and-multiplicities">2.1 Eigenvalues and multiplicities</a></li>
+  <li><a href="#diagonalizability" id="toc-diagonalizability" class="nav-link" data-scroll-target="#diagonalizability">2.2 Diagonalizability</a></li>
+  </ul></li>
+  <li><a href="#polynomials-in-a-and-the-minimal-polynomial" id="toc-polynomials-in-a-and-the-minimal-polynomial" class="nav-link" data-scroll-target="#polynomials-in-a-and-the-minimal-polynomial">3. Polynomials in <span class="math inline">\(A\)</span> and the minimal polynomial</a>
+  <ul class="collapse">
+  <li><a href="#the-minimal-polynomial" id="toc-the-minimal-polynomial" class="nav-link" data-scroll-target="#the-minimal-polynomial">3.1 The minimal polynomial</a></li>
+  <li><a href="#the-primary-decomposition" id="toc-the-primary-decomposition" class="nav-link" data-scroll-target="#the-primary-decomposition">3.2 The primary decomposition</a></li>
+  <li><a href="#diagonalizability-via-the-minimal-polynomial" id="toc-diagonalizability-via-the-minimal-polynomial" class="nav-link" data-scroll-target="#diagonalizability-via-the-minimal-polynomial">3.3 Diagonalizability via the minimal polynomial</a></li>
+  <li><a href="#the-cayleyhamilton-theorem" id="toc-the-cayleyhamilton-theorem" class="nav-link" data-scroll-target="#the-cayleyhamilton-theorem">3.4 The Cayley–Hamilton theorem</a></li>
+  </ul></li>
+  <li><a href="#triangularization-the-schur-decomposition-and-normal-matrices" id="toc-triangularization-the-schur-decomposition-and-normal-matrices" class="nav-link" data-scroll-target="#triangularization-the-schur-decomposition-and-normal-matrices">4. Triangularization: the Schur decomposition and normal matrices</a></li>
+  <li><a href="#the-jordan-canonical-form" id="toc-the-jordan-canonical-form" class="nav-link" data-scroll-target="#the-jordan-canonical-form">5. The Jordan canonical form</a>
+  <ul class="collapse">
+  <li><a href="#generalized-eigenspaces" id="toc-generalized-eigenspaces" class="nav-link" data-scroll-target="#generalized-eigenspaces">5.1 Generalized eigenspaces</a></li>
+  <li><a href="#the-jordanchevalley-decomposition" id="toc-the-jordanchevalley-decomposition" class="nav-link" data-scroll-target="#the-jordanchevalley-decomposition">5.2 The Jordan–Chevalley decomposition</a></li>
+  <li><a href="#nilpotent-maps" id="toc-nilpotent-maps" class="nav-link" data-scroll-target="#nilpotent-maps">5.3 Nilpotent maps</a></li>
+  <li><a href="#the-jordan-canonical-form-1" id="toc-the-jordan-canonical-form-1" class="nav-link" data-scroll-target="#the-jordan-canonical-form-1">5.4 The Jordan canonical form</a></li>
+  <li><a href="#powers-and-exponentials" id="toc-powers-and-exponentials" class="nav-link" data-scroll-target="#powers-and-exponentials">5.5 Powers and exponentials</a></li>
+  <li><a href="#a-warning-the-jordan-form-is-unstable" id="toc-a-warning-the-jordan-form-is-unstable" class="nav-link" data-scroll-target="#a-warning-the-jordan-form-is-unstable">5.6 A warning: the Jordan form is unstable</a></li>
+  </ul></li>
+  <li><a href="#the-spectral-theorem-for-self-adjoint-operators" id="toc-the-spectral-theorem-for-self-adjoint-operators" class="nav-link" data-scroll-target="#the-spectral-theorem-for-self-adjoint-operators">6. The spectral theorem for self-adjoint operators</a>
+  <ul class="collapse">
+  <li><a href="#two-elementary-facts" id="toc-two-elementary-facts" class="nav-link" data-scroll-target="#two-elementary-facts">6.1 Two elementary facts</a></li>
+  <li><a href="#statement" id="toc-statement" class="nav-link" data-scroll-target="#statement">6.2 Statement</a></li>
+  <li><a href="#proof" id="toc-proof" class="nav-link" data-scroll-target="#proof">6.3 Proof</a></li>
+  <li><a href="#consequences" id="toc-consequences" class="nav-link" data-scroll-target="#consequences">6.4 Consequences</a></li>
+  <li><a href="#self-adjointness-for-a-weighted-inner-product" id="toc-self-adjointness-for-a-weighted-inner-product" class="nav-link" data-scroll-target="#self-adjointness-for-a-weighted-inner-product">6.5 Self-adjointness for a weighted inner product</a></li>
+  </ul></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">7. Exercises</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/notes/la-review-part1.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Linear Algebra Review, Part I</h1>
+<p class="subtitle lead">Diagonalization in finite dimensions</p>
+</div>
+
+<div>
+  <div class="description">
+    Draft. Sections 1 and 6 are the essentials.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This note reviews what it means to diagonalize a linear map on a finite-dimensional space, and what can be said when that is impossible.</p>
+<ul>
+<li>Section 1 fixes notation.</li>
+<li>Sections 2–3 cover eigenvalues, the characteristic and minimal polynomials, and exact criteria for diagonalizability, including Cayley–Hamilton.</li>
+<li>Section 4 proves the Schur triangularization and characterizes the unitarily diagonalizable (normal) matrices.</li>
+<li>Section 5 develops the Jordan canonical form, the complete answer for non-diagonalizable matrices, together with a warning about its numerical instability.</li>
+<li>Section 6 proves the <strong>spectral theorem</strong> for self-adjoint operators and derives the tools used throughout the course: Rayleigh quotients, Courant–Fischer, Weyl’s inequality, and self-adjointness with respect to weighted inner products such as the degree inner product of a graph.</li>
+</ul>
+<p>Part II extends Section 6 to infinite dimensions, using the proof strategy of Section 6 almost verbatim, so that proof is worth reading carefully. Most of the course needs only Sections 1 and 6. Sections 2–5 matter whenever matrices are not symmetric: directed graphs, non-reversible Markov chains, and iterative methods.</p>
+<hr>
+<section id="notation-and-conventions" class="level2">
+<h2 class="anchored" data-anchor-id="notation-and-conventions">1. Notation and conventions</h2>
+<ul>
+<li><span class="math inline">\(\mathbb{F}\)</span> denotes <span class="math inline">\(\mathbb{R}\)</span> or <span class="math inline">\(\mathbb{C}\)</span>. For <span class="math inline">\(z \in \mathbb{C}\)</span>, <span class="math inline">\(\bar z\)</span> is the complex conjugate.</li>
+<li><span class="math inline">\(V\)</span> is a finite-dimensional vector space over <span class="math inline">\(\mathbb{F}\)</span>. A linear map <span class="math inline">\(A : V \to V\)</span> is identified, after choosing a basis, with a matrix in <span class="math inline">\(\mathbb{F}^{n\times n}\)</span>. Matrices <span class="math inline">\(A\)</span> and <span class="math inline">\(S^{-1}AS\)</span> (<span class="math inline">\(S\)</span> invertible) are <strong>similar</strong>: they represent the same map in different bases.</li>
+<li><span class="math inline">\(\mathbb{F}[t]\)</span> is the ring of polynomials with coefficients in <span class="math inline">\(\mathbb{F}\)</span>. A polynomial <strong>splits</strong> over <span class="math inline">\(\mathbb{F}\)</span> if it is a product of linear factors <span class="math inline">\((t - \lambda)\)</span> with <span class="math inline">\(\lambda \in \mathbb{F}\)</span>.</li>
+</ul>
+<p>The remaining conventions concern inner products, which are needed from Section 4 on.</p>
+<ul>
+<li>An <strong>inner product</strong> on an <span class="math inline">\(\mathbb{F}\)</span>-vector space <span class="math inline">\(V\)</span> is a map <span class="math inline">\(\langle \cdot,\cdot\rangle : V\times V \to \mathbb{F}\)</span> that is linear in the first argument, satisfies <span class="math inline">\(\langle x, y\rangle = \overline{\langle y, x\rangle}\)</span>, and has <span class="math inline">\(\langle x, x\rangle &gt; 0\)</span> for <span class="math inline">\(x \neq 0\)</span>. (So it is conjugate-linear in the second argument.) The induced norm is <span class="math inline">\(\|x\| = \sqrt{\langle x, x\rangle}\)</span>.</li>
+<li>On <span class="math inline">\(\mathbb{F}^n\)</span> the standard inner product is <span class="math inline">\(\langle x, y\rangle = \sum_i x_i \bar y_i = y^* x\)</span>, where <span class="math inline">\(y^*\)</span> is the conjugate transpose. Over <span class="math inline">\(\mathbb{R}\)</span>, <span class="math inline">\(y^* = y^\top\)</span>.</li>
+<li>Two basic identities hold in every inner product space:
+<ul>
+<li><strong>Cauchy–Schwarz:</strong> <span class="math inline">\(|\langle x, y\rangle| \le \|x\|\,\|y\|\)</span>, with equality iff <span class="math inline">\(x, y\)</span> are linearly dependent.</li>
+<li><strong>Parallelogram law:</strong> <span class="math inline">\(\|x+y\|^2 + \|x-y\|^2 = 2\|x\|^2 + 2\|y\|^2\)</span>.</li>
+</ul></li>
+<li><span class="math inline">\(x \perp y\)</span> means <span class="math inline">\(\langle x, y\rangle = 0\)</span>. For a set <span class="math inline">\(S\)</span>, <span class="math inline">\(S^\perp = \{x : x \perp s \text{ for all } s \in S\}\)</span>. This is always a (closed) subspace.</li>
+<li>For a linear map <span class="math inline">\(A : V \to V\)</span>, the <strong>adjoint</strong> <span class="math inline">\(A^*\)</span> is the linear map with <span class="math inline">\(\langle Ax, y\rangle = \langle x, A^* y\rangle\)</span> for all <span class="math inline">\(x, y\)</span>. For matrices with the standard inner product, <span class="math inline">\(A^*\)</span> is the conjugate transpose. <span class="math inline">\(A\)</span> is <strong>self-adjoint</strong> if <span class="math inline">\(A = A^*\)</span>: a real symmetric matrix, or a complex Hermitian matrix.</li>
+<li><span class="math inline">\(A\)</span> is <strong>positive semidefinite</strong> (PSD), written <span class="math inline">\(A \succeq 0\)</span>, if it is self-adjoint and <span class="math inline">\(\langle Ax, x\rangle \ge 0\)</span> for all <span class="math inline">\(x\)</span>. <span class="math inline">\(A \succeq B\)</span> means <span class="math inline">\(A - B \succeq 0\)</span>.</li>
+<li>The <strong>Rayleigh quotient</strong> of a self-adjoint <span class="math inline">\(A\)</span> is <span class="math inline">\(R_A(x) = \dfrac{\langle Ax, x\rangle}{\langle x, x\rangle}\)</span> for <span class="math inline">\(x \ne 0\)</span>.</li>
+</ul>
+<p><strong>Example (why self-adjointness shows up everywhere in this course).</strong> For an undirected graph <span class="math inline">\(G = (V, E, w)\)</span>, the adjacency matrix <span class="math inline">\(A\)</span>, the Laplacian <span class="math inline">\(L = D - A\)</span>, and the normalized Laplacian <span class="math inline">\(\mathcal{L} = I - D^{-1/2} A D^{-1/2}\)</span> are all real symmetric. So are covariance matrices <span class="math inline">\(\frac1m \sum_i x_i x_i^\top\)</span> and kernel (Gram) matrices <span class="math inline">\(K_{ij} = k(x_i, x_j)\)</span>. The random-walk matrix <span class="math inline">\(P = D^{-1}A\)</span> and the random-walk Laplacian <span class="math inline">\(L_{\mathrm{rw}} = D^{-1}L = I - P\)</span> are <em>not</em> symmetric. They are, however, self-adjoint for the degree-weighted inner product <span class="math inline">\(\langle x, y\rangle_D = y^* D x\)</span>, and this is equivalent to the symmetry of <span class="math inline">\(\mathcal{L}\)</span> (Section 6.5).</p>
+<hr>
+</section>
+<section id="eigenvalues-and-the-characteristic-polynomial" class="level2">
+<h2 class="anchored" data-anchor-id="eigenvalues-and-the-characteristic-polynomial">2. Eigenvalues and the characteristic polynomial</h2>
+<p>Throughout Sections 2–5, <span class="math inline">\(V\)</span> is a vector space over <span class="math inline">\(\mathbb{F}\)</span> of dimension <span class="math inline">\(n \ge 1\)</span> and <span class="math inline">\(A : V \to V\)</span> is linear. No inner product is needed until Section 4. Choosing a basis identifies <span class="math inline">\(A\)</span> with a matrix in <span class="math inline">\(\mathbb{F}^{n\times n}\)</span>. Changing the basis replaces the matrix by a <strong>similar</strong> one, <span class="math inline">\(S^{-1}AS\)</span> with <span class="math inline">\(S\)</span> invertible. Every notion below is invariant under similarity, so it belongs to the linear map, not the matrix.</p>
+<section id="eigenvalues-and-multiplicities" class="level3">
+<h3 class="anchored" data-anchor-id="eigenvalues-and-multiplicities">2.1 Eigenvalues and multiplicities</h3>
+<p>A scalar <span class="math inline">\(\lambda \in \mathbb{F}\)</span> is an <strong>eigenvalue</strong> of <span class="math inline">\(A\)</span> if <span class="math inline">\(Av = \lambda v\)</span> for some <span class="math inline">\(v \ne 0\)</span>, called an <strong>eigenvector</strong>. The <strong>eigenspace</strong> is <span class="math inline">\(E_\lambda = \ker(A - \lambda I)\)</span>. Its dimension <span class="math inline">\(g_\lambda = \dim E_\lambda\)</span> is the <strong>geometric multiplicity</strong> of <span class="math inline">\(\lambda\)</span>. The set of eigenvalues is the <strong>spectrum</strong> <span class="math inline">\(\sigma(A)\)</span>.</p>
+<p>The <strong>characteristic polynomial</strong> is <span class="math display">\[
+p_A(t) = \det(tI - A) = t^n - (\operatorname{tr} A)\, t^{n-1} + \dots + (-1)^n \det A .
+\]</span> It is monic of degree <span class="math inline">\(n\)</span>. It is similarity invariant, since <span class="math inline">\(\det(tI - S^{-1}AS) = \det\big(S^{-1}(tI - A)S\big) = \det(tI - A)\)</span>. And <span class="math inline">\(\lambda\)</span> is an eigenvalue iff <span class="math inline">\(A - \lambda I\)</span> is singular iff <span class="math inline">\(p_A(\lambda) = 0\)</span>. The multiplicity <span class="math inline">\(a_\lambda\)</span> of <span class="math inline">\(\lambda\)</span> as a root of <span class="math inline">\(p_A\)</span> is its <strong>algebraic multiplicity</strong>. If <span class="math inline">\(p_A\)</span> <strong>splits</strong> over <span class="math inline">\(\mathbb{F}\)</span>, i.e., factors into linear factors <span class="math inline">\(p_A(t) = \prod_{\lambda \in \sigma(A)} (t - \lambda)^{a_\lambda}\)</span>, then comparing coefficients gives <span class="math display">\[
+\operatorname{tr} A = \sum_\lambda a_\lambda \lambda, \qquad \det A = \prod_\lambda \lambda^{a_\lambda}.
+\]</span></p>
+<p><strong>Existence of eigenvalues depends on the field.</strong></p>
+<ul>
+<li>Over <span class="math inline">\(\mathbb{C}\)</span>, the fundamental theorem of algebra says <span class="math inline">\(p_A\)</span> always splits. So every linear map on a nonzero complex vector space has an eigenvalue.</li>
+<li>Over <span class="math inline">\(\mathbb{R}\)</span>, this fails. The rotation <span class="math inline">\(R_\theta = \begin{pmatrix}\cos\theta &amp; -\sin\theta \\ \sin\theta &amp; \cos\theta\end{pmatrix}\)</span> has <span class="math inline">\(p(t) = t^2 - 2\cos\theta\, t + 1\)</span>, with no real roots unless <span class="math inline">\(\theta \in \pi\mathbb{Z}\)</span>. The standard remedy is to regard a real matrix as a complex one. Its eigenvalues are then real or come in conjugate pairs.</li>
+</ul>
+<p><strong>Lemma 2.1.</strong> Eigenvectors <span class="math inline">\(v_1, \dots, v_k\)</span> belonging to distinct eigenvalues <span class="math inline">\(\lambda_1, \dots, \lambda_k\)</span> are linearly independent.</p>
+<p><em>Proof.</em> Suppose not, and take a nontrivial relation <span class="math inline">\(\sum_{i\in I} c_i v_i = 0\)</span> with the fewest nonzero terms. It has at least two terms. Pick <span class="math inline">\(j \in I\)</span> and apply <span class="math inline">\(A - \lambda_j I\)</span>: this gives <span class="math inline">\(\sum_{i \in I} c_i(\lambda_i - \lambda_j)v_i = 0\)</span>. The new relation is nontrivial, since <span class="math inline">\(\lambda_i \ne \lambda_j\)</span> for <span class="math inline">\(i \ne j\)</span>, and has fewer terms. That contradicts minimality. <span class="math inline">\(\blacksquare\)</span></p>
+<p><strong>Lemma 2.2.</strong> For every eigenvalue <span class="math inline">\(\lambda\)</span>, <span class="math inline">\(1 \le g_\lambda \le a_\lambda\)</span>.</p>
+<p><em>Proof.</em> Extend a basis of <span class="math inline">\(E_\lambda\)</span> to a basis of <span class="math inline">\(V\)</span>. In this basis, <span class="math inline">\(A = \begin{pmatrix} \lambda I_{g} &amp; * \\ 0 &amp; C\end{pmatrix}\)</span> with <span class="math inline">\(g = g_\lambda\)</span>. So <span class="math inline">\(p_A(t) = (t - \lambda)^{g}\, p_C(t)\)</span>, and <span class="math inline">\((t-\lambda)^g\)</span> divides <span class="math inline">\(p_A\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+</section>
+<section id="diagonalizability" class="level3">
+<h3 class="anchored" data-anchor-id="diagonalizability">2.2 Diagonalizability</h3>
+<p><span class="math inline">\(A\)</span> is <strong>diagonalizable</strong> (over <span class="math inline">\(\mathbb{F}\)</span>) if <span class="math inline">\(V\)</span> has a basis of eigenvectors of <span class="math inline">\(A\)</span>. Equivalently, <span class="math inline">\(A = S\Lambda S^{-1}\)</span> with <span class="math inline">\(\Lambda\)</span> diagonal. The columns of <span class="math inline">\(S\)</span> are the eigenvectors.</p>
+<p><strong>Theorem 2.3.</strong> <span class="math inline">\(A\)</span> is diagonalizable over <span class="math inline">\(\mathbb{F}\)</span> iff <span class="math inline">\(p_A\)</span> splits over <span class="math inline">\(\mathbb{F}\)</span> and <span class="math inline">\(g_\lambda = a_\lambda\)</span> for every <span class="math inline">\(\lambda \in \sigma(A)\)</span>. In particular, if <span class="math inline">\(A\)</span> has <span class="math inline">\(n\)</span> distinct eigenvalues in <span class="math inline">\(\mathbb{F}\)</span>, it is diagonalizable.</p>
+<p><em>Proof.</em> (⇒) If <span class="math inline">\(A = S\Lambda S^{-1}\)</span>, then <span class="math inline">\(p_A(t) = \prod_i (t - \Lambda_{ii})\)</span> splits, and <span class="math inline">\(g_\lambda = \#\{i : \Lambda_{ii} = \lambda\} = a_\lambda\)</span>.</p>
+<p>(⇐) By Lemma 2.1, the sum <span class="math inline">\(\sum_\lambda E_\lambda\)</span> is direct. Its dimension is <span class="math inline">\(\sum_\lambda g_\lambda = \sum_\lambda a_\lambda = \deg p_A = n\)</span>. So it is all of <span class="math inline">\(V\)</span>, and the union of bases of the <span class="math inline">\(E_\lambda\)</span> is an eigenbasis. <span class="math inline">\(\blacksquare\)</span></p>
+<p><strong>Examples from graphs.</strong> Let <span class="math inline">\(\vec P_n\)</span> be the directed path <span class="math inline">\(1 \to 2 \to \dots \to n\)</span> and <span class="math inline">\(\vec C_n\)</span> the directed cycle.</p>
+<ul>
+<li>The adjacency matrix of <span class="math inline">\(\vec P_n\)</span> is nilpotent. Its only eigenvalue is <span class="math inline">\(0\)</span>, with <span class="math inline">\(a_0 = n\)</span> but <span class="math inline">\(g_0 = 1\)</span>, so it is <strong>not diagonalizable</strong> over any field.</li>
+<li>The adjacency matrix of <span class="math inline">\(\vec C_n\)</span> is a permutation matrix with <span class="math inline">\(p(t) = t^n - 1\)</span>. It has <span class="math inline">\(n\)</span> distinct complex eigenvalues (the <span class="math inline">\(n\)</span>-th roots of unity), so it is diagonalizable over <span class="math inline">\(\mathbb{C}\)</span>. For <span class="math inline">\(n \ge 3\)</span> it is not diagonalizable over <span class="math inline">\(\mathbb{R}\)</span>.</li>
+<li>Undirected graphs give symmetric matrices, which are always diagonalizable, in an orthonormal basis (Section 6).</li>
+</ul>
+<p><strong>Why diagonalizability matters.</strong> If <span class="math inline">\(A = S\Lambda S^{-1}\)</span>, then <span class="math display">\[
+A^k = S\Lambda^k S^{-1}, \qquad e^{tA} = S e^{t\Lambda}S^{-1},
+\]</span> so linear dynamics <span class="math inline">\(x_{k+1} = Ax_k\)</span> or <span class="math inline">\(\dot x = Ax\)</span> decouple into <span class="math inline">\(n\)</span> scalar ones. The catch for non-symmetric <span class="math inline">\(A\)</span> is that <span class="math inline">\(S\)</span> need not be orthogonal. An ill-conditioned <span class="math inline">\(S\)</span> (large <span class="math inline">\(\kappa(S) = \|S\|\,\|S^{-1}\|\)</span>) makes these formulas numerically and quantitatively misleading. See Section 5.6.</p>
+<hr>
+</section>
+</section>
+<section id="polynomials-in-a-and-the-minimal-polynomial" class="level2">
+<h2 class="anchored" data-anchor-id="polynomials-in-a-and-the-minimal-polynomial">3. Polynomials in <span class="math inline">\(A\)</span> and the minimal polynomial</h2>
+<section id="the-minimal-polynomial" class="level3">
+<h3 class="anchored" data-anchor-id="the-minimal-polynomial">3.1 The minimal polynomial</h3>
+<p>For <span class="math inline">\(q(t) = \sum_k c_k t^k \in \mathbb{F}[t]\)</span>, set <span class="math inline">\(q(A) = \sum_k c_k A^k\)</span>. The map <span class="math inline">\(q \mapsto q(A)\)</span> respects sums and products. So all polynomials in <span class="math inline">\(A\)</span> commute with each other and with <span class="math inline">\(A\)</span>. Two further facts:</p>
+<ul>
+<li>If <span class="math inline">\(Av = \lambda v\)</span>, then <span class="math inline">\(q(A)v = q(\lambda)v\)</span>.</li>
+<li><span class="math inline">\(q(S^{-1}AS) = S^{-1}q(A)S\)</span>.</li>
+</ul>
+<p>Some nonzero polynomial annihilates <span class="math inline">\(A\)</span>: the <span class="math inline">\(n^2 + 1\)</span> matrices <span class="math inline">\(I, A, \dots, A^{n^2}\)</span> live in the <span class="math inline">\(n^2\)</span>-dimensional space <span class="math inline">\(\mathbb{F}^{n\times n}\)</span>, so they are linearly dependent.</p>
+<p><strong>Proposition 3.1.</strong> There is a unique monic polynomial <span class="math inline">\(m_A\)</span> of least degree with <span class="math inline">\(m_A(A) = 0\)</span>, the <strong>minimal polynomial</strong> of <span class="math inline">\(A\)</span>. A polynomial <span class="math inline">\(q\)</span> satisfies <span class="math inline">\(q(A) = 0\)</span> iff <span class="math inline">\(m_A\)</span> divides <span class="math inline">\(q\)</span>.</p>
+<p><em>Proof.</em> Let <span class="math inline">\(m\)</span> be a monic annihilating polynomial of least degree. For any <span class="math inline">\(q\)</span> with <span class="math inline">\(q(A) = 0\)</span>, divide: <span class="math inline">\(q = sm + r\)</span> with <span class="math inline">\(\deg r &lt; \deg m\)</span>. Then <span class="math inline">\(r(A) = q(A) - s(A)m(A) = 0\)</span>, so <span class="math inline">\(r = 0\)</span> by minimality. Uniqueness: two such <span class="math inline">\(m\)</span> divide each other and are monic. <span class="math inline">\(\blacksquare\)</span></p>
+<p><strong>Proposition 3.2.</strong> The roots of <span class="math inline">\(m_A\)</span> in <span class="math inline">\(\mathbb{F}\)</span> are exactly the eigenvalues of <span class="math inline">\(A\)</span> in <span class="math inline">\(\mathbb{F}\)</span>.</p>
+<p><em>Proof.</em> If <span class="math inline">\(Av = \lambda v\)</span> with <span class="math inline">\(v \ne 0\)</span>, then <span class="math inline">\(0 = m_A(A)v = m_A(\lambda)v\)</span>, so <span class="math inline">\(m_A(\lambda) = 0\)</span>.</p>
+<p>Conversely, if <span class="math inline">\(m_A(\lambda) = 0\)</span>, write <span class="math inline">\(m_A(t) = (t - \lambda)q(t)\)</span>. Since <span class="math inline">\(\deg q &lt; \deg m_A\)</span>, <span class="math inline">\(q(A) \ne 0\)</span>. Pick <span class="math inline">\(w\)</span> with <span class="math inline">\(v = q(A)w \ne 0\)</span>. Then <span class="math inline">\((A - \lambda I)v = m_A(A)w = 0\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+</section>
+<section id="the-primary-decomposition" class="level3">
+<h3 class="anchored" data-anchor-id="the-primary-decomposition">3.2 The primary decomposition</h3>
+<p>The engine behind everything that follows is a statement about coprime polynomials.</p>
+<p><strong>Lemma 3.3 (Kernel splitting).</strong> Suppose <span class="math inline">\(q(A) = 0\)</span> and <span class="math inline">\(q = q_1q_2\)</span> with <span class="math inline">\(\gcd(q_1, q_2) = 1\)</span>. Then <span class="math display">\[
+V = \ker q_1(A) \oplus \ker q_2(A).
+\]</span> Both summands are <span class="math inline">\(A\)</span>-invariant. The projection onto <span class="math inline">\(\ker q_1(A)\)</span> along <span class="math inline">\(\ker q_2(A)\)</span> is a polynomial in <span class="math inline">\(A\)</span>.</p>
+<p><em>Proof.</em> By Bézout, there are polynomials <span class="math inline">\(a, b\)</span> with <span class="math inline">\(aq_1 + bq_2 = 1\)</span>, so <span class="math inline">\(I = a(A)q_1(A) + b(A)q_2(A)\)</span>. For any <span class="math inline">\(v\)</span>, <span class="math display">\[
+v = \underbrace{b(A)q_2(A)v}_{=:v_1} + \underbrace{a(A)q_1(A)v}_{=:v_2}.
+\]</span> Here <span class="math inline">\(q_1(A)v_1 = b(A)q(A)v = 0\)</span>, so <span class="math inline">\(v_1 \in \ker q_1(A)\)</span>. Similarly, <span class="math inline">\(v_2 \in \ker q_2(A)\)</span>.</p>
+<p>If <span class="math inline">\(v\)</span> lies in both kernels, both terms vanish, so <span class="math inline">\(v = 0\)</span>. The sum is therefore direct, and the projection onto the first summand is <span class="math inline">\(b(A)q_2(A)\)</span>. Invariance: if <span class="math inline">\(q_i(A)v = 0\)</span>, then <span class="math inline">\(q_i(A)Av = Aq_i(A)v = 0\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+<p><strong>Corollary 3.4 (Primary decomposition).</strong> If <span class="math inline">\(q(A) = 0\)</span> and <span class="math inline">\(q = q_1 \cdots q_r\)</span> with the <span class="math inline">\(q_i\)</span> pairwise coprime, then <span class="math display">\[
+V = \ker q_1(A) \oplus \dots \oplus \ker q_r(A).
+\]</span> Each summand is <span class="math inline">\(A\)</span>-invariant, and the projections <span class="math inline">\(P_i\)</span> onto the summands are polynomials in <span class="math inline">\(A\)</span>. In particular, they commute with <span class="math inline">\(A\)</span>, with each other, and with anything that commutes with <span class="math inline">\(A\)</span>.</p>
+<p><em>Proof.</em> Induct on <span class="math inline">\(r\)</span>, applying Lemma 3.3 to <span class="math inline">\(q_1\)</span> and <span class="math inline">\(q_2\cdots q_r\)</span> (which are coprime). <span class="math inline">\(\blacksquare\)</span></p>
+</section>
+<section id="diagonalizability-via-the-minimal-polynomial" class="level3">
+<h3 class="anchored" data-anchor-id="diagonalizability-via-the-minimal-polynomial">3.3 Diagonalizability via the minimal polynomial</h3>
+<p><strong>Theorem 3.5.</strong> The following are equivalent:</p>
+<ol type="1">
+<li><span class="math inline">\(A\)</span> is diagonalizable over <span class="math inline">\(\mathbb{F}\)</span>.</li>
+<li><span class="math inline">\(m_A\)</span> splits over <span class="math inline">\(\mathbb{F}\)</span> with <strong>distinct</strong> roots: <span class="math inline">\(m_A(t) = \prod_{\lambda \in \sigma(A)}(t - \lambda)\)</span>.</li>
+<li><span class="math inline">\(A\)</span> is annihilated by some polynomial that splits over <span class="math inline">\(\mathbb{F}\)</span> with distinct roots.</li>
+</ol>
+<p><em>Proof.</em></p>
+<ul>
+<li>(1)⇒(2): Let <span class="math inline">\(q(t) = \prod_{\lambda\in\sigma(A)} (t-\lambda)\)</span>. Then <span class="math inline">\(q(A)\)</span> kills every eigenvector, hence every vector of an eigenbasis. So <span class="math inline">\(q(A) = 0\)</span> and <span class="math inline">\(m_A\)</span> divides <span class="math inline">\(q\)</span>. By Proposition 3.2, every factor of <span class="math inline">\(q\)</span> appears in <span class="math inline">\(m_A\)</span>, so <span class="math inline">\(m_A = q\)</span>.</li>
+<li>(2)⇒(3) is trivial.</li>
+<li>(3)⇒(1): If <span class="math inline">\(q(A) = 0\)</span> with <span class="math inline">\(q = \prod_{i}(t - \mu_i)\)</span> and the <span class="math inline">\(\mu_i\)</span> distinct, the factors are pairwise coprime. Corollary 3.4 gives <span class="math inline">\(V = \bigoplus_i \ker(A - \mu_i I)\)</span>, a direct sum of eigenspaces. <span class="math inline">\(\blacksquare\)</span></li>
+</ul>
+<p><strong>Corollary 3.6.</strong></p>
+<ol type="1">
+<li>If <span class="math inline">\(A\)</span> is diagonalizable and <span class="math inline">\(W\)</span> is an <span class="math inline">\(A\)</span>-invariant subspace, then <span class="math inline">\(A|_W\)</span> is diagonalizable. (Proof: <span class="math inline">\(m_A(A|_W) = 0\)</span>, so criterion (3) applies.)</li>
+<li>Projections (<span class="math inline">\(A^2 = A\)</span>) and involutions (<span class="math inline">\(A^2 = I\)</span>) are diagonalizable over <span class="math inline">\(\mathbb{R}\)</span>. Matrices with <span class="math inline">\(A^k = I\)</span> are diagonalizable over <span class="math inline">\(\mathbb{C}\)</span>, since <span class="math inline">\(t^k - 1\)</span> has <span class="math inline">\(k\)</span> distinct complex roots. This covers every permutation matrix, and in particular <span class="math inline">\(\vec C_n\)</span>.</li>
+</ol>
+<p><strong>Proposition 3.7 (Simultaneous diagonalization).</strong> If <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are diagonalizable and <span class="math inline">\(AB = BA\)</span>, then they have a common eigenbasis.</p>
+<p><em>Proof.</em> <span class="math inline">\(B\)</span> preserves each eigenspace <span class="math inline">\(E_\lambda\)</span> of <span class="math inline">\(A\)</span>: if <span class="math inline">\(Av = \lambda v\)</span>, then <span class="math inline">\(A(Bv) = BAv = \lambda Bv\)</span>. By Corollary 3.6(1), <span class="math inline">\(B|_{E_\lambda}\)</span> is diagonalizable. Choose an eigenbasis of <span class="math inline">\(B|_{E_\lambda}\)</span> inside each <span class="math inline">\(E_\lambda\)</span>. Its vectors are eigenvectors of <span class="math inline">\(A\)</span> too, and together they form a basis of <span class="math inline">\(V = \bigoplus_\lambda E_\lambda\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+</section>
+<section id="the-cayleyhamilton-theorem" class="level3">
+<h3 class="anchored" data-anchor-id="the-cayleyhamilton-theorem">3.4 The Cayley–Hamilton theorem</h3>
+<p><strong>Theorem 3.8 (Cayley–Hamilton).</strong> <span class="math inline">\(p_A(A) = 0\)</span>. Consequently, <span class="math inline">\(m_A\)</span> divides <span class="math inline">\(p_A\)</span>, and <span class="math inline">\(\deg m_A \le n\)</span>.</p>
+<p><em>Proof.</em> Let <span class="math inline">\(\operatorname{adj}\)</span> denote the adjugate (transposed cofactor matrix), so that <span class="math inline">\(\operatorname{adj}(M)\,M = \det(M)\,I\)</span>. Apply this to <span class="math inline">\(M = tI - A\)</span>: <span class="math display">\[
+\operatorname{adj}(tI - A)\,(tI - A) = p_A(t)\, I .
+\]</span> The entries of <span class="math inline">\(\operatorname{adj}(tI - A)\)</span> are polynomials of degree <span class="math inline">\(\le n-1\)</span> in <span class="math inline">\(t\)</span>. Write <span class="math inline">\(\operatorname{adj}(tI - A) = \sum_{k=0}^{n-1} B_k t^k\)</span> with constant matrices <span class="math inline">\(B_k\)</span>, and <span class="math inline">\(p_A(t) = \sum_{k=0}^n c_k t^k\)</span>. Set <span class="math inline">\(B_{-1} = B_n = 0\)</span> and compare coefficients of <span class="math inline">\(t^k\)</span>: <span class="math display">\[
+B_{k-1} - B_kA = c_k I, \qquad k = 0, \dots, n.
+\]</span> Multiply the <span class="math inline">\(k\)</span>-th identity on the right by <span class="math inline">\(A^k\)</span> and sum over <span class="math inline">\(k\)</span>. The left side telescopes: <span class="math display">\[
+p_A(A) = \sum_{k=0}^n \big(B_{k-1}A^k - B_kA^{k+1}\big) = B_{-1} - B_nA^{n+1} = 0. \qquad\blacksquare
+\]</span></p>
+<p>The proof uses only polynomial identities, so it holds over any field. The tempting one-liner “substitute <span class="math inline">\(t = A\)</span> into <span class="math inline">\(\det(tI - A)\)</span>” is not a proof, since <span class="math inline">\(\det(A\cdot I - A)\)</span> would be a scalar, whereas <span class="math inline">\(p_A(A)\)</span> is a matrix.</p>
+<p><strong>Corollary 3.9.</strong> If <span class="math inline">\(p_A(t) = \prod_\lambda (t - \lambda)^{a_\lambda}\)</span>, then <span class="math display">\[
+m_A(t) = \prod_\lambda (t-\lambda)^{k_\lambda}, \qquad 1 \le k_\lambda \le a_\lambda.
+\]</span> The exponents <span class="math inline">\(k_\lambda\)</span> are identified in Section 5 as the size of the largest Jordan block for <span class="math inline">\(\lambda\)</span>.</p>
+<p><em>Examples.</em> For <span class="math inline">\(A = \operatorname{diag}(1,1,2)\)</span>: <span class="math inline">\(p_A = (t-1)^2(t-2)\)</span> and <span class="math inline">\(m_A = (t-1)(t-2)\)</span>. For the <span class="math inline">\(n\times n\)</span> Jordan block with eigenvalue <span class="math inline">\(\lambda\)</span> (Section 5): <span class="math inline">\(p_A = m_A = (t-\lambda)^n\)</span>.</p>
+<p><strong>Application: distinct eigenvalues bound the diameter.</strong> Let <span class="math inline">\(G\)</span> be a connected graph with nonnegative edge weights, adjacency matrix <span class="math inline">\(A\)</span>, and diameter <span class="math inline">\(\mathrm{diam}(G)\)</span>. Then <span class="math display">\[
+\mathrm{diam}(G) \le (\text{number of distinct eigenvalues of } A) - 1.
+\]</span></p>
+<p><em>Proof.</em></p>
+<ul>
+<li>Since <span class="math inline">\(A\)</span> is symmetric, it is diagonalizable (Section 6). By Theorem 3.5, <span class="math inline">\(\deg m_A\)</span> equals the number of distinct eigenvalues.</li>
+<li>Let <span class="math inline">\(D = \mathrm{diam}(G)\)</span>. Fix <span class="math inline">\(u\)</span> and vertices <span class="math inline">\(w_0 = u, w_1, \dots, w_D\)</span> along a shortest path, so <span class="math inline">\(d(u, w_k) = k\)</span>.</li>
+<li>The entry <span class="math inline">\((A^j)_{u w_k}\)</span> sums the weights of walks of length <span class="math inline">\(j\)</span> from <span class="math inline">\(u\)</span> to <span class="math inline">\(w_k\)</span>. So it is <span class="math inline">\(0\)</span> for <span class="math inline">\(j &lt; k\)</span> and positive for <span class="math inline">\(j = k\)</span>.</li>
+<li>If <span class="math inline">\(\sum_{j=0}^{D} c_j A^j = 0\)</span>, look at entry <span class="math inline">\((u, w_D)\)</span>: only <span class="math inline">\(j = D\)</span> contributes, so <span class="math inline">\(c_D = 0\)</span>. Then look at <span class="math inline">\((u, w_{D-1})\)</span> to get <span class="math inline">\(c_{D-1} = 0\)</span>, and so on.</li>
+<li>So <span class="math inline">\(I, A, \dots, A^D\)</span> are linearly independent, and <span class="math inline">\(\deg m_A \ge D + 1\)</span>. <span class="math inline">\(\blacksquare\)</span></li>
+</ul>
+<p>The same fact underlies Krylov methods. Conjugate gradient and Lanczos applied to a symmetric matrix terminate, in exact arithmetic, after at most (number of distinct eigenvalues) steps.</p>
+<hr>
+</section>
+</section>
+<section id="triangularization-the-schur-decomposition-and-normal-matrices" class="level2">
+<h2 class="anchored" data-anchor-id="triangularization-the-schur-decomposition-and-normal-matrices">4. Triangularization: the Schur decomposition and normal matrices</h2>
+<p>Not every matrix is diagonalizable, but over <span class="math inline">\(\mathbb{C}\)</span> every matrix is triangularizable, even by a unitary change of basis. In this section <span class="math inline">\(V\)</span> carries an inner product (Section 1).</p>
+<p><strong>Theorem 4.1 (Schur).</strong> Let <span class="math inline">\(A \in \mathbb{C}^{n\times n}\)</span>. There is a unitary <span class="math inline">\(U\)</span> and an upper triangular <span class="math inline">\(T\)</span> with <span class="math display">\[
+A = UTU^*.
+\]</span> The diagonal entries of <span class="math inline">\(T\)</span> are the eigenvalues of <span class="math inline">\(A\)</span>, repeated according to algebraic multiplicity, and they can be placed in any prescribed order. If <span class="math inline">\(A\)</span> is real and <span class="math inline">\(p_A\)</span> splits over <span class="math inline">\(\mathbb{R}\)</span>, then <span class="math inline">\(U\)</span> can be taken real orthogonal and <span class="math inline">\(T\)</span> real.</p>
+<p><em>Proof.</em> Induct on <span class="math inline">\(n\)</span>; the case <span class="math inline">\(n = 1\)</span> is trivial. Let <span class="math inline">\(\lambda\)</span> be the eigenvalue to be placed first. (One exists by the fundamental theorem of algebra, or by the splitting hypothesis in the real case.) Let <span class="math inline">\(v\)</span> be a unit eigenvector, and complete it to a unitary matrix <span class="math inline">\([v\ W]\)</span>. Since <span class="math inline">\(W^*Av = \lambda W^*v = 0\)</span>, <span class="math display">\[
+[v\ W]^* A\, [v\ W] = \begin{pmatrix} \lambda &amp; v^*AW \\ 0 &amp; W^*AW \end{pmatrix}.
+\]</span> Now <span class="math inline">\(p_{W^*AW}(t) = p_A(t)/(t - \lambda)\)</span>. So by induction, <span class="math inline">\(W^*AW = U_1T_1U_1^*\)</span>, with the remaining eigenvalues in the prescribed order. Then <span class="math inline">\(U = [v\ \ WU_1]\)</span> works. The diagonal of <span class="math inline">\(T\)</span> lists the eigenvalues with multiplicity because <span class="math inline">\(p_A = p_T = \prod_i (t - T_{ii})\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+<p>Unlike the Jordan form below, the Schur form is computed stably in practice: it is what the QR algorithm produces.</p>
+<p><strong>Theorem 4.2 (Normal matrices).</strong> <span class="math inline">\(A \in \mathbb{C}^{n\times n}\)</span> is unitarily diagonalizable (<span class="math inline">\(A = U\Lambda U^*\)</span> with <span class="math inline">\(U\)</span> unitary and <span class="math inline">\(\Lambda\)</span> diagonal) iff <span class="math inline">\(A\)</span> is <strong>normal</strong>: <span class="math inline">\(AA^* = A^*A\)</span>.</p>
+<p><em>Proof.</em> (⇒) Diagonal matrices commute with their adjoints, so <span class="math inline">\(AA^* = U\Lambda\bar\Lambda U^* = A^*A\)</span>.</p>
+<p>(⇐) Write <span class="math inline">\(A = UTU^*\)</span> by Schur. Then <span class="math inline">\(T\)</span> is normal and upper triangular. Compare the <span class="math inline">\((1,1)\)</span> entries of <span class="math inline">\(T^*T\)</span> and <span class="math inline">\(TT^*\)</span>: <span class="math display">\[
+|t_{11}|^2 = (T^*T)_{11} = (TT^*)_{11} = \sum_{j} |t_{1j}|^2 .
+\]</span> So <span class="math inline">\(t_{1j} = 0\)</span> for <span class="math inline">\(j &gt; 1\)</span>. The lower-right <span class="math inline">\((n-1)\times(n-1)\)</span> block is again normal and upper triangular, so induction shows <span class="math inline">\(T\)</span> is diagonal. <span class="math inline">\(\blacksquare\)</span></p>
+<p><strong>Corollary 4.3.</strong> A Hermitian matrix is unitarily diagonalizable with real eigenvalues. (Here <span class="math inline">\(T = T^*\)</span> is upper triangular, so it is diagonal with real entries.) A real symmetric matrix therefore has real eigenvalues, so <span class="math inline">\(p_A\)</span> splits over <span class="math inline">\(\mathbb{R}\)</span>, and the real case of Theorem 4.1 gives a real orthogonal eigenbasis.</p>
+<p>This is already the finite-dimensional spectral theorem. Section 6 proves it again, variationally. That proof avoids the fundamental theorem of algebra, produces the Courant–Fischer characterization along the way, and is the one that extends to infinite dimensions (Part II).</p>
+<p><strong>Examples of normal matrices.</strong></p>
+<ul>
+<li>Hermitian and skew-Hermitian matrices.</li>
+<li>Unitary matrices, including permutation matrices. The adjacency matrix of <span class="math inline">\(\vec C_n\)</span> is unitarily diagonalized by the discrete Fourier basis <span class="math inline">\(\big(\omega^{jk}/\sqrt n\big)_{j}\)</span> with <span class="math inline">\(\omega = e^{2\pi i/n}\)</span>.</li>
+<li><strong>Circulant matrices</strong>, i.e., polynomials in the cyclic shift. These are the adjacency matrices of Cayley graphs of <span class="math inline">\(\mathbb{Z}_n\)</span>, and they are all diagonalized by the same Fourier basis.</li>
+</ul>
+<p>The adjacency matrix of a directed graph is normal only in special cases. The directed path is not even diagonalizable.</p>
+<hr>
+</section>
+<section id="the-jordan-canonical-form" class="level2">
+<h2 class="anchored" data-anchor-id="the-jordan-canonical-form">5. The Jordan canonical form</h2>
+<p>When <span class="math inline">\(A\)</span> is not diagonalizable, the best one can do by similarity is block diagonal form with <strong>Jordan blocks</strong>. Throughout this section, assume <span class="math inline">\(p_A\)</span> splits over <span class="math inline">\(\mathbb{F}\)</span>, which is automatic over <span class="math inline">\(\mathbb{C}\)</span>. Write <span class="math inline">\(p_A(t) = \prod_{\lambda\in\sigma(A)}(t-\lambda)^{a_\lambda}\)</span>.</p>
+<section id="generalized-eigenspaces" class="level3">
+<h3 class="anchored" data-anchor-id="generalized-eigenspaces">5.1 Generalized eigenspaces</h3>
+<p>The <strong>generalized eigenspace</strong> of <span class="math inline">\(\lambda \in \sigma(A)\)</span> is <span class="math display">\[
+G_\lambda = \ker (A - \lambda I)^{a_\lambda} \;\supseteq\; E_\lambda .
+\]</span></p>
+<p><strong>Theorem 5.1 (Generalized eigenspace decomposition).</strong></p>
+<ol type="1">
+<li><span class="math inline">\(V = \bigoplus_{\lambda \in \sigma(A)} G_\lambda\)</span>, and each <span class="math inline">\(G_\lambda\)</span> is <span class="math inline">\(A\)</span>-invariant.</li>
+<li><span class="math inline">\(\lambda\)</span> is the only eigenvalue of <span class="math inline">\(A|_{G_\lambda}\)</span>, and <span class="math inline">\(\dim G_\lambda = a_\lambda\)</span>.</li>
+<li>The projections <span class="math inline">\(P_\lambda\)</span> onto <span class="math inline">\(G_\lambda\)</span> along <span class="math inline">\(\bigoplus_{\mu\ne\lambda} G_\mu\)</span> are polynomials in <span class="math inline">\(A\)</span>, and <span class="math inline">\(\sum_\lambda P_\lambda = I\)</span>.</li>
+</ol>
+<p><em>Proof.</em> (1) and (3): By Cayley–Hamilton, <span class="math inline">\(p_A(A) = 0\)</span>. The factors <span class="math inline">\((t - \lambda)^{a_\lambda}\)</span> are pairwise coprime, so Corollary 3.4 applies.</p>
+<p>(2): If <span class="math inline">\(v \in G_\lambda\)</span> and <span class="math inline">\(Av = \mu v\)</span> with <span class="math inline">\(v \ne 0\)</span>, then <span class="math inline">\(0 = (A-\lambda I)^{a_\lambda}v = (\mu - \lambda)^{a_\lambda}v\)</span>, so <span class="math inline">\(\mu = \lambda\)</span>. Hence <span class="math inline">\(p_{A|_{G_\lambda}}(t) = (t - \lambda)^{\dim G_\lambda}\)</span>. In a basis adapted to the decomposition in (1), <span class="math inline">\(A\)</span> is block diagonal, so <span class="math inline">\(p_A = \prod_\lambda p_{A|_{G_\lambda}}\)</span>. Comparing exponents gives <span class="math inline">\(\dim G_\lambda = a_\lambda\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+</section>
+<section id="the-jordanchevalley-decomposition" class="level3">
+<h3 class="anchored" data-anchor-id="the-jordanchevalley-decomposition">5.2 The Jordan–Chevalley decomposition</h3>
+<p><strong>Theorem 5.2 (Jordan–Chevalley).</strong> There are unique linear maps <span class="math inline">\(S\)</span> and <span class="math inline">\(N\)</span> with:</p>
+<ul>
+<li><span class="math inline">\(A = S + N\)</span>;</li>
+<li><span class="math inline">\(S\)</span> diagonalizable and <span class="math inline">\(N\)</span> nilpotent (<span class="math inline">\(N^k = 0\)</span> for some <span class="math inline">\(k\)</span>);</li>
+<li><span class="math inline">\(SN = NS\)</span>.</li>
+</ul>
+<p>Moreover, <span class="math inline">\(S\)</span> and <span class="math inline">\(N\)</span> are polynomials in <span class="math inline">\(A\)</span>.</p>
+<p><em>Proof.</em> <em>Existence.</em> With <span class="math inline">\(P_\lambda\)</span> as in Theorem 5.1, set <span class="math inline">\(S = \sum_\lambda \lambda P_\lambda\)</span> and <span class="math inline">\(N = A - S\)</span>. Both are polynomials in <span class="math inline">\(A\)</span>, so they commute. <span class="math inline">\(S\)</span> acts as <span class="math inline">\(\lambda I\)</span> on <span class="math inline">\(G_\lambda\)</span>, so it is diagonalizable. On <span class="math inline">\(G_\lambda\)</span>, <span class="math inline">\(N\)</span> acts as <span class="math inline">\(A - \lambda I\)</span>, and <span class="math inline">\((A - \lambda I)^{a_\lambda} = 0\)</span> there. So <span class="math inline">\(N^{\max_\lambda a_\lambda} = 0\)</span>.</p>
+<p><em>Uniqueness.</em> Suppose <span class="math inline">\(A = S' + N'\)</span> is another such decomposition.</p>
+<ul>
+<li><span class="math inline">\(S'\)</span> and <span class="math inline">\(N'\)</span> commute with <span class="math inline">\(S' + N' = A\)</span>, hence with every polynomial in <span class="math inline">\(A\)</span>, in particular with <span class="math inline">\(S\)</span> and <span class="math inline">\(N\)</span>.</li>
+<li>So <span class="math inline">\(S - S' = N' - N\)</span>. The left side is a difference of commuting diagonalizable maps, hence diagonalizable by Proposition 3.7. The right side is a difference of commuting nilpotent maps, hence nilpotent: expand <span class="math inline">\((N' - N)^{2k}\)</span> with the binomial theorem.</li>
+<li>A map that is both diagonalizable and nilpotent is <span class="math inline">\(0\)</span>. <span class="math inline">\(\blacksquare\)</span></li>
+</ul>
+<p><span class="math inline">\(S = \sum_\lambda \lambda P_\lambda\)</span> is the non-normal analogue of the spectral decomposition in Theorem 6.2. The differences are that the <span class="math inline">\(P_\lambda\)</span> are <em>oblique</em> projections, not orthogonal ones, and that there is a nilpotent correction <span class="math inline">\(N\)</span>. When <span class="math inline">\(A\)</span> is normal, <span class="math inline">\(N = 0\)</span> and the <span class="math inline">\(P_\lambda\)</span> are orthogonal.</p>
+</section>
+<section id="nilpotent-maps" class="level3">
+<h3 class="anchored" data-anchor-id="nilpotent-maps">5.3 Nilpotent maps</h3>
+<p>For <span class="math inline">\(\lambda \in \mathbb{F}\)</span> and <span class="math inline">\(s \ge 1\)</span>, the <strong>Jordan block</strong> <span class="math inline">\(J_s(\lambda) \in \mathbb{F}^{s\times s}\)</span> has <span class="math inline">\(\lambda\)</span> on the diagonal, <span class="math inline">\(1\)</span> on the superdiagonal, and <span class="math inline">\(0\)</span> elsewhere: <span class="math display">\[
+J_s(\lambda) = \lambda I_s + N_s, \qquad N_s e_1 = 0,\quad N_s e_j = e_{j-1}\ (j \ge 2).
+\]</span> <span class="math inline">\(N_s\)</span> is nilpotent, with <span class="math inline">\(N_s^{s-1} \ne 0 = N_s^s\)</span>. So <span class="math inline">\(\dim\ker N_s^k = \min(k, s)\)</span>.</p>
+<p><strong>Theorem 5.3 (Structure of nilpotent maps).</strong> Let <span class="math inline">\(N : V \to V\)</span> be nilpotent. There are vectors <span class="math inline">\(u_1, \dots, u_r \in V\)</span> and integers <span class="math inline">\(m_1, \dots, m_r \ge 0\)</span> such that:</p>
+<ul>
+<li>the vectors <span class="math inline">\(N^{m_i}u_i, \dots, Nu_i, u_i\)</span>, for <span class="math inline">\(i = 1, \dots, r\)</span>, form a basis of <span class="math inline">\(V\)</span>;</li>
+<li><span class="math inline">\(N^{m_i + 1}u_i = 0\)</span> for each <span class="math inline">\(i\)</span>.</li>
+</ul>
+<p>In this basis, listed chain by chain, <span class="math inline">\(N = \bigoplus_i J_{m_i+1}(0)\)</span>.</p>
+<p><em>Proof.</em> Induct on <span class="math inline">\(\dim V\)</span>. If <span class="math inline">\(N = 0\)</span>, any basis works with all <span class="math inline">\(m_i = 0\)</span>. Otherwise, <span class="math inline">\(N\)</span> is not injective (it is nilpotent), so <span class="math inline">\(\operatorname{range} N \subsetneq V\)</span>. <span class="math inline">\(N\)</span> maps <span class="math inline">\(\operatorname{range} N\)</span> into itself nilpotently.</p>
+<p><em>Step 1: apply induction to <span class="math inline">\(\operatorname{range} N\)</span>.</em> We get <span class="math inline">\(v_1, \dots, v_s \in \operatorname{range} N\)</span> and integers <span class="math inline">\(\ell_i \ge 0\)</span> such that the vectors <span class="math inline">\(N^j v_i\)</span> (<span class="math inline">\(0 \le j \le \ell_i\)</span>) form a basis of <span class="math inline">\(\operatorname{range} N\)</span>, and <span class="math inline">\(N^{\ell_i+1}v_i = 0\)</span>. Write <span class="math inline">\(v_i = Nu_i\)</span>.</p>
+<p><em>Step 2: the lifted chains are independent.</em> Let <span class="math inline">\(L\)</span> be the list of vectors <span class="math inline">\(N^j u_i\)</span> for <span class="math inline">\(0 \le j \le \ell_i + 1\)</span>. Suppose <span class="math inline">\(\sum_{i,j} c_{ij} N^j u_i = 0\)</span>. Apply <span class="math inline">\(N\)</span>: <span class="math display">\[
+\sum_{i,j} c_{ij}N^{j+1}u_i = \sum_i \sum_{j=0}^{\ell_i} c_{ij} N^j v_i = 0,
+\]</span> where the terms with <span class="math inline">\(j = \ell_i + 1\)</span> vanish because <span class="math inline">\(N^{\ell_i+1}v_i = 0\)</span>. The remaining vectors are the basis of <span class="math inline">\(\operatorname{range} N\)</span>, so <span class="math inline">\(c_{ij} = 0\)</span> for <span class="math inline">\(j \le \ell_i\)</span>. What is left is <span class="math inline">\(\sum_i c_{i,\ell_i+1} N^{\ell_i+1}u_i = \sum_i c_{i,\ell_i+1}N^{\ell_i}v_i = 0\)</span>. These vectors are also part of that basis, so the remaining coefficients vanish too.</p>
+<p><em>Step 3: complete with kernel vectors.</em> Extend <span class="math inline">\(L\)</span> to a basis of <span class="math inline">\(V\)</span> by vectors <span class="math inline">\(w_1, \dots, w_p\)</span>. Each <span class="math inline">\(Nw_k\)</span> lies in <span class="math inline">\(\operatorname{range} N\)</span>, which is spanned by <span class="math inline">\(N(L)\)</span>. So <span class="math inline">\(Nw_k = Nx_k\)</span> for some <span class="math inline">\(x_k \in \operatorname{span} L\)</span>. Put <span class="math inline">\(u_{s+k} = w_k - x_k\)</span>. Then <span class="math inline">\(Nu_{s+k} = 0\)</span>, and <span class="math inline">\(L, u_{s+1}, \dots, u_{s+p}\)</span> still spans <span class="math inline">\(V\)</span> and has <span class="math inline">\(\dim V\)</span> elements, so it is a basis.</p>
+<p>The theorem holds with <span class="math inline">\(m_i = \ell_i + 1\)</span> for <span class="math inline">\(i \le s\)</span> and <span class="math inline">\(m_{s+k} = 0\)</span>. For the matrix form, in the chain <span class="math inline">\(N^{m}u, \dots, Nu, u\)</span>, <span class="math inline">\(N\)</span> sends each vector to the previous one and the first to <span class="math inline">\(0\)</span>. That is exactly <span class="math inline">\(N_{m+1}\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+</section>
+<section id="the-jordan-canonical-form-1" class="level3">
+<h3 class="anchored" data-anchor-id="the-jordan-canonical-form-1">5.4 The Jordan canonical form</h3>
+<p><strong>Theorem 5.4 (Jordan canonical form).</strong> If <span class="math inline">\(p_A\)</span> splits over <span class="math inline">\(\mathbb{F}\)</span>, there is a basis of <span class="math inline">\(V\)</span> in which <span class="math display">\[
+A = \bigoplus_{\lambda\in\sigma(A)}\ \bigoplus_{i=1}^{g_\lambda} J_{s_{\lambda,i}}(\lambda).
+\]</span> The block sizes are determined by <span class="math inline">\(A\)</span>: for each <span class="math inline">\(\lambda\)</span> and <span class="math inline">\(k \ge 1\)</span>, <span class="math display">\[
+\#\{i : s_{\lambda,i} \ge k\} = \dim\ker(A - \lambda I)^k - \dim\ker(A-\lambda I)^{k-1}.
+\]</span> Hence the Jordan form is unique up to the order of the blocks. Two matrices are similar iff they have the same Jordan form.</p>
+<p><em>Proof.</em> <em>Existence.</em> By Theorem 5.1, it suffices to work on each <span class="math inline">\(G_\lambda\)</span>. There, <span class="math inline">\(N = (A - \lambda I)|_{G_\lambda}\)</span> is nilpotent. Theorem 5.3 gives a basis of <span class="math inline">\(G_\lambda\)</span> in which <span class="math inline">\(N = \bigoplus_i J_{s_i}(0)\)</span>, so <span class="math inline">\(A|_{G_\lambda} = \lambda I + N = \bigoplus_i J_{s_i}(\lambda)\)</span>.</p>
+<p><em>The counting formula.</em> <span class="math inline">\((A - \lambda I)^k\)</span> is invertible on <span class="math inline">\(G_\mu\)</span> for <span class="math inline">\(\mu \ne \lambda\)</span>. So only the <span class="math inline">\(\lambda\)</span>-blocks contribute to its kernel, and <span class="math inline">\(\dim\ker J_s(\lambda - \lambda)^k = \dim \ker N_s^k = \min(k,s)\)</span>. Hence <span class="math display">\[
+\dim\ker(A-\lambda I)^k = \sum_i \min(k, s_{\lambda,i}).
+\]</span> Taking differences in <span class="math inline">\(k\)</span> counts the blocks of size <span class="math inline">\(\ge k\)</span>.</p>
+<p>The number of blocks for <span class="math inline">\(\lambda\)</span> is the <span class="math inline">\(k=1\)</span> count, <span class="math inline">\(\dim E_\lambda = g_\lambda\)</span>.</p>
+<p><em>Similarity.</em> The dimensions of <span class="math inline">\(\ker(A - \lambda I)^k\)</span> are similarity invariants, so similar matrices have the same Jordan form. The converse is clear. <span class="math inline">\(\blacksquare\)</span></p>
+<p><strong>Corollary 5.5 (Reading the invariants off the Jordan form).</strong> For each <span class="math inline">\(\lambda \in \sigma(A)\)</span>:</p>
+<ul>
+<li><span class="math inline">\(a_\lambda\)</span> is the total size of the <span class="math inline">\(\lambda\)</span>-blocks;</li>
+<li><span class="math inline">\(g_\lambda\)</span> is the number of <span class="math inline">\(\lambda\)</span>-blocks;</li>
+<li>the exponent <span class="math inline">\(k_\lambda\)</span> of <span class="math inline">\((t-\lambda)\)</span> in <span class="math inline">\(m_A\)</span> is the size of the largest <span class="math inline">\(\lambda\)</span>-block.</li>
+</ul>
+<p>(The last follows because <span class="math inline">\(m_A\)</span> of a block diagonal matrix is the least common multiple of the blocks’ minimal polynomials, and <span class="math inline">\(m_{J_s(\lambda)} = (t-\lambda)^s\)</span>.) In particular, <span class="math inline">\(A\)</span> is diagonalizable iff every Jordan block is <span class="math inline">\(1\times1\)</span>, iff <span class="math inline">\(k_\lambda = 1\)</span> for all <span class="math inline">\(\lambda\)</span>, iff <span class="math inline">\(g_\lambda = a_\lambda\)</span> for all <span class="math inline">\(\lambda\)</span>. This recovers Theorems 2.3 and 3.5.</p>
+<p><em>Example.</em> <span class="math inline">\(\vec P_n\)</span> is a single block <span class="math inline">\(J_n(0)\)</span> (Exercise 5). A matrix with <span class="math inline">\(p_A = (t-2)^4\)</span>, <span class="math inline">\(\dim\ker(A - 2I) = 2\)</span> and <span class="math inline">\(\dim\ker(A-2I)^2 = 4\)</span> has Jordan form <span class="math inline">\(J_2(2)\oplus J_2(2)\)</span>.</p>
+</section>
+<section id="powers-and-exponentials" class="level3">
+<h3 class="anchored" data-anchor-id="powers-and-exponentials">5.5 Powers and exponentials</h3>
+<p>Since <span class="math inline">\(\lambda I\)</span> and <span class="math inline">\(N_s\)</span> commute and <span class="math inline">\(N_s^s = 0\)</span>, the binomial theorem gives <span class="math display">\[
+J_s(\lambda)^k = \sum_{j=0}^{s-1}\binom{k}{j}\lambda^{k-j}N_s^j, \qquad e^{tJ_s(\lambda)} = e^{t\lambda}\sum_{j=0}^{s-1}\frac{t^j}{j!}N_s^j .
+\]</span> So the entries of <span class="math inline">\(A^k\)</span> are combinations of <span class="math inline">\(k^j\lambda^k\)</span> with <span class="math inline">\(j &lt;\)</span> (block size). Consequences:</p>
+<ul>
+<li><span class="math inline">\(A^k \to 0\)</span> iff the <strong>spectral radius</strong> <span class="math inline">\(\rho(A) = \max_{\lambda\in\sigma(A)}|\lambda|\)</span> is less than <span class="math inline">\(1\)</span>. (A block <span class="math inline">\(J_s(\lambda)\)</span> with <span class="math inline">\(|\lambda| &lt; 1\)</span> still decays, because <span class="math inline">\(k^{s-1}|\lambda|^k \to 0\)</span>.)</li>
+<li>More precisely, if <span class="math inline">\(\rho(A) &gt; 0\)</span>, then <span class="math inline">\(\|A^k\| \asymp k^{s-1}\rho(A)^k\)</span> as <span class="math inline">\(k\to\infty\)</span>, where <span class="math inline">\(s\)</span> is the largest block among the eigenvalues of modulus <span class="math inline">\(\rho(A)\)</span>. The limit <span class="math inline">\(\|A^k\|^{1/k} \to \rho(A)\)</span> is Gelfand’s formula.</li>
+<li>For a Markov chain <span class="math inline">\(P\)</span>, convergence to stationarity is governed by the eigenvalues with <span class="math inline">\(|\lambda| &lt; 1\)</span>. For a <em>non-reversible</em> chain, Jordan blocks contribute polynomial prefactors, and <span class="math inline">\(\kappa(S)\)</span> can produce long transients before the asymptotic rate kicks in. Reversible chains avoid both problems because <span class="math inline">\(P\)</span> is self-adjoint in <span class="math inline">\(\ell^2(\pi)\)</span> (Section 6.5).</li>
+</ul>
+</section>
+<section id="a-warning-the-jordan-form-is-unstable" class="level3">
+<h3 class="anchored" data-anchor-id="a-warning-the-jordan-form-is-unstable">5.6 A warning: the Jordan form is unstable</h3>
+<p>The Jordan form is a discontinuous function of the matrix. Let <span class="math inline">\(A_\varepsilon = J_n(0) + \varepsilon\, e_ne_1^\top\)</span>. Then <span class="math inline">\(p_{A_\varepsilon}(t) = t^n - \varepsilon\)</span>. So <span class="math inline">\(A_\varepsilon\)</span> has <span class="math inline">\(n\)</span> distinct eigenvalues <span class="math inline">\(\varepsilon^{1/n}e^{2\pi ij/n}\)</span> and is diagonalizable. For <span class="math inline">\(n = 10\)</span> and <span class="math inline">\(\varepsilon = 10^{-10}\)</span>, a perturbation of size <span class="math inline">\(10^{-10}\)</span> moves the eigenvalues by <span class="math inline">\(0.1\)</span>.</p>
+<p>Compare the Hermitian case, where Weyl’s inequality (Corollary 6.9) says eigenvalues move by at most <span class="math inline">\(\|E\|\)</span>. For diagonalizable matrices, the general statement interpolates between the two:</p>
+<p><strong>Theorem 5.6 (Bauer–Fike).</strong> If <span class="math inline">\(A = S\Lambda S^{-1}\)</span> is diagonalizable, then every eigenvalue <span class="math inline">\(\mu\)</span> of <span class="math inline">\(A + E\)</span> satisfies <span class="math display">\[
+\min_{\lambda\in\sigma(A)}|\mu - \lambda| \le \kappa(S)\,\|E\|, \qquad \kappa(S) = \|S\|\,\|S^{-1}\|.
+\]</span></p>
+<p><em>Proof.</em> Assume <span class="math inline">\(\mu \notin \sigma(A)\)</span> and let <span class="math inline">\((A + E)v = \mu v\)</span> with <span class="math inline">\(v \ne 0\)</span>. Then <span class="math display">\[
+v = -(A - \mu I)^{-1}Ev = -S(\Lambda - \mu I)^{-1}S^{-1}Ev.
+\]</span> Taking norms, <span class="math inline">\(1 \le \kappa(S)\,\|E\| \,/\min_\lambda|\lambda - \mu|\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+<p>For normal matrices <span class="math inline">\(S\)</span> is unitary, so <span class="math inline">\(\kappa(S) = 1\)</span>. In practice, one therefore works with the Schur form, singular values, or pseudospectra (Trefethen &amp; Embree) rather than the Jordan form. The Jordan form remains the right <em>theoretical</em> description of what <span class="math inline">\(A\)</span> does.</p>
+<hr>
+</section>
+</section>
+<section id="the-spectral-theorem-for-self-adjoint-operators" class="level2">
+<h2 class="anchored" data-anchor-id="the-spectral-theorem-for-self-adjoint-operators">6. The spectral theorem for self-adjoint operators</h2>
+<p>Throughout this section, <span class="math inline">\(V\)</span> is a finite-dimensional inner product space over <span class="math inline">\(\mathbb{F}\)</span> with <span class="math inline">\(n = \dim V \ge 1\)</span>, and <span class="math inline">\(A : V \to V\)</span> is linear.</p>
+<p>Corollary 4.3 already gives the spectral theorem as a consequence of the Schur decomposition. Here we prove it again from scratch, variationally. This proof does not use the fundamental theorem of algebra, it produces the Rayleigh-quotient characterization of eigenvalues on which the rest of the course depends, and it is the proof that generalizes to compact operators in Part II.</p>
+<section id="two-elementary-facts" class="level3">
+<h3 class="anchored" data-anchor-id="two-elementary-facts">6.1 Two elementary facts</h3>
+<p><strong>Lemma 6.1.</strong> Let <span class="math inline">\(A\)</span> be self-adjoint.</p>
+<ol type="1">
+<li><span class="math inline">\(\langle Ax, x\rangle \in \mathbb{R}\)</span> for every <span class="math inline">\(x\)</span>.</li>
+<li>Every eigenvalue of <span class="math inline">\(A\)</span> is real.</li>
+<li>Eigenvectors belonging to distinct eigenvalues are orthogonal.</li>
+<li>If <span class="math inline">\(W\)</span> is a subspace with <span class="math inline">\(A W \subseteq W\)</span>, then <span class="math inline">\(A W^\perp \subseteq W^\perp\)</span>.</li>
+</ol>
+<p><em>Proof.</em> (1) <span class="math inline">\(\langle Ax, x\rangle = \langle x, Ax\rangle = \overline{\langle Ax, x\rangle}\)</span>. (2) If <span class="math inline">\(Ax = \lambda x\)</span> with <span class="math inline">\(x \ne 0\)</span>, then <span class="math inline">\(\lambda \|x\|^2 = \langle Ax, x\rangle \in \mathbb{R}\)</span>. (3) If <span class="math inline">\(Ax = \lambda x\)</span> and <span class="math inline">\(Ay = \mu y\)</span> with <span class="math inline">\(\lambda \ne \mu\)</span> (both real by (2)), then <span class="math inline">\(\lambda\langle x, y\rangle = \langle Ax, y\rangle = \langle x, Ay\rangle = \mu \langle x, y\rangle\)</span>, so <span class="math inline">\(\langle x, y\rangle = 0\)</span>. (4) If <span class="math inline">\(y \in W^\perp\)</span> and <span class="math inline">\(w \in W\)</span>, then <span class="math inline">\(\langle Ay, w\rangle = \langle y, Aw\rangle = 0\)</span> because <span class="math inline">\(Aw \in W\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+</section>
+<section id="statement" class="level3">
+<h3 class="anchored" data-anchor-id="statement">6.2 Statement</h3>
+<p><strong>Theorem 6.2 (Spectral theorem, finite dimensions).</strong> Let <span class="math inline">\(A : V \to V\)</span> be self-adjoint. Then there is an orthonormal basis <span class="math inline">\(v_1, \dots, v_n\)</span> of <span class="math inline">\(V\)</span> consisting of eigenvectors of <span class="math inline">\(A\)</span>, with real eigenvalues <span class="math inline">\(\lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_n\)</span>. Equivalently:</p>
+<ul>
+<li><strong>(Matrix form)</strong> If <span class="math inline">\(A \in \mathbb{F}^{n\times n}\)</span> is Hermitian (real symmetric when <span class="math inline">\(\mathbb{F} = \mathbb{R}\)</span>), then <span class="math inline">\(A = Q \Lambda Q^*\)</span>, where <span class="math inline">\(Q\)</span> is unitary (real orthogonal when <span class="math inline">\(\mathbb{F}=\mathbb{R}\)</span>) with columns <span class="math inline">\(v_i\)</span> and <span class="math inline">\(\Lambda = \operatorname{diag}(\lambda_1, \dots, \lambda_n)\)</span>.</li>
+<li><strong>(Spectral decomposition)</strong> <span class="math inline">\(A = \sum_{i=1}^n \lambda_i\, v_i v_i^*\)</span>. Grouping equal eigenvalues, <span class="math inline">\(A = \sum_{\lambda \in \sigma(A)} \lambda P_\lambda\)</span>, where <span class="math inline">\(P_\lambda\)</span> is the orthogonal projection onto the eigenspace <span class="math inline">\(\ker(A - \lambda I)\)</span>. These projections are mutually orthogonal and sum to <span class="math inline">\(I\)</span>.</li>
+</ul>
+<p>Note that the real case does not follow from the complex case by a formality: we need the eigenvectors of a real symmetric matrix to be real. The proof below works verbatim over either field.</p>
+</section>
+<section id="proof" class="level3">
+<h3 class="anchored" data-anchor-id="proof">6.3 Proof</h3>
+<p>The proof is variational. It never mentions the characteristic polynomial and so does not need the fundamental theorem of algebra. This is the version that generalizes to infinite dimensions.</p>
+<p><strong>Lemma 6.3 (Top eigenvector via the Rayleigh quotient).</strong> Let <span class="math inline">\(A\)</span> be self-adjoint on <span class="math inline">\(V \ne \{0\}\)</span>. The function <span class="math inline">\(x \mapsto \langle Ax, x\rangle\)</span> attains its maximum over the unit sphere <span class="math inline">\(S = \{x : \|x\| = 1\}\)</span>. Any maximizer <span class="math inline">\(x_\star\)</span> is an eigenvector of <span class="math inline">\(A\)</span> with eigenvalue <span class="math inline">\(\lambda_\star = \langle Ax_\star, x_\star\rangle = \max_{x \ne 0} R_A(x)\)</span>.</p>
+<p><em>Proof.</em> Choosing an orthonormal basis identifies <span class="math inline">\(V\)</span> isometrically with <span class="math inline">\(\mathbb{F}^n\)</span>. The unit sphere is therefore closed and bounded, hence compact. The map <span class="math inline">\(x \mapsto \langle Ax, x\rangle\)</span> is continuous and real-valued (Lemma 6.1), so it attains a maximum <span class="math inline">\(\lambda_\star\)</span> at some <span class="math inline">\(x_\star \in S\)</span>.</p>
+<p>Fix any <span class="math inline">\(y \perp x_\star\)</span> and a scalar <span class="math inline">\(s \in \mathbb{F}\)</span>. For real <span class="math inline">\(t\)</span>, set <span class="math inline">\(u(t) = x_\star + t s y\)</span>. Then <span class="math inline">\(\|u(t)\|^2 = 1 + t^2 |s|^2 \|y\|^2\)</span>, and by maximality <span class="math inline">\(\langle A u(t), u(t)\rangle \le \lambda_\star \|u(t)\|^2\)</span>. Expanding both sides: <span class="math display">\[
+\lambda_\star + 2t\,\mathrm{Re}\big(\bar s\,\langle A x_\star, y\rangle\big) + t^2 |s|^2 \langle Ay, y\rangle \;\le\; \lambda_\star + t^2 \lambda_\star |s|^2 \|y\|^2 .
+\]</span> Here we used <span class="math inline">\(\langle Ay, x_\star\rangle = \overline{\langle Ax_\star, y\rangle}\)</span>. Cancel <span class="math inline">\(\lambda_\star\)</span>, divide by <span class="math inline">\(t\)</span>, and let <span class="math inline">\(t \to 0^+\)</span> and <span class="math inline">\(t \to 0^-\)</span>. This gives <span class="math inline">\(\mathrm{Re}(\bar s \langle Ax_\star, y\rangle) = 0\)</span>. Taking <span class="math inline">\(s = 1\)</span> (and also <span class="math inline">\(s = i\)</span> in the complex case) yields <span class="math inline">\(\langle Ax_\star, y\rangle = 0\)</span>.</p>
+<p>So <span class="math inline">\(Ax_\star \perp \{x_\star\}^\perp\)</span>, which means <span class="math inline">\(Ax_\star \in \operatorname{span}\{x_\star\}\)</span>. Write <span class="math inline">\(Ax_\star = \mu x_\star\)</span>. Then <span class="math inline">\(\mu = \langle Ax_\star, x_\star\rangle = \lambda_\star\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+<p><em>Proof of Theorem 6.2.</em> Induct on <span class="math inline">\(n = \dim V\)</span>. If <span class="math inline">\(n = 1\)</span>, any unit vector works. For <span class="math inline">\(n &gt; 1\)</span>, Lemma 6.3 gives a unit eigenvector <span class="math inline">\(v_1\)</span> with eigenvalue <span class="math inline">\(\lambda_1 = \max R_A\)</span>. The line <span class="math inline">\(W = \operatorname{span}\{v_1\}\)</span> is <span class="math inline">\(A\)</span>-invariant, so by Lemma 6.1(4), <span class="math inline">\(W^\perp\)</span> is <span class="math inline">\(A\)</span>-invariant too. The restriction <span class="math inline">\(A|_{W^\perp}\)</span> is self-adjoint on the <span class="math inline">\((n-1)\)</span>-dimensional inner product space <span class="math inline">\(W^\perp\)</span>. By induction it has an orthonormal eigenbasis <span class="math inline">\(v_2, \dots, v_n\)</span> of <span class="math inline">\(W^\perp\)</span> with eigenvalues <span class="math inline">\(\lambda_2 \ge \dots \ge \lambda_n\)</span>. Each <span class="math inline">\(\lambda_j\)</span> with <span class="math inline">\(j \ge 2\)</span> is a value of <span class="math inline">\(R_A\)</span>, so <span class="math inline">\(\lambda_j \le \lambda_1\)</span>. Then <span class="math inline">\(v_1, \dots, v_n\)</span> is the required basis.</p>
+<p>For the matrix form, let <span class="math inline">\(Q = [v_1 \cdots v_n]\)</span>. Then <span class="math inline">\(Q^*Q = I\)</span> and <span class="math inline">\(AQ = Q\Lambda\)</span>. For the spectral decomposition, expand <span class="math inline">\(x = \sum_i \langle x, v_i\rangle v_i\)</span> and apply <span class="math inline">\(A\)</span>: <span class="math inline">\(Ax = \sum_i \lambda_i \langle x, v_i\rangle v_i = \big(\sum_i \lambda_i v_i v_i^*\big) x\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+<p><strong>Remark 6.4.</strong> The same proof shows that <span class="math inline">\(\lambda_1 = \max_{\|x\|=1} \langle Ax, x\rangle\)</span> and <span class="math inline">\(\lambda_n = \min_{\|x\|=1} \langle Ax, x\rangle\)</span>. Part II (Section 7) replaces the compactness of the unit sphere, which fails in infinite dimensions, with the compactness of the <em>operator</em>.</p>
+<p><strong>Remark 6.5 (Beyond self-adjoint).</strong> By Theorem 4.2, a complex matrix is unitarily diagonalizable iff it is normal. Non-normal matrices may fail to be diagonalizable at all (Section 5). Even when they are diagonalizable, their eigenvalues can be highly sensitive to perturbation (Section 5.6). Directed graphs and non-reversible Markov chains produce such matrices, and there pseudospectra are often the better tool (Trefethen &amp; Embree).</p>
+</section>
+<section id="consequences" class="level3">
+<h3 class="anchored" data-anchor-id="consequences">6.4 Consequences</h3>
+<p>Throughout, <span class="math inline">\(A\)</span> is self-adjoint with eigenpairs <span class="math inline">\((\lambda_i, v_i)\)</span> as in Theorem 6.2, <span class="math inline">\(\lambda_1 \ge \dots \ge \lambda_n\)</span>.</p>
+<p><strong>Corollary 6.6 (Functional calculus).</strong> For any function <span class="math inline">\(f : \mathbb{R} \to \mathbb{F}\)</span>, define <span class="math inline">\(f(A) = \sum_i f(\lambda_i) v_i v_i^*\)</span>. This agrees with the obvious definition when <span class="math inline">\(f\)</span> is a polynomial, so, for example, <span class="math inline">\(A^k = \sum_i \lambda_i^k v_i v_i^*\)</span>. Standard instances:</p>
+<ul>
+<li>the heat kernel <span class="math inline">\(e^{-tL}\)</span>;</li>
+<li>the pseudoinverse <span class="math inline">\(L^{+} = \sum_{\lambda_i \ne 0} \lambda_i^{-1} v_i v_i^*\)</span>;</li>
+<li>the square root <span class="math inline">\(A^{1/2}\)</span> for <span class="math inline">\(A \succeq 0\)</span>;</li>
+<li>spectral projections <span class="math inline">\(\mathbf{1}_{[a,b]}(A)\)</span>.</li>
+</ul>
+<p><strong>Corollary 6.7 (Quantities read off the spectrum).</strong></p>
+<ul>
+<li><span class="math inline">\(\operatorname{tr} A = \sum_i \lambda_i\)</span> and <span class="math inline">\(\det A = \prod_i \lambda_i\)</span>.</li>
+<li><span class="math inline">\(\|A\|_{\mathrm{op}} = \max_i |\lambda_i|\)</span> and <span class="math inline">\(\|A\|_F^2 = \sum_i \lambda_i^2\)</span>.</li>
+<li><span class="math inline">\(A \succeq 0\)</span> iff all <span class="math inline">\(\lambda_i \ge 0\)</span> iff <span class="math inline">\(A = B^*B\)</span> for some <span class="math inline">\(B\)</span>.</li>
+<li><span class="math inline">\(\operatorname{rank} A\)</span> is the number of nonzero <span class="math inline">\(\lambda_i\)</span>.</li>
+<li><span class="math inline">\(\ker A\)</span> and <span class="math inline">\(\operatorname{range} A\)</span> are orthogonal complements, spanned by the eigenvectors with zero and nonzero eigenvalues respectively.</li>
+</ul>
+<p><strong>Theorem 6.8 (Courant–Fischer min–max).</strong> For <span class="math inline">\(k = 1, \dots, n\)</span>, <span class="math display">\[
+\lambda_k \;=\; \max_{\substack{S \subseteq V\\ \dim S = k}} \; \min_{x \in S\setminus\{0\}} R_A(x) \;=\; \min_{\substack{T \subseteq V\\ \dim T = n-k+1}} \; \max_{x \in T\setminus\{0\}} R_A(x).
+\]</span></p>
+<p><em>Proof.</em> We prove the max–min formula; the min–max formula follows by applying it to <span class="math inline">\(-A\)</span>.</p>
+<p>In eigenvector coordinates, <span class="math inline">\(x = \sum_i c_i v_i\)</span> and <span class="math inline">\(R_A(x) = \sum_i \lambda_i |c_i|^2 / \sum_i |c_i|^2\)</span>, a weighted average of the eigenvalues.</p>
+<p>(<span class="math inline">\(\ge\)</span>) Take <span class="math inline">\(S = \operatorname{span}\{v_1, \dots, v_k\}\)</span>. Every <span class="math inline">\(x \in S\)</span> is an average of <span class="math inline">\(\lambda_1, \dots, \lambda_k\)</span>, so <span class="math inline">\(R_A(x) \ge \lambda_k\)</span>.</p>
+<p>(<span class="math inline">\(\le\)</span>) Let <span class="math inline">\(S\)</span> be any <span class="math inline">\(k\)</span>-dimensional subspace and <span class="math inline">\(U = \operatorname{span}\{v_k, \dots, v_n\}\)</span>, which has dimension <span class="math inline">\(n - k + 1\)</span>. Since <span class="math inline">\(\dim S + \dim U = n+1 &gt; n\)</span>, there is a nonzero <span class="math inline">\(x \in S \cap U\)</span>. For this <span class="math inline">\(x\)</span>, <span class="math inline">\(R_A(x)\)</span> is an average of <span class="math inline">\(\lambda_k, \dots, \lambda_n\)</span>, so <span class="math inline">\(R_A(x) \le \lambda_k\)</span>. Hence <span class="math inline">\(\min_{S} R_A \le \lambda_k\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+<p><strong>Example.</strong> For a graph Laplacian <span class="math inline">\(L\)</span> with eigenvalues <span class="math inline">\(0 = \mu_1 \le \mu_2 \le \dots \le \mu_n\)</span>, the <em>min</em>-version gives <span class="math inline">\(\mu_2 = \min_{x \perp \mathbf{1},\, x \ne 0} \dfrac{\sum_{(u,v)\in E} w_{uv}(x_u - x_v)^2}{\sum_u x_u^2}\)</span>. This is the starting point for Cheeger’s inequality and spectral partitioning.</p>
+<p><strong>Corollary 6.9 (Weyl’s perturbation inequality).</strong> If <span class="math inline">\(A, B\)</span> are self-adjoint with eigenvalues <span class="math inline">\(\lambda_1(\cdot) \ge \dots \ge \lambda_n(\cdot)\)</span>, then for every <span class="math inline">\(k\)</span>, <span class="math display">\[
+|\lambda_k(A) - \lambda_k(B)| \le \|A - B\|_{\mathrm{op}}.
+\]</span></p>
+<p><em>Proof.</em> For every <span class="math inline">\(x \ne 0\)</span>, <span class="math inline">\(R_A(x) = R_B(x) + R_{A-B}(x) \le R_B(x) + \|A-B\|_{\mathrm{op}}\)</span>. Take max–min over <span class="math inline">\(S\)</span> in Theorem 6.8 to get <span class="math inline">\(\lambda_k(A) \le \lambda_k(B) + \|A-B\|_{\mathrm{op}}\)</span>. Swap <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> for the other direction. <span class="math inline">\(\blacksquare\)</span></p>
+<p>Weyl’s inequality controls eigen<em>values</em>. Eigen<em>vectors</em> are controlled only relative to the gap separating their eigenvalue from the rest of the spectrum (Davis–Kahan <span class="math inline">\(\sin\Theta\)</span> theorem; see the separate supplement). We will return to this when analyzing spectral clustering.</p>
+</section>
+<section id="self-adjointness-for-a-weighted-inner-product" class="level3">
+<h3 class="anchored" data-anchor-id="self-adjointness-for-a-weighted-inner-product">6.5 Self-adjointness for a weighted inner product</h3>
+<p>Theorem 6.2 is stated for an abstract inner product space. Nothing in it refers to the standard inner product on <span class="math inline">\(\mathbb{F}^n\)</span>. This matters because several natural graph matrices are not symmetric, yet are self-adjoint for a <em>different</em> inner product.</p>
+<p>Let <span class="math inline">\(M \in \mathbb{F}^{n\times n}\)</span> be positive definite (<span class="math inline">\(M = M^*\)</span> and <span class="math inline">\(M \succ 0\)</span>). Then <span class="math inline">\(\langle x, y\rangle_M = y^* M x\)</span> is an inner product on <span class="math inline">\(\mathbb{F}^n\)</span>. The adjoint of <span class="math inline">\(B\)</span> with respect to it is <span class="math inline">\(M^{-1}B^*M\)</span>, because <span class="math display">\[
+\langle Bx, y\rangle_M = y^* M B x = (M^{-1} B^* M y)^* M x = \langle x, M^{-1}B^*My\rangle_M .
+\]</span></p>
+<p><strong>Proposition 6.10.</strong> Let <span class="math inline">\(M \succ 0\)</span> and <span class="math inline">\(B \in \mathbb{F}^{n\times n}\)</span>. The following are equivalent:</p>
+<ol type="1">
+<li><span class="math inline">\(B\)</span> is self-adjoint with respect to <span class="math inline">\(\langle\cdot,\cdot\rangle_M\)</span>;</li>
+<li><span class="math inline">\(MB\)</span> is self-adjoint (Hermitian) in the usual sense;</li>
+<li><span class="math inline">\(M^{1/2} B M^{-1/2}\)</span> is self-adjoint in the usual sense.</li>
+</ol>
+<p>When they hold, <span class="math inline">\(B\)</span> has real eigenvalues <span class="math inline">\(\lambda_1 \ge \dots \ge \lambda_n\)</span>, and there is a basis of eigenvectors that is orthonormal for <span class="math inline">\(\langle\cdot,\cdot\rangle_M\)</span>. Explicitly, if <span class="math inline">\(u_1, \dots, u_n\)</span> is an orthonormal eigenbasis of <span class="math inline">\(M^{1/2}BM^{-1/2}\)</span>, then <span class="math inline">\(v_i = M^{-1/2}u_i\)</span> satisfies <span class="math inline">\(Bv_i = \lambda_i v_i\)</span> and <span class="math inline">\(v_i^* M v_j = \delta_{ij}\)</span>. Courant–Fischer (Theorem 6.8) holds with the Rayleigh quotient <span class="math display">\[
+R^M_B(x) = \frac{\langle Bx, x\rangle_M}{\langle x, x\rangle_M} = \frac{x^* MB\, x}{x^* M x}.
+\]</span></p>
+<p><em>Proof.</em></p>
+<ul>
+<li>(1)⇔(2): (1) says <span class="math inline">\(M^{-1}B^*M = B\)</span>, i.e., <span class="math inline">\(B^*M = MB\)</span>. Since <span class="math inline">\((MB)^* = B^*M\)</span>, this is exactly (2).</li>
+<li>(2)⇔(3): <span class="math inline">\(M^{1/2}BM^{-1/2} = M^{-1/2}(MB)M^{-1/2}\)</span>. A congruence by the invertible Hermitian matrix <span class="math inline">\(M^{-1/2}\)</span> preserves being Hermitian, and so does its inverse.</li>
+<li>The spectral statements: apply Theorem 6.2 to <span class="math inline">\(C = M^{1/2}BM^{-1/2}\)</span>. From <span class="math inline">\(Cu_i = \lambda_i u_i\)</span> we get <span class="math inline">\(B(M^{-1/2}u_i) = \lambda_i M^{-1/2}u_i\)</span>, and <span class="math inline">\(v_i^*Mv_j = u_i^* u_j = \delta_{ij}\)</span>. Alternatively, apply Theorem 6.2 directly to the inner product space <span class="math inline">\((\mathbb{F}^n, \langle\cdot,\cdot\rangle_M)\)</span>. <span class="math inline">\(\blacksquare\)</span></li>
+</ul>
+<p>Conceptually, <span class="math inline">\(U = M^{1/2}\)</span> is an isometry from <span class="math inline">\((\mathbb{F}^n, \langle\cdot,\cdot\rangle_M)\)</span> onto <span class="math inline">\((\mathbb{F}^n, \langle\cdot,\cdot\rangle)\)</span>, since <span class="math inline">\(\langle Ux, Uy\rangle = y^*Mx = \langle x, y\rangle_M\)</span>. The operator <span class="math inline">\(B\)</span> in the first picture corresponds to <span class="math inline">\(UBU^{-1} = M^{1/2}BM^{-1/2}\)</span> in the second. Isometries preserve adjoints, so <span class="math inline">\(B\)</span> is self-adjoint in one picture iff it is in the other. Proposition 6.10 is this observation written in coordinates.</p>
+<p><strong>Application: the random-walk and normalized Laplacians.</strong> Let <span class="math inline">\(G\)</span> be a weighted graph with no isolated vertices, so <span class="math inline">\(D \succ 0\)</span>. Define the <strong>degree inner product</strong> <span class="math inline">\(\langle x, y\rangle_D = \sum_u d_u\, x_u \bar y_u\)</span>, and the <strong>random-walk Laplacian</strong> <span class="math display">\[
+L_{\mathrm{rw}} = D^{-1}L = I - D^{-1}A.
+\]</span> In the analysis-on-graphs convention, this is simply “the Laplacian”: <span class="math inline">\((L_{\mathrm{rw}} f)(u) = f(u) - \frac{1}{d_u}\sum_v w_{uv} f(v)\)</span>. Apply Proposition 6.10 with <span class="math inline">\(M = D\)</span> and <span class="math inline">\(B = L_{\mathrm{rw}}\)</span>:</p>
+<ul>
+<li><span class="math inline">\(D L_{\mathrm{rw}} = L\)</span>, which is symmetric, so condition (2) holds. <strong>So <span class="math inline">\(L_{\mathrm{rw}}\)</span> is self-adjoint for <span class="math inline">\(\langle\cdot,\cdot\rangle_D\)</span>.</strong></li>
+<li><span class="math inline">\(D^{1/2} L_{\mathrm{rw}} D^{-1/2} = D^{-1/2} L D^{-1/2} = \mathcal{L}\)</span>. So condition (3) is precisely <strong>the symmetry of the normalized Laplacian in the standard inner product.</strong></li>
+</ul>
+<p>Thus the statements “<span class="math inline">\(L_{\mathrm{rw}}\)</span> is self-adjoint on <span class="math inline">\((\mathbb{R}^V, \langle\cdot,\cdot\rangle_D)\)</span>” and “<span class="math inline">\(\mathcal{L}\)</span> is symmetric on <span class="math inline">\((\mathbb{R}^V, \langle\cdot,\cdot\rangle)\)</span>” are the same fact, seen through the isometry <span class="math inline">\(x \mapsto D^{1/2}x\)</span>. Consequences:</p>
+<ul>
+<li><p><span class="math inline">\(L_{\mathrm{rw}}\)</span> and <span class="math inline">\(\mathcal{L}\)</span> have the same (real) eigenvalues.</p></li>
+<li><p>The eigenvectors are related by <span class="math inline">\(v = D^{-1/2}u\)</span>, and the eigenvectors of <span class="math inline">\(L_{\mathrm{rw}}\)</span> are <span class="math inline">\(D\)</span>-orthogonal.</p></li>
+<li><p>Equivalently, the <span class="math inline">\(v_i\)</span> solve the <strong>generalized eigenproblem</strong> <span class="math inline">\(Lv = \lambda Dv\)</span>.</p></li>
+<li><p>The Rayleigh quotient becomes <span class="math display">\[
+R^D_{L_{\mathrm{rw}}}(x) = \frac{x^\top L x}{x^\top D x} = \frac{\sum_{\{u,v\}\in E} w_{uv}(x_u - x_v)^2}{\sum_u d_u x_u^2}.
+\]</span> This is the form that appears in Cheeger’s inequality. The constant vector <span class="math inline">\(\mathbf 1\)</span> spans the bottom eigenspace for a connected graph, and “orthogonal to <span class="math inline">\(\mathbf 1\)</span>” now means <span class="math inline">\(\langle x, \mathbf 1\rangle_D = \sum_u d_u x_u = 0\)</span>.</p></li>
+<li><p>The same holds for <span class="math inline">\(P = D^{-1}A = I - L_{\mathrm{rw}}\)</span>. Since the stationary distribution of the random walk is <span class="math inline">\(\pi_u = d_u / \sum_v d_v\)</span>, <span class="math inline">\(P\)</span> is self-adjoint on <span class="math inline">\(\ell^2(\pi)\)</span>. More generally, a Markov chain is <strong>reversible</strong> iff its transition matrix is self-adjoint on <span class="math inline">\(\ell^2(\pi)\)</span>.</p></li>
+</ul>
+<p>Which picture to use is a matter of convenience. <span class="math inline">\(\mathcal{L}\)</span> is convenient for computation and for applying matrix inequalities stated for symmetric matrices. <span class="math inline">\(L_{\mathrm{rw}}\)</span> with <span class="math inline">\(\langle\cdot,\cdot\rangle_D\)</span> is convenient for interpretation, because its eigenvectors are functions on the vertices, not reweighted ones. This is also the version that generalizes to infinite graphs and to manifolds, via <span class="math inline">\(\ell^2(V, d)\)</span> and <span class="math inline">\(L^2(\mu)\)</span>.</p>
+<hr>
+</section>
+</section>
+<section id="exercises" class="level2">
+<h2 class="anchored" data-anchor-id="exercises">7. Exercises</h2>
+<ol type="1">
+<li>Show that a real matrix that is diagonalizable by a real orthogonal matrix must be symmetric. Conclude that Theorem 6.2 characterizes real symmetric matrices.</li>
+<li>Prove the min–max half of Theorem 6.8 directly, without passing to <span class="math inline">\(-A\)</span>.</li>
+<li>Let <span class="math inline">\(A \succeq 0\)</span>. Show that <span class="math inline">\(A\)</span> has a unique PSD square root. <em>(Hint: any PSD square root commutes with <span class="math inline">\(A\)</span>, so it preserves each eigenspace of <span class="math inline">\(A\)</span>.)</em></li>
+<li>Using Section 6.5, prove that the random-walk matrix <span class="math inline">\(P = D^{-1}A\)</span> of a connected graph has eigenvalues in <span class="math inline">\([-1,1]\)</span>, that <span class="math inline">\(1\)</span> is a simple eigenvalue, and that <span class="math inline">\(-1\)</span> is an eigenvalue iff the graph is bipartite.</li>
+<li>Compute the characteristic polynomial, minimal polynomial, and Jordan form of the adjacency matrices of the directed path <span class="math inline">\(\vec P_n\)</span> and the directed cycle <span class="math inline">\(\vec C_n\)</span>. Find an eigenbasis of <span class="math inline">\(\vec C_n\)</span> over <span class="math inline">\(\mathbb{C}\)</span>.</li>
+<li>Assume <span class="math inline">\(p_A\)</span> splits. Show that <span class="math inline">\(A\)</span> is diagonalizable iff <span class="math inline">\(\ker(A - \lambda I)^2 = \ker(A - \lambda I)\)</span> for every <span class="math inline">\(\lambda \in \sigma(A)\)</span>.</li>
+<li>Show that every square matrix is similar to its transpose. <em>(Hint: <span class="math inline">\(J_s(\lambda)^\top\)</span> is similar to <span class="math inline">\(J_s(\lambda)\)</span> via the reversal permutation.)</em></li>
+<li>Show that commuting matrices <span class="math inline">\(A, B \in \mathbb{C}^{n\times n}\)</span> have a common eigenvector, and deduce that they can be simultaneously upper-triangularized by a unitary matrix.</li>
+<li>Show that <span class="math inline">\(A^k \to 0\)</span> iff <span class="math inline">\(\rho(A) &lt; 1\)</span>, and give an example where <span class="math inline">\(\rho(A) &lt; 1\)</span> but <span class="math inline">\(\|A^k\|\)</span> first grows to <span class="math inline">\(10^6\)</span> before decaying. <em>(Hint: <span class="math inline">\(2\times 2\)</span> upper triangular.)</em></li>
+<li>Show that the number of distinct eigenvalues of the Laplacian of a connected graph is also at least <span class="math inline">\(\mathrm{diam}(G) + 1\)</span>. Compute both sides for the path <span class="math inline">\(P_n\)</span> and the complete graph <span class="math inline">\(K_n\)</span>.</li>
+</ol>
+<hr>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li>S. Axler, <em>Linear Algebra Done Right</em>. The determinant-free viewpoint of Section 6, generalized eigenspaces, and the proof of Theorem 5.3.</li>
+<li>K. Hoffman &amp; R. Kunze, <em>Linear Algebra</em>. Minimal polynomials and the primary decomposition (Section 3).</li>
+<li>R. Horn &amp; C. Johnson, <em>Matrix Analysis</em>. Schur, Jordan, Courant–Fischer, Weyl, Bauer–Fike, and much more.</li>
+<li>A. E. Brouwer &amp; W. H. Haemers, <em>Spectra of Graphs</em>. Includes the diameter bound of Section 3.4.</li>
+<li>L. N. Trefethen &amp; M. Embree, <em>Spectra and Pseudospectra</em>. The non-normal case (Section 5.6, Remark 6.5).</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/lorecchia\.github\.io\/cmsc35410");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/notes/la-review-part1.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

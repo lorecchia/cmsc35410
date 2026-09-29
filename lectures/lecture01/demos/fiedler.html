@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spectral clustering with the Fiedler vector</title>
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="controls">
+    <label>bridge edges <input type="range" id="nb" min="1" max="12" step="1" value="2"><span class="val" id="nbVal"></span></label>
+    <label>bridge weight <input type="range" id="bw" min="0.05" max="2" step="0.05" value="0.5"><span class="val" id="bwVal"></span></label>
+    <span class="seg" id="layoutSeg">
+      <button data-l="geo" class="on">True layout</button>
+      <button data-l="rand">Scrambled</button>
+      <button data-l="fied">Ordered by Fiedler</button>
+    </span>
+  </div>
+  <div class="panels">
+    <div class="panel">
+      <h3>Graph — colour = Fiedler vector entry</h3>
+      <svg id="graph" viewBox="0 0 480 400"></svg>
+    </div>
+    <div class="panel">
+      <h3>Sorted Fiedler vector D<sup>−1/2</sup>v<sub>2</sub> and best sweep cut</h3>
+      <svg id="vec" viewBox="0 0 480 190"></svg>
+      <h3>Smallest eigenvalues of the normalized Laplacian 𝓛</h3>
+      <svg id="spec" viewBox="0 0 480 150"></svg>
+    </div>
+  </div>
+  <div class="readout" id="readout"></div>
+</div>
+<script src="lib.js"></script>
+<script>
+const N1 = 12, N = 24;
+const rand = rng(7);
+function gauss() { return Math.sqrt(-2 * Math.log(rand() + 1e-12)) * Math.cos(2 * Math.PI * rand()); }
+const geo = [];
+for (let i = 0; i < N; i++) {
+  const cx = i < N1 ? 135 : 345;
+  geo.push([Math.max(25, Math.min(455, cx + 48 * gauss())), Math.max(25, Math.min(370, 200 + 62 * gauss()))]);
+}
+// within-cluster edges: k-nearest neighbours (k=4) inside each blob, symmetrized
+const inner = new Set();
+for (let i = 0; i < N; i++) {
+  const same = [...Array(N).keys()].filter(j => j !== i && (j < N1) === (i < N1));
+  same.sort((a, b) => Math.hypot(geo[a][0] - geo[i][0], geo[a][1] - geo[i][1]) - Math.hypot(geo[b][0] - geo[i][0], geo[b][1] - geo[i][1]));
+  same.slice(0, 4).forEach(j => inner.add(i < j ? `${i}-${j}` : `${j}-${i}`));
+}
+const innerEdges = [...inner].map(s => s.split("-").map(Number));
+// candidate bridges: pairs (left, right) ordered by distance
+const bridges = [];
+for (let i = 0; i < N1; i++) for (let j = N1; j < N; j++) bridges.push([i, j, Math.hypot(geo[i][0] - geo[j][0], geo[i][1] - geo[j][1]) + 60 * rand()]);
+bridges.sort((a, b) => a[2] - b[2]);
+const perm = [...Array(N).keys()].sort(() => rand() - 0.5);
+
+let nb = 2, bw = 0.5, layout = "geo";
+
+function analyse() {
+  const E = innerEdges.map(([i, j]) => [i, j, 1]).concat(bridges.slice(0, nb).map(([i, j]) => [i, j, bw]));
+  const A = Array.from({ length: N }, () => Array(N).fill(0));
+  E.forEach(([i, j, w]) => { A[i][j] += w; A[j][i] += w; });
+  const d = A.map(r => r.reduce((s, x) => s + x, 0));
+  const Ls = A.map((r, i) => r.map((a, j) => (i === j ? 1 : 0) - a / Math.sqrt(d[i] * d[j])));
+  const { values, vectors } = eigSym(Ls);
+  let f = vectors[1].map((v, i) => v / Math.sqrt(d[i]));
+  if (f.slice(0, N1).reduce((s, x) => s + x, 0) > 0) f = f.map(x => -x);  // left blob = blue
+  // sweep cut over the order of f
+  const order = [...Array(N).keys()].sort((a, b) => f[a] - f[b]);
+  const vol = d.reduce((s, x) => s + x, 0);
+  const inS = Array(N).fill(false);
+  let volS = 0, cut = 0, best = { phi: Infinity, t: 0 };
+  for (let t = 0; t < N - 1; t++) {
+    const u = order[t];
+    inS[u] = true; volS += d[u];
+    for (let v = 0; v < N; v++) if (A[u][v]) cut += inS[v] ? -A[u][v] : A[u][v];
+    const phi = cut / Math.min(volS, vol - volS);
+    if (phi < best.phi) best = { phi, t };
+  }
+  const side = Array(N).fill(1);
+  order.slice(0, best.t + 1).forEach(u => side[u] = 0);
+  return { E, values, f, order, best, side };
+}
+
+const gsvg = document.getElementById("graph"), vsvg = document.getElementById("vec"), ssvg = document.getElementById("spec");
+
+function positions(res) {
+  if (layout === "geo") return geo;
+  const seq = layout === "rand" ? perm : res.order;
+  const pos = Array(N);
+  seq.forEach((u, r) => {
+    const th = -Math.PI / 2 + 2 * Math.PI * r / N;
+    pos[u] = [240 + 165 * Math.cos(th), 200 + 165 * Math.sin(th)];
+  });
+  return pos;
+}
+
+function render() {
+  const res = analyse(), pos = positions(res);
+  const fmax = Math.max(...res.f.map(Math.abs));
+  // graph
+  gsvg.innerHTML = "";
+  res.E.forEach(([i, j, w]) => {
+    const cross = res.side[i] !== res.side[j];
+    el("line", { x1: pos[i][0], y1: pos[i][1], x2: pos[j][0], y2: pos[j][1],
+      stroke: cross ? "#1c1b19" : "#b8b3a9", "stroke-width": cross ? 1 + 1.5 * w : 1.2,
+      "stroke-dasharray": cross ? "5 3" : "" }, gsvg);
+  });
+  pos.forEach(([x, y], i) => el("circle", { cx: x, cy: y, r: 10, fill: diverging(res.f[i] / fmax), stroke: "#57534e", "stroke-width": 1 }, gsvg));
+  el("text", { x: 10, y: 392, class: "tick" }, gsvg).textContent = "dashed dark edges are cut by the best sweep threshold";
+
+  // sorted vector
+  vsvg.innerHTML = "";
+  const x0 = 40, w = 430, y0 = 95, h = 70;
+  el("line", { x1: x0, x2: x0 + w, y1: y0, y2: y0, class: "axis" }, vsvg);
+  const X = r => x0 + (r + 0.5) / N * w, Y = v => y0 - v / fmax * h;
+  const tx = (X(res.best.t) + X(res.best.t + 1)) / 2;
+  el("line", { x1: tx, x2: tx, y1: 12, y2: 178, stroke: "#1c1b19", "stroke-dasharray": "4 3" }, vsvg);
+  el("text", { x: tx + 5, y: 22, class: "tick" }, vsvg).textContent = "sweep cut";
+  res.order.forEach((u, r) => {
+    el("line", { x1: X(r), x2: X(r), y1: y0, y2: Y(res.f[u]), stroke: "#d6d3cc" }, vsvg);
+    el("circle", { cx: X(r), cy: Y(res.f[u]), r: 5, fill: diverging(res.f[u] / fmax), stroke: "#57534e" }, vsvg);
+  });
+  el("text", { x: x0 - 6, y: 16, "text-anchor": "start", class: "tick" }, vsvg).textContent = "";
+
+  // spectrum
+  ssvg.innerHTML = "";
+  const K = 8, sx0 = 40, sw = 430, sy0 = 120, sh = 95, vmax = Math.max(1.0, res.values[K - 1] * 1.1);
+  el("line", { x1: sx0, x2: sx0 + sw, y1: sy0, y2: sy0, class: "axis" }, ssvg);
+  for (let kk = 0; kk < K; kk++) {
+    const bx = sx0 + kk * sw / K + 8, bwid = sw / K - 16, v = res.values[kk];
+    el("rect", { x: bx, y: sy0 - v / vmax * sh, width: bwid, height: Math.max(v / vmax * sh, 1), rx: 2, fill: kk === 1 ? "#ea580c" : "#a8a398" }, ssvg);
+    el("text", { x: bx + bwid / 2, y: sy0 - v / vmax * sh - 4, "text-anchor": "middle", class: "tick" }, ssvg).textContent = fmt(Math.max(v, 0), 2);
+    el("text", { x: bx + bwid / 2, y: sy0 + 14, "text-anchor": "middle", class: "tick" }, ssvg).textContent = "λ" + "₁₂₃₄₅₆₇₈"[kk];
+  }
+
+  const l2 = res.values[1];
+  document.getElementById("nbVal").textContent = nb;
+  document.getElementById("bwVal").textContent = bw.toFixed(2);
+  document.getElementById("readout").innerHTML =
+    `Cheeger: &nbsp; λ₂/2 = <b>${fmt(l2 / 2)}</b> &nbsp;≤&nbsp; h(G) &nbsp;≤&nbsp; φ(sweep cut) = <b>${fmt(res.best.phi)}</b> &nbsp;≤&nbsp; √(2λ₂) = <b>${fmt(Math.sqrt(2 * l2))}</b>`;
+}
+
+document.getElementById("nb").oninput = e => { nb = +e.target.value; render(); };
+document.getElementById("bw").oninput = e => { bw = +e.target.value; render(); };
+document.querySelectorAll("#layoutSeg button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#layoutSeg button").forEach(x => x.classList.remove("on"));
+  b.classList.add("on"); layout = b.dataset.l; render();
+});
+render();
+</script>
+</body>
+</html>
