@@ -554,7 +554,7 @@ h(G) = \min_{S}\; \frac{|\partial S|}{\min\big(\mathrm{vol}(S),\, \mathrm{vol}(V
 <section id="demo-pca-on-synthetic-data" class="slide level2">
 <h2>Demo: PCA on synthetic data</h2>
 
-<img data-src="lecture1_files/figure-revealjs/cell-2-output-1.png" class="r-stretch"><aside class="notes">
+<img data-src="lecture1_files/figure-revealjs/cell-2-output-1.svg" class="r-stretch"><aside class="notes">
 <p>Blue dots sit exactly on the orange line: the reconstruction error is predicted by the discarded singular values, and nothing of rank k does better (grey = random subspace).</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -645,7 +645,7 @@ K(t,x,y) = \sum_k e^{-\lambda_k t}\,\phi_k(x)\,\phi_k(y).
 \]</span></p>
 <p>The <strong>same equation</strong> as the graph case — a finite sum becomes a discrete-but-infinite one.</p>
 <aside class="notes">
-<p>The eigenbasis comes from Theorem 4.1 in the Linear Algebra Review note, applied to the compact self-adjoint resolvent (I+Δ)⁻¹.</p>
+<p>The eigenbasis comes from Theorem 7.1 in Linear Algebra Review, Part II (see its Section 8), applied to the compact self-adjoint resolvent (I+Δ)⁻¹.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -718,7 +718,7 @@ Z(t) = \sum_k e^{-\lambda_k t} \;\sim\; (4\pi t)^{-n/2}\Big(\mathrm{Vol}(M) + \t
 <li><strong>Chebyshev collocation:</strong> global polynomial basis, error <span class="math inline">\(O(\rho^{-N})\)</span> for smooth <span class="math inline">\(u\)</span> — “spectral” convergence.</li>
 </ul>
 
-<img data-src="lecture1_files/figure-revealjs/cell-3-output-1.png" class="r-stretch"><aside class="notes">
+<img data-src="lecture1_files/figure-revealjs/cell-3-output-1.svg" class="r-stretch"><aside class="notes">
 <p>§6 ~15 min. The intended “wow”: ~20 Chebyshev points reach machine precision; finite differences with thousands of points are still around 1e-6. Mention Orr–Sommerfeld (next slide) as a name-drop.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
