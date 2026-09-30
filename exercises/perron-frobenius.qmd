@@ -1,0 +1,30 @@
+---
+title: "Exercise: The Perron–Frobenius Theorem"
+subtitle: "Recommended exercise for Lecture 1"
+description: "Prove Perron–Frobenius for irreducible non-negative matrices."
+---
+
+In class we used the Perron–Frobenius Theorem on the random-walk matrix $P = D^{-1}A$ of a connected graph $G$. $P$ is row-stochastic, and the theorem, applied to $P^\top$, gives eigenvalue $1$ with a positive left eigenvector $\pi$, so that $\pi^\top P = \pi^\top$. Normalized, $\pi$ is the stationary distribution of the random walk. In this exercise you will prove a version of the Perron–Frobenius Theorem for irreducible non-negative matrices.
+
+Prove the following theorem.
+
+**Theorem.** Let $M$ be an $n \times n$ non-negative matrix that is *irreducible*: for all $i, j \in [n]$ there is a positive integer $k$ such that $(M^k)_{ij} \neq 0$. Then there is a real number $\lambda$ such that:
+
+- **(a)** $\lambda$ is an eigenvalue of $M$;
+- **(b)** every other eigenvalue $\mu$ of $M$ satisfies $|\mu| \le \lambda$;
+- **(c)** $\lambda$ has an eigenvector $x$ that is entrywise positive;
+- **(d)** every non-negative eigenvector of $M$, for any eigenvalue, is a scalar multiple of $x$.
+
+Convince yourself that you can view an irreducible non-negative matrix as the adjacency matrix of a *directed* graph that is strongly connected. The graph may have self-loops. Strongly connected means there is a directed path from every vertex $i$ to every other vertex $j$.
+
+---
+
+**Hint 1.** Call a non-negative, nonzero vector $x \in \mathbb{R}^n$ *$\rho$-good* if $(Mx)_i \ge \rho\, x_i$ for all $i \in [n]$. Consider the largest $\rho$ for which some $\rho$-good vector exists. Suppose $x$ is $\rho$-good but not an eigenvector. Show how to use $x$ to build a vector $y$ that is $(\rho + \epsilon)$-good for some $\epsilon > 0$. This is a contradiction. Remember to use the irreducibility of $M$.
+
+**Hint 2.** Let $\rho$ be the largest value for which a $\rho$-good vector exists. Among the $\rho$-good vectors, pick an $x$ with the fewest coordinates $i$ such that $(Mx)_i = \rho\, x_i$, and call this set of coordinates $S_x$. Use the irreducibility of $M$ in its graph form. Show that you can find either a $y$ that is $(\rho + \epsilon)$-good, or a $y$ that is $\rho$-good with $|S_y| < |S_x|$.
+
+**Hint 3 (for (d)).** First show a stronger form of (c): *every* non-negative, nonzero eigenvector of $M$ is entrywise positive, whatever its eigenvalue. Look at the set of coordinates where such a vector is zero, and use irreducibility.
+
+**Hint 4 (for (d)).** Let $u \ge 0$, $u \ne 0$ with $Mu = \mu u$. Let $s$ be the largest number with $u \ge s\,x$ entrywise, and look at a coordinate where equality holds. Use it to show $\mu \ge \lambda$, then use (b) to conclude $\mu = \lambda$.
+
+**Hint 5 (for (d)).** Now $u$ and $x$ are both eigenvectors for $\lambda$. What does Hint 3 tell you about $u - s\,x$?

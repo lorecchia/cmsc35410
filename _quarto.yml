@@ -8,6 +8,7 @@ project:
     - "lectures/**/*.qmd"
     - "notes/*.qmd"
     - "homework/*.qmd"
+    - "exercises/*.qmd"
 
 website:
   title: "CMSC 35410"

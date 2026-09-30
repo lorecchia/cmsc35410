@@ -1,0 +1,62 @@
+---
+title: "Exercise: ℓ₁ Contraction for Stochastic Matrices"
+subtitle: "Recommended exercise for Lecture 1"
+description: "Stationary distributions and convergence of random walks via ℓ₁ contraction."
+---
+
+In the [Perron–Frobenius exercise](perron-frobenius.qmd), we got a stationary distribution of a random walk from the theory of non-negative matrices. This exercise takes a more probabilistic route. A stochastic matrix never increases $\ell_1$ distances, and it strictly decreases them when its entries are bounded away from zero. That fact alone is enough.
+
+**Setup.** A matrix $P \in \mathbb{R}^{n \times n}$ is *(row-)stochastic* if $P \ge 0$ entrywise and every row sums to $1$, that is, $P\mathbf 1 = \mathbf 1$. The entry $P_{ij}$ is the probability of moving from state $i$ to state $j$. A *probability distribution* is a vector in
+$$
+\Delta = \{\, p \in \mathbb{R}^n : p \ge 0,\ p^\top \mathbf 1 = 1 \,\}.
+$$
+Distributions are written as row vectors and multiply $P$ from the left. One step of the Markov chain maps $p^\top$ to $p^\top P$. A distribution $\pi$ is *stationary* if $\pi^\top P = \pi^\top$.
+
+For example, the random-walk matrix $P = D^{-1}A$ of a graph with no isolated vertices is row-stochastic.
+
+Throughout, $\|v\|_1 = \sum_i |v_i|$.
+
+---
+
+**(a) Weak contraction.** Let $P$ be stochastic. Show that
+$$
+\|v^\top P\|_1 \le \|v\|_1 \qquad \text{for every } v \in \mathbb{C}^n.
+$$
+Deduce two things:
+- $p^\top \mapsto p^\top P$ maps $\Delta$ into $\Delta$;
+- every eigenvalue $\mu$ of $P$ satisfies $|\mu| \le 1$.
+
+**(b) Existence of a stationary distribution.** Let $P$ be stochastic, and fix any $p \in \Delta$. For $T \ge 1$, consider the average
+$$
+\bar p_T^\top = \frac1T \sum_{t=0}^{T-1} p^\top P^t .
+$$
+Show that $\|\bar p_T^\top P - \bar p_T^\top\|_1 \le 2/T$. Use this to prove that $P$ has a stationary distribution $\pi \in \Delta$.
+
+**(c) Strict contraction for positive matrices.** Let $Q$ be stochastic with $Q_{ij} \ge \delta > 0$ for all $i, j$. Show that
+$$
+\|v^\top Q\|_1 \le (1 - n\delta)\, \|v\|_1 \qquad \text{for every } v \in \mathbb{R}^n \text{ with } v^\top \mathbf 1 = 0.
+$$
+
+**(d) Uniqueness for irreducible chains.** Let $P$ be stochastic and *irreducible*: for all $i, j \in [n]$ there is a positive integer $k$ such that $(P^k)_{ij} > 0$. Let
+$$
+Q = \Big(\tfrac12 (I + P)\Big)^{n-1}.
+$$
+Show that $Q$ is stochastic and entrywise positive. Conclude that $P$ has exactly one stationary distribution $\pi$, and that $\pi > 0$ entrywise.
+
+**(e) Convergence.** Let $P$ be stochastic, and suppose $P^m$ is entrywise positive for some $m \ge 1$. Let $\delta = \min_{i,j} (P^m)_{ij}$, and let $\pi$ be the stationary distribution. Show that for every $p \in \Delta$ and every $t \ge 0$,
+$$
+\|p^\top P^t - \pi^\top\|_1 \le 2\,(1 - n\delta)^{\lfloor t/m \rfloor}.
+$$
+Explain why this applies to the *lazy* chain $\tfrac12(I + P)$ of any irreducible $P$, but can fail for $P$ itself.
+
+---
+
+**Hint for (a).** Write $(v^\top P)_j = \sum_i v_i P_{ij}$. Apply the triangle inequality, then swap the order of summation. For the eigenvalues, recall that $P$ and $P^\top$ have the same eigenvalues.
+
+**Hint for (b).** Show that $\bar p_T$ lies in $\Delta$, and that $\bar p_T^\top P - \bar p_T^\top$ is a telescoping sum. For the last step, use the compactness of $\Delta$.
+
+**Hint for (c).** First explain why $n\delta \le 1$. Then write $Q = n\delta\, U + (1 - n\delta)\, R$, where $U = \frac1n \mathbf 1 \mathbf 1^\top$. Check that $R$ is stochastic when $n\delta < 1$, and compute $v^\top U$ when $v^\top \mathbf 1 = 0$.
+
+**Hint for (d).** Expand $(I + P)^{n-1}$ with the binomial theorem. In the directed graph of $P$, any vertex can reach any other by a path of length at most $n-1$. For uniqueness, apply (c) to the difference of two stationary distributions.
+
+**Hint for (e).** The vector $p - \pi$ sums to zero, and right-multiplying by a stochastic matrix keeps the sum zero. Write $t = qm + r$ with $0 \le r < m$. For the last question, consider $P = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$.

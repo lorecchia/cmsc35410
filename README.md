@@ -15,6 +15,7 @@ resources.qmd          references, software
 lectures/lectureNN/    one folder per lecture: reveal.js deck (.qmd), theme, demos/
 notes/                 lecture notes and supplements (.qmd)
 homework/              problem sets (no solutions — this repo is public)
+exercises/             recommended exercises, linked from schedule.qmd (solutions kept locally, git-ignored)
 assets/site.scss       site colours and fonts
 _freeze/               stored results of Python cells (commit this)
 ```
