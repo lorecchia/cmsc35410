@@ -7,7 +7,7 @@ Tentative and updated as the quarter goes. Slides open in presentation mode (pre
 
 ::: schedule-table
 | \# | Date | Topic | Materials | Reading | Recommended Exercises |
-|-----------|-----------|--------------------|-----------|-----------|-----------|
+|------------|------------|-------------|------------|------------|------------|
 | 1 | 9/29 | Why eigenvectors? A tour of spectral methods | [Slides](lectures/lecture01/lecture1.qmd) · demos: [PageRank](lectures/lecture01/demos/pagerank.html), [Fiedler vector](lectures/lecture01/demos/fiedler.html), [Heat diffusion](lectures/lecture01/demos/heat.html) | [LA Review I](notes/la-review-part1.qmd) |  |
 | 2 | 10/1 | Spectral Graph Theory for Undirected Graphs. Heat Kernels, Random Walks and their Convergence. |  |  |  |
 | 3 | 10/6 | Spectral Clustering and Eigenvector Perturbation |  | [Davis–Kahan](notes/davis-kahan.qmd) |  |
