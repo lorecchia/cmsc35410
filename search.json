@@ -4,7 +4,7 @@
     "href": "schedule.html",
     "title": "Schedule",
     "section": "",
-    "text": "Tentative and updated as the quarter goes. Slides open in presentation mode (press F for fullscreen, S for speaker view, E for print/PDF mode).\n\n\n\n\n#\nDate\nTopic\nMaterials\n\n\n\n\n1\nTBD\nWhy eigenvectors? A tour of spectral methods\nSlides · demos: PageRank, Fiedler vector, Heat diffusion\n\n\n2\nTBD\nLinear algebra review: the spectral theorem, Courant–Fischer, Weyl\nLA Review I\n\n\n3\nTBD\nSpectral graph theory: Laplacians and their spectra\n\n\n\n4\nTBD\nSpectral clustering and eigenvector perturbation\nDavis–Kahan\n\n\n5\nTBD\nCheeger’s inequality\n\n\n\n6\nTBD\nRandom walks and mixing\n\n\n\n…\n\n\n\n\n\n\nTBD\nInfinite dimensions: Hilbert spaces and compact operators\nLA Review II"
+    "text": "Tentative and updated as the quarter goes. Slides open in presentation mode (press F for fullscreen, S for speaker view, E for print/PDF mode).\n\n\n\n\n#\nDate\nTopic\nMaterials\nReading\nRecommended Exercises\n\n\n\n\n1\n9/29\nWhy eigenvectors? A tour of spectral methods\nSlides · demos: PageRank, Fiedler vector, Heat diffusion\nLA Review I\n\n\n\n2\n10/1\nSpectral Graph Theory for Undirected Graphs. Heat Kernels, Random Walks and their Convergence.\n\n\n\n\n\n3\n10/6\nSpectral Clustering and Eigenvector Perturbation\n\nDavis–Kahan\n\n\n\n4\n10/8\nConductance and Cheeger’s Inequality\n\n\n\n\n\n5\n10/13\nHigher-order and k-way Cheeger’s Inequalities\n\n\n\n\n\n6\n10/15\nElectrical Flows and Fast Laplacian Solvers\n\n\n\n\n\n7\n10/20\nSemidefinite Programming and MMWUs\n\n\n\n\n\n\n\n\nLA Review II"
   },
   {
     "objectID": "notes/la-review-part2.html",
