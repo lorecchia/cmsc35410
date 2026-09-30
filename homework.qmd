@@ -1,9 +1,0 @@
----
-title: "Homework"
-toc: false
----
-
-Problem sets will be posted here. [None posted yet.]{.tbd}
-
-<!-- To post a problem set: add homework/hw1.qmd (or a PDF in homework/) and link it below.
-     Keep solutions OUT of this public repo. -->

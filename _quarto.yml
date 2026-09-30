@@ -7,7 +7,6 @@ project:
     - "*.qmd"
     - "lectures/**/*.qmd"
     - "notes/*.qmd"
-    - "homework/*.qmd"
     - "exercises/*.qmd"
 
 website:
@@ -25,8 +24,6 @@ website:
         text: Schedule
       - href: notes.qmd
         text: Notes
-      - href: homework.qmd
-        text: Homework
       - href: resources.qmd
         text: Resources
     right:
