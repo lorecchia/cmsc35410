@@ -1,0 +1,430 @@
+---
+title: "Random Walks and Their Convergence"
+subtitle: "Graphs as differential operators, mixing, canonical paths"
+description: "Notes for Lecture 2 (10/1), with full proofs."
+order: 4
+---
+
+This lecture turns Lecture 1's qualitative picture ("the Fiedler vector is the last non-uniform heat left") into theorems. We (1) derive the graph matrices as discrete $-\operatorname{div}\nabla$, (2) set up the random walk as a semigroup with generator $D^{-1}L$ and make precise the duality between measures and functions, (3) define the distances we use to measure convergence and the mixing time, (4) prove that the spectral gap controls $\chi^2$ decay, (5) derive what this says about $\ell_1$ and entropy, and (6) compute upper and lower bounds on the gap for the cycle, grid and binary tree via test functions and canonical paths, then compare against the true mixing times.
+
+**Conventions (as in Lecture 1).** $P = D^{-1}A$ is row-stochastic; probability distributions are row vectors acting from the left ($\mu^\top P$); functions are column vectors acted on from the right ($Pf$). Sign convention: we work with the **positive** operator $L_{rw} = D^{-1}L \succeq 0$, matching $\Delta = -\operatorname{div}\nabla \succeq 0$ from Lecture 1. The Markov-process literature calls $\mathcal A = -L_{rw} = P - I$ "the generator"; we flag the sign wherever it matters.
+
+**Running notation.**
+
+| Symbol | Meaning |
+|---|---|
+| $G=(V,E,w)$ | connected, undirected, weighted graph, $n=\lvert V\rvert$, $w_{ij}=w_{ji}>0$ for $\{i,j\}\in E$ |
+| $d_i = \sum_j w_{ij}$, $\ \mathrm{vol}(S)=\sum_{i\in S} d_i$ | degrees and volume |
+| $\pi_i = d_i/\mathrm{vol}(V)$, $\ \Pi = \operatorname{diag}(\pi)$ | stationary distribution |
+| $L = D-A$, $\ L_{rw} = D^{-1}L = I-P$, $\ \mathcal L = D^{-1/2}LD^{-1/2}$ | Laplacian, random-walk Laplacian, normalized Laplacian |
+| $\langle f,g\rangle_\pi = \sum_i \pi_i f_i g_i$ | inner product on functions, $L^2(\pi)$ |
+| $\mathcal E(f,g) = \langle f, L_{rw} g\rangle_\pi = \frac{1}{\mathrm{vol}(V)}\sum_{\{i,j\}\in E} w_{ij}(f_i-f_j)(g_i-g_j)$ | Dirichlet form |
+| $0=\lambda_1<\lambda_2\le\dots\le\lambda_n\le 2$ | eigenvalues of $L_{rw}$ (same as $\mathcal L$) |
+| $\lambda := \lambda_2(L_{rw})$ | **spectral gap** |
+| $H_t = e^{-tL_{rw}}$ | heat semigroup (continuous-time walk) |
+
+---
+
+## 1. Graph matrices as differential operators
+
+Lecture 1 §5 put two heat equations side by side: $\dot u = -Lu$ on a graph and $\partial_t u = -\Delta u$ on a manifold, with $\Delta = -\operatorname{div}\operatorname{grad}$. Today we make that analogy literal: each graph matrix *is* $-\operatorname{div}\circ\operatorname{grad}$ for an appropriate choice of measures.
+
+### 1.1 Gradient
+
+Orient each edge arbitrarily, $e = (i\to j)$. The **gradient** $\nabla:\mathbb R^V\to\mathbb R^E$ is
+$$
+(\nabla f)(e) = f(j) - f(i), \qquad e = (i\to j).
+$$
+As a matrix this is the signed edge–vertex incidence matrix $B\in\mathbb R^{E\times V}$, $B_{e,j}=+1$, $B_{e,i}=-1$. It is the discrete analog of $\nabla f$: a function on vertices produces a "vector field" on edges. Its kernel (on a connected graph) is exactly the constants — the discrete version of "$\nabla f = 0 \Rightarrow f$ constant on a connected domain."
+
+### 1.2 Divergence is minus the adjoint — and the adjoint depends on the measures
+
+In the continuum, $\operatorname{div}$ is defined as $-\nabla^*$, the adjoint taken in $L^2$ of the volume measure (that is the integration-by-parts identity $\int \langle \nabla f, X\rangle\,dV = -\int f\,\operatorname{div}X\,dV$). On a graph we must choose two measures:
+
+- an **edge measure** — the weights $w_e$ (play the role of the metric / conductivity): $\langle X,Y\rangle_w = \sum_e w_e X_e Y_e$;
+- a **vertex measure** $m$ (plays the role of the volume form): $\langle f,g\rangle_m = \sum_i m_i f_i g_i$.
+
+The adjoint $\nabla^*_m: \mathbb R^E\to\mathbb R^V$ is defined by $\langle \nabla f, X\rangle_w = \langle f, \nabla_m^* X\rangle_m$. Expanding the left side,
+$$
+\sum_{e=(i\to j)} w_e\,(f_j-f_i)\,X_e = \sum_i f_i\Big(\sum_{e \text{ into } i} w_eX_e - \sum_{e\text{ out of } i} w_eX_e\Big),
+$$
+so $(\nabla_m^*X)_i = \frac{1}{m_i}\big(\text{net } w\text{-weighted flow into } i\big)$, and $\operatorname{div}_m := -\nabla_m^*$ is "net weighted outflow per unit vertex mass."
+
+### 1.3 The Laplacians
+
+**Proposition.** $\nabla_m^*\nabla$ is the operator $(\nabla_m^*\nabla f)_i = \frac{1}{m_i}\sum_{j\sim i} w_{ij}(f_i - f_j)$. In particular:
+
+- $m \equiv 1$ (counting measure): $\nabla^*\nabla = B^\top W B = D - A = L$;
+- $m = d$ (degree measure), equivalently $m=\pi$ (constant rescaling is harmless): $\nabla^*_d\nabla = D^{-1}L = L_{rw}$, the **random-walk Laplacian** (so named because $L_{rw} = I - P$).
+
+*Proof.* Plug $X=\nabla f$ into the formula above: an edge $e=(k\to i)$ contributes $w_e(f_i-f_k)$ and an edge $e=(i\to j)$ contributes $-w_e(f_j-f_i) = w_e(f_i-f_j)$; either way each neighbor $j$ contributes $w_{ij}(f_i-f_j)$, independent of the orientation. $\square$
+
+So **$L$ and $L_{rw}$ are the same differential operator $-\operatorname{div}\nabla$ with respect to two different volume measures**, and $\mathcal L = D^{1/2}L_{rw}D^{-1/2}$ is $L_{rw}$ transported to the unweighted space by the isometry $f\mapsto D^{1/2}f$ from $L^2(d)$ to $L^2(\mathbf 1)$. This is the "change of inner product, not a repair" remark from Lecture 1, now with a reason.
+
+**Green's identity / Dirichlet form.** By construction,
+$$
+\langle f, \nabla_m^*\nabla g\rangle_m = \langle \nabla f,\nabla g\rangle_w = \sum_{\{i,j\}\in E} w_{ij}(f_i-f_j)(g_i-g_j),
+$$
+the analog of $\int f\,(-\Delta g) = \int\langle\nabla f,\nabla g\rangle$. Note there is **no boundary term**: graph Laplacians come with natural (Neumann) boundary conditions built in. The quadratic form $\|\nabla f\|_w^2$ is the energy $\int|\nabla f|^2$; with $m=\pi$ (normalized) it is our Dirichlet form $\mathcal E(f,f)$.
+
+**Self-adjointness for free.** $\nabla_m^*\nabla$ is self-adjoint and PSD in $L^2(m)$ for *every* $m$ — there is nothing to check. Which $m$ you pick decides which matrix you write down.
+
+### 1.4 Dictionary
+
+| Continuum (Riemannian manifold $(M,g)$) | Graph $G=(V,E,w)$ |
+|---|---|
+| metric $g$ (local conductivity) | edge weights $w$ |
+| volume measure $dV$ | vertex measure $m$ ($\mathbf 1$ or $d$) |
+| $\nabla f$ | $\nabla f = Bf \in \mathbb R^E$ |
+| $\operatorname{div} = -\nabla^*$ | $\operatorname{div}_m = -\nabla_m^*$ |
+| $\Delta = -\operatorname{div}\nabla \succeq 0$ | $L$ ($m=\mathbf 1$), $L_{rw}$ ($m=d$) |
+| $\int_M \lvert\nabla f\rvert^2\,dV$ | $\sum_{ij} w_{ij}(f_i-f_j)^2$ |
+| Neumann boundary conditions | automatic |
+| weighted manifold $(M,g,e^{-U}dV)$: $\Delta_U f = -e^{U}\operatorname{div}(e^{-U}\nabla f)$, self-adjoint in $L^2(e^{-U})$ | $L_{rw}$: self-adjoint in $L^2(\pi)$ |
+| Poincaré: $\operatorname{Var}(f)\le C\int\lvert\nabla f\rvert^2$ | $\operatorname{Var}_\pi(f)\le \lambda^{-1}\mathcal E(f,f)$ (§2.5) |
+
+The weighted-manifold row is the one that matters later: $\Delta_U = \Delta + \langle\nabla U,\nabla\cdot\rangle$ is (minus) the generator of Langevin diffusion with stationary density $\propto e^{-U}$. $L_{rw}$ is its discrete analog, with $\pi\propto d$ playing the role of $e^{-U}$.
+
+### 1.5 Sanity check: finite differences
+
+Path on $h\mathbb Z$ with weights $w = h^{-2}$: $(Lf)_i = h^{-2}(2f_i - f_{i-1}-f_{i+1}) \to -f''$. The $k\times k$ grid with weights $h^{-2}$ gives the 5-point stencil for $-\Delta$ on the square, with Neumann boundary conditions. And the cycle $C_n$ is the discretized circle: eigenvectors $\cos(2\pi jx/n)$, $\sin(2\pi jx/n)$, eigenvalues $2-2\cos(2\pi j/n)\approx(2\pi j/n)^2$ — exactly the Fourier modes of $-d^2/d\theta^2$ (Lecture 1's heat demo overlaid these).
+
+---
+
+## 2. The generator and the measure/function duality
+
+### 2.1 Two objects, two actions
+
+The discrete-time walk has $\Pr[X_{t+1}=j\mid X_t=i] = P_{ij} = w_{ij}/d_i$. $P$ acts on two different kinds of objects:
+
+- **measures** (distributions), row vectors: $\mu^\top \mapsto \mu^\top P$, i.e., $\Pr[X_1=\cdot]$ when $X_0\sim\mu$;
+- **functions** (observables), column vectors: $f\mapsto Pf$, $(Pf)(i) = \sum_j P_{ij}f(j) = \mathbb E[f(X_1)\mid X_0=i]$ — a **local averaging** operator.
+
+They are linked by the pairing $\langle\mu,f\rangle = \mu^\top f = \mathbb E_\mu f$:
+$$
+\langle \mu^\top P, f\rangle = \mu^\top P f = \langle \mu, Pf\rangle .
+$$
+Evolving the measure forward and observing, or evolving the observable "backward" and averaging against the initial measure, give the same number. In operator language: the action on measures is the transpose (pairing-adjoint) of the action on functions.
+
+### 2.2 Continuous time, the generator, the semigroup
+
+Let the walk jump at the times of a rate-1 Poisson clock, each jump according to $P$. Then
+$$
+H_t := \sum_{k\ge0} e^{-t}\frac{t^k}{k!}P^k = e^{-t(I-P)} = e^{-tL_{rw}},
+$$
+$$
+(H_tf)(i) = \mathbb E[f(X_t)\mid X_0=i],\qquad \mu_t^\top = \mu_0^\top H_t .
+$$
+Differentiating:
+
+- **backward (Kolmogorov) equation** on functions: $\partial_t f_t = -L_{rw}f_t$ — the heat equation of Lecture 1, now with $L_{rw}$;
+- **forward (master / Fokker–Planck) equation** on measures: $\partial_t \mu_t^\top = -\mu_t^\top L_{rw}$.
+
+The **generator** in the Markov-process convention is $\mathcal A = \lim_{t\to0}(H_t - I)/t = P - I = -L_{rw}$, with
+$$
+(\mathcal A f)(i) = \sum_j P_{ij}\big(f(j)-f(i)\big) = \frac{1}{d_i}\sum_{j\sim i} w_{ij}(f_j-f_i),
+$$
+"average of neighbors minus self" — the discrete $+\Delta$ (analyst's sign, negative semidefinite). $(H_t)_{t\ge0}$ is a **Markov semigroup**: $H_0=I$, $H_{s+t}=H_sH_t$, $H_t\mathbf 1 = \mathbf 1$, $f\ge0\Rightarrow H_tf\ge0$. These four properties are all we'll use; that's why the arguments below transfer verbatim to diffusions later in the course.
+
+**Why continuous time (or laziness).** The cycle with $n$ even, the grid and the binary tree are all **bipartite**, so $P$ has eigenvalue $-1$ and the discrete-time walk started at a vertex never converges (it alternates sides). Two standard fixes, equivalent for our purposes: the continuous-time walk above, or the **lazy walk** $P_{\rm lazy} = \frac12(I+P) = I - \frac12 L_{rw}$, whose eigenvalues $1-\lambda_k/2$ lie in $[0,1]$.
+
+### 2.3 Stationarity and reversibility
+
+$\pi_i = d_i/\mathrm{vol}(V)$ is stationary: $(\pi^\top P)_j = \sum_i \frac{d_i}{\mathrm{vol}}\frac{w_{ij}}{d_i} = \frac{d_j}{\mathrm{vol}}$. Moreover **detailed balance** holds:
+$$
+\pi_iP_{ij} = \frac{w_{ij}}{\mathrm{vol}(V)} = \pi_jP_{ji}\qquad\Longleftrightarrow\qquad \Pi P = P^\top\Pi .
+$$
+Equivalently $P$ (and hence $L_{rw}$, $H_t$) is self-adjoint in $L^2(\pi)$: $\langle f,Pg\rangle_\pi = f^\top\Pi Pg = f^\top P^\top\Pi g = \langle Pf,g\rangle_\pi$. This is the same fact as §1.3 ($L_{rw} = \nabla_\pi^*\nabla$), seen probabilistically.
+
+### 2.4 Densities are functions — and they evolve like functions
+
+Write a measure via its density with respect to $\pi$: $h = d\mu/d\pi$, i.e., $\mu = \Pi h$, $h_i = \mu_i/\pi_i$.
+
+**Proposition (duality).** If $\mu_t^\top = \mu_0^\top H_t$, then $h_t = H_t^* h_0$, where $H_t^* = \Pi^{-1}H_t^\top\Pi$ is the adjoint of $H_t$ in $L^2(\pi)$. For a reversible walk $H_t^*=H_t$, so
+$$
+\boxed{\ h_t = H_t h_0\ }
+$$
+— **densities obey the same (backward) heat equation as observables.**
+
+*Proof.* $\mu_t = H_t^\top\mu_0 = H_t^\top\Pi h_0$, so $h_t = \Pi^{-1}H_t^\top\Pi h_0$. For any $f,g$: $\langle f,\Pi^{-1}H_t^\top\Pi g\rangle_\pi = f^\top H_t^\top \Pi g = \langle H_t f, g\rangle_\pi$, so this is the $L^2(\pi)$-adjoint. Reversibility gives $\Pi H_t = H_t^\top\Pi$. $\square$
+
+**Geometric picture.** Measures live naturally in $\mathbb R^V$ with the inner product $\langle\mu,\nu\rangle_{1/\pi} = \sum_i \mu_i\nu_i/\pi_i$; functions in $L^2(\pi)$. The map $\mu\mapsto \mu/\pi$ is an isometry between them (the Riesz map), and it intertwines the forward and backward evolutions. (Up to the normalization by $\mathrm{vol}(V)$, these are the degree-weighted inner products $\langle\cdot,\cdot\rangle_D$ and $\langle\cdot,\cdot\rangle_{D^{-1}}$.) From now on **we analyze convergence entirely in terms of $h_t = H_th_0$ in $L^2(\pi)$.**
+
+**Forward pointer (Markov semigroups).** Without reversibility, $h_t$ evolves under $H_t^*$, the semigroup of the **time-reversed** chain, which is a different Markov semigroup with the same $\pi$. Everything in §4–5 goes through using $\mathcal E(f,f) = \langle f, L_{rw}f\rangle_\pi$ (which only sees the symmetric part of the generator); we'll redo this for general Markov semigroups and for diffusions.
+
+### 2.5 Spectral decomposition, the gap, Poincaré
+
+$L_{rw}$ is self-adjoint in $L^2(\pi)$, so it has an $L^2(\pi)$-orthonormal eigenbasis $\varphi_1=\mathbf 1,\varphi_2,\dots,\varphi_n$ with $0=\lambda_1\le\lambda_2\le\dots\le\lambda_n$, and
+$$
+H_t f = \sum_k e^{-\lambda_kt}\langle f,\varphi_k\rangle_\pi\,\varphi_k,\qquad \mathcal E(f,f) = \sum_k \lambda_k\langle f,\varphi_k\rangle_\pi^2,
+$$
+$$
+\operatorname{Var}_\pi(f) = \|f-\mathbb E_\pi f\|_\pi^2 = \sum_{k\ge2}\langle f,\varphi_k\rangle_\pi^2 .
+$$
+(Facts, from the review notes / exercises: $\lambda_2>0$ iff $G$ connected; $\lambda_n\le 2$ with equality iff a connected component is bipartite.)
+
+**Spectral gap and Poincaré inequality.** By Courant–Fischer,
+$$
+\lambda = \lambda_2(L_{rw}) = \min_{f\ \text{non-const}}\frac{\mathcal E(f,f)}{\operatorname{Var}_\pi(f)} = \min_{f\ \text{non-const}}\frac{\sum_{\{i,j\}\in E} w_{ij}(f_i-f_j)^2}{\min_c \sum_i d_i(f_i-c)^2}, 
+$$
+i.e., $\lambda$ is the best constant in the **Poincaré inequality** $\lambda\operatorname{Var}_\pi(f)\le\mathcal E(f,f)$ — "a function with small gradient is nearly constant." The **relaxation time** is $t_{\rm rel} := 1/\lambda$.
+
+**The variance is an energy too.** Expanding the variance over pairs,
+$$
+\operatorname{Var}_\pi(f) = \frac12\sum_{a,b}\pi_a\pi_b(f_a-f_b)^2 = \frac1{\mathrm{vol}(V)}\sum_{\{a,b\}}\frac{d_ad_b}{\mathrm{vol}(V)}(f_a-f_b)^2 = \mathcal E_{K_G}(f,f),
+$$
+the Dirichlet form (same $1/\mathrm{vol}(V)$ normalization) of the complete graph $K_G$ with weights $w'_{ab} = d_ad_b/\mathrm{vol}(V)$. Each vertex has degree $\sum_bd_ad_b/\mathrm{vol}(V) = d_a$ in $K_G$ (the $b=a$ term is a self-loop, invisible to the energy), so **$K_G$ has the same degrees, hence the same $\pi$, as $G$** — and its walk $P' = \mathbf 1\pi^\top$ reaches stationarity in a single step. The Poincaré inequality is therefore a comparison between two graphs with the same degrees,
+$$
+\lambda\,L_{K_G}\preceq L_G ,
+$$
+and $\lambda$ measures how well $G$ approximates this "ideal mixer."
+
+---
+
+## 3. Measuring convergence; mixing time
+
+For a distribution $\mu$ with density $h=\mu/\pi$:
+
+| Distance | Measure form | Density form |
+|---|---|---|
+| total variation | $\lVert\mu-\pi\rVert_{TV} = \tfrac12\lVert\mu-\pi\rVert_1 = \max_{S\subseteq V}\lvert\mu(S)-\pi(S)\rvert$ | $\tfrac12\,\mathbb E_\pi\lvert h-1\rvert$ |
+| chi-squared | $\chi^2(\mu\Vert\pi) = \sum_i \frac{(\mu_i-\pi_i)^2}{\pi_i} = \lVert\mu-\pi\rVert_{1/\pi}^2$ | $\operatorname{Var}_\pi(h) = \lVert h-1\rVert^2_\pi$ |
+| relative entropy (KL) | $D(\mu\Vert\pi) = \sum_i\mu_i\log\frac{\mu_i}{\pi_i}$ | $\operatorname{Ent}_\pi(h) = \mathbb E_\pi[h\log h] - \mathbb E_\pi h\log\mathbb E_\pi h$ |
+
+Each is $\mathbb E_\pi\Phi(h)$ for a convex $\Phi$ with $\Phi(1)=0$ (an $f$-divergence): $\Phi(x) = \frac12|x-1|,\ (x-1)^2,\ x\log x$.
+
+**Starting from a point mass** $\mu=\delta_x$ ($h = \mathbf 1_x/\pi_x$):
+$$
+\|\delta_x-\pi\|_{TV} = 1-\pi_x\le1,\qquad D(\delta_x\Vert\pi) = \log\frac{1}{\pi_x},\qquad \chi^2(\delta_x\Vert\pi) = \frac1{\pi_x}-1 .
+$$
+On a bounded-degree graph $\pi_x\approx 1/n$: the three initial distances are $O(1)$, $\log n$, and $n$. Keep this in mind — it is the whole story of §5.
+
+**Lemma (comparisons).** For all $\mu$:
+1. $2\|\mu-\pi\|_{TV}\le\sqrt{\chi^2(\mu\Vert\pi)}$;
+2. (Pinsker) $\|\mu-\pi\|_{TV}\le\sqrt{\tfrac12 D(\mu\Vert\pi)}$;
+3. $D(\mu\Vert\pi)\le\log\big(1+\chi^2(\mu\Vert\pi)\big)\le\chi^2(\mu\Vert\pi)$.
+
+*Proof.* (1) Cauchy–Schwarz in $L^2(\pi)$: $\mathbb E_\pi|h-1|\le(\mathbb E_\pi(h-1)^2)^{1/2}$. (3) Jensen for the concave $\log$ under $\mu$: $D = \mathbb E_\mu\log h\le\log\mathbb E_\mu h = \log\mathbb E_\pi h^2 = \log(1+\operatorname{Var}_\pi h)$. (2) is Pinsker's inequality (standard; proof in any information-theory text — reduce to two points by data processing, then calculus). $\square$
+
+**Lemma (monotonicity).** For convex $\Phi$, $t\mapsto\mathbb E_\pi\Phi(H_th)$ is non-increasing. *Proof.* $H_t$ is an averaging operator, so Jensen gives $\Phi(H_th)\le H_t\Phi(h)$ pointwise; and $\mathbb E_\pi H_tg = \mathbb E_\pi g$ by stationarity. Use the semigroup property for general $s<t$. $\square$
+(For TV this is the $\ell_1$-contraction from Lecture 1's exercise.) Monotone, yes — but for **rates** we need more than convexity: we need a differential inequality, and that is where $\chi^2$ and entropy are special (§4–5). TV is the distance we *want*; $\chi^2$ and entropy are the ones we can *differentiate*.
+
+**Mixing time.** Worst case over starting points:
+$$
+d(t) := \max_{x\in V}\|\delta_xH_t-\pi\|_{TV},\qquad t_{\rm mix}(\varepsilon) := \min\{t: d(t)\le\varepsilon\},
+$$
+$$
+t_{\rm mix}:=t_{\rm mix}(1/4).
+$$
+Analogously $t_2(\varepsilon)$ and $t_{\rm ent}(\varepsilon)$ with $\sqrt{\chi^2}$ or $D$ in place of TV. (Worst case over $x$ = worst case over all $\mu$, by convexity.) Same definitions for the lazy discrete chain with $P_{\rm lazy}^t$. Remark for later: $d(t)$ is essentially submultiplicative, so $t_{\rm mix}(\varepsilon)\le\lceil\log_2(1/\varepsilon)\rceil\,t_{\rm mix}$ (Levin–Peres–Wilmer, Ch. 4); the choice $1/4$ is a convention.
+
+---
+
+## 4. The spectral gap controls $\chi^2$
+
+**Theorem.** For every $h$ and $t\ge0$: $\operatorname{Var}_\pi(H_th)\le e^{-2\lambda t}\operatorname{Var}_\pi(h)$. Equivalently $\chi^2(\mu_t\Vert\pi)\le e^{-2\lambda t}\chi^2(\mu_0\Vert\pi)$. The rate is sharp: equality holds for $h = 1+\epsilon\varphi_2$.
+
+*Proof 1 (spectral).* $\operatorname{Var}_\pi(H_th) = \sum_{k\ge2}e^{-2\lambda_kt}\langle h,\varphi_k\rangle_\pi^2\le e^{-2\lambda t}\sum_{k\ge2}\langle h,\varphi_k\rangle_\pi^2$. $\square$
+
+*Proof 2 (Dirichlet form — the template for the rest of the course).* Let $h_t = H_th$; $\mathbb E_\pi h_t$ is constant. Then
+$$
+\frac{d}{dt}\operatorname{Var}_\pi(h_t) = 2\langle h_t-\mathbb E_\pi h_t,\ \partial_th_t\rangle_\pi = -2\langle h_t-c, L_{rw}h_t\rangle_\pi = -2\,\mathcal E(h_t,h_t),
+$$
+using $L_{rw}\mathbf 1 = 0$ and self-adjointness. Poincaré gives $\mathcal E(h_t,h_t)\ge\lambda\operatorname{Var}_\pi(h_t)$, so $\frac{d}{dt}\operatorname{Var}\le-2\lambda\operatorname{Var}$; Grönwall. $\square$
+
+Proof 2 never diagonalizes anything: it uses only (i) "variance dissipates at rate $2\mathcal E$" and (ii) the functional inequality $\mathcal E\ge\lambda\operatorname{Var}$. Replace the pair (Var, Poincaré) by (Ent, log-Sobolev) and you get §5.3; replace the graph by a manifold and you get the Bakry–Émery program. In fact the theorem is an *equivalence*: if $\operatorname{Var}(H_th)\le e^{-2ct}\operatorname{Var}(h)$ for all $h$, differentiating at $t=0$ gives $\mathcal E\ge c\operatorname{Var}$, so $c\le\lambda$.
+
+### 4.1 The heat flow is the gradient flow of the energy in the $\chi^2$ geometry
+
+Equip densities with the Hilbert structure of $L^2(\pi)$, so that the squared distance to equilibrium is $\|h-1\|_\pi^2 = \chi^2(\mu\Vert\pi)$, and let $F(h) = \frac12\mathcal E(h,h)$ be the Dirichlet energy. Since $F(h+\epsilon v) = F(h)+\epsilon\langle L_{rw}h,v\rangle_\pi+O(\epsilon^2)$, the $L^2(\pi)$-gradient is $\nabla_\pi F(h) = L_{rw}h$, and the gradient flow $\partial_th = -\nabla_\pi F(h)$ is exactly the heat equation for densities, $h_t = H_th_0$. (Equivalently, the implicit-Euler / minimizing-movement scheme $h_{k+1} = \arg\min_h\{F(h)+\frac1{2\tau}\|h-h_k\|_\pi^2\} = (I+\tau L_{rw})^{-1}h_k$ converges to $H_t$.)
+
+In this language the Poincaré inequality says $F(h)\ge\frac\lambda2\|h-\mathbb E_\pi h\|_\pi^2$: **the energy is $\lambda$-strongly convex transverse to its minimizers.** The theorem of §4 is then the generic fact that the gradient flow of a $\lambda$-strongly convex function contracts the squared distance to its minimizer at rate $2\lambda$; Proof 2 is precisely that computation, $\frac{d}{dt}\frac12\|h_t-1\|_\pi^2 = -\langle h_t-1,\nabla_\pi F(h_t)\rangle_\pi = -2F(h_t)$. This is why $\chi^2$ is the natural convergence measure for the heat flow: it is the squared norm of the geometry in which the flow is a gradient flow.
+
+**Question for later.** Is there a geometry in which the heat flow is the gradient flow of the *entropy*, with geodesic convexity of the entropy giving entropy decay? Yes: on $\mathbb R^n$, Jordan–Kinderlehrer–Otto (1998) with the Wasserstein-2 metric (convexity ↔ Bakry–Émery curvature); on finite Markov chains, Maas (2011) and Mielke (2011) with a discrete transport metric; Erbar–Maas then showed that a lower bound on the resulting entropic Ricci curvature implies a modified log-Sobolev inequality — the discrete analog of Bakry–Émery.
+
+**Discrete time.** For the lazy chain, $\operatorname{Var}_\pi(P_{\rm lazy}^th)\le(1-\lambda/2)^{2t}\operatorname{Var}_\pi(h)$, since $P_{\rm lazy}$ has eigenvalues $1-\lambda_k/2\in[0,1]$. For the non-lazy chain the factor is $\lambda_\star^{2t}$ with $\lambda_\star=\max_{k\ge2}|1-\lambda_k|$ — which is $1$ on bipartite graphs.
+
+---
+
+## 5. What this implies for $\ell_1$ and entropy
+
+### 5.1 Two-sided bound on the mixing time
+
+**Theorem.** For the continuous-time walk, with $\pi_{\min}=\min_x\pi_x$,
+$$
+\frac1\lambda\log\frac1{2\varepsilon}\ \le\ t_{\rm mix}(\varepsilon)\ \le\ \frac1\lambda\Big(\tfrac12\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon}\Big).
+$$
+
+*Upper bound.* By Lemma (1) and §4, $\|\delta_xH_t-\pi\|_{TV}\le\frac12\sqrt{\chi^2(\delta_xH_t\Vert\pi)}\le\frac12e^{-\lambda t}\sqrt{1/\pi_x}$. Set the right side $\le\varepsilon$. $\square$
+
+*Lower bound.* Let $f=\varphi_2$ rescaled so $\|f\|_\infty = 1 = |f(x)|$ for some $x$. Then $\mathbb E_\pi f = \langle f,\mathbf 1\rangle_\pi = 0$ and $(H_tf)(x) = e^{-\lambda t}f(x)$. For any $\mu$, $|\mathbb E_\mu f-\mathbb E_\pi f|\le\|\mu-\pi\|_1\|f\|_\infty = 2\|\mu-\pi\|_{TV}$. With $\mu = \delta_xH_t$: $e^{-\lambda t} = |(H_tf)(x)| \le 2\|\delta_xH_t-\pi\|_{TV}$. So $d(t)\ge\frac12e^{-\lambda t}$. $\square$
+
+**Lazy discrete version** (same proofs, $e^{-\lambda}\to 1-\lambda/2$): $(\tfrac2\lambda-1)\log\tfrac1{2\varepsilon}\le t_{\rm mix}(\varepsilon)\le\tfrac2\lambda\big(\tfrac12\log\tfrac1{\pi_{\min}}+\log\tfrac1{2\varepsilon}\big)$, using $\log\frac1{1-x}\le\frac x{1-x}$ for the lower bound (cf. Levin–Peres–Wilmer, Ch. 12).
+
+**Reading.** The gap determines $t_{\rm mix}$ up to a factor $\log(1/\pi_{\min})\approx\log n$. The loss comes entirely from the **initial value** $\chi^2(\delta_x\Vert\pi)\approx n$: $\chi^2$ needs time $\approx\log(\chi^2_0)/(2\lambda)$ just to get below 1. Two ways to recover it, previewed in §5.3 and §6.5: use more of the spectrum than $\lambda_2$, or measure with a distance whose initial value is smaller.
+
+### 5.2 Entropy from the spectral gap
+
+From Lemma (3): $D(\mu_t\Vert\pi)\le\log\big(1+e^{-2\lambda t}\chi^2(\mu_0\Vert\pi)\big)$. Starting from $\delta_x$ this is $\approx\log(1/\pi_x) - 2\lambda t$ (useless) until $t\approx\log(1/\pi_x)/(2\lambda)$, and $\approx e^{-2\lambda t}/\pi_x$ afterwards. So the spectral gap gives exponential **eventual** decay of entropy at rate $2\lambda$, but with the same $\log(1/\pi_{\min})$ burn-in.
+
+### 5.3 Preparing the ground for log-Sobolev inequalities
+
+Redo Proof 2 of §4 with entropy. Since $\mathbb E_\pi h_t$ is constant and $L_{rw}$ is self-adjoint with $L_{rw}\mathbf 1=0$:
+$$
+\frac{d}{dt}\operatorname{Ent}_\pi(h_t) = \mathbb E_\pi\big[(1+\log h_t)\,\partial_th_t\big] = -\langle\log h_t,L_{rw}h_t\rangle_\pi = -\mathcal E(h_t,\log h_t)\ \le 0 .
+$$
+$\mathcal E(h,\log h)$ is the **entropy production** (discrete Fisher information). The functional inequality that closes the loop is the **modified log-Sobolev inequality** (MLSI) with constant $\rho_0$:
+$$
+\rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)\quad\forall h>0\qquad\Longrightarrow\qquad D(\mu_t\Vert\pi)\le e^{-\rho_0t}D(\mu_0\Vert\pi).
+$$
+Then Pinsker gives $\|\delta_xH_t-\pi\|_{TV}\le\sqrt{\tfrac12e^{-\rho_0t}\log(1/\pi_x)}$, i.e.,
+$$
+t_{\rm mix}(\varepsilon)\le\frac1{\rho_0}\Big(\log\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon^2}\Big).
+$$
+**$\log(1/\pi_{\min})$ has become $\log\log(1/\pi_{\min})$** — because entropy starts at $\log n$ instead of $n$.
+
+The price is the constant. Relations (both one-line proofs worth doing in class):
+
+- **$\rho_0\le2\lambda$.** Linearize at equilibrium: $h=1+\epsilon g$, $\mathbb E_\pi g=0$. Then $\operatorname{Ent}_\pi(h) = \frac{\epsilon^2}2\operatorname{Var}_\pi g+O(\epsilon^3)$ and $\mathcal E(h,\log h) = \epsilon^2\mathcal E(g,g)+O(\epsilon^3)$, so MLSI forces $\rho_0\le 2\mathcal E(g,g)/\operatorname{Var}_\pi g$ for every $g$; take $g=\varphi_2$.
+- **Classical LSI.** $\alpha\operatorname{Ent}_\pi(f^2)\le\mathcal E(f,f)$ for all $f$ (Gross; Diaconis–Saloff-Coste's normalization). Since $(a-b)(\log a-\log b)\ge4(\sqrt a-\sqrt b)^2$ (equivalent to $\log(x/y)\ge 2\frac{x-y}{x+y}$), we have $\mathcal E(h,\log h)\ge4\mathcal E(\sqrt h,\sqrt h)\ge4\alpha\operatorname{Ent}_\pi(h)$, so $\rho_0\ge4\alpha$. The same linearization gives $\alpha\le\lambda/2$.
+
+So $4\alpha\le\rho_0\le2\lambda$. Whenever the log-Sobolev constant is comparable to the gap, entropy methods win by trading $\log n$ for $\log\log n$. When it is much smaller, they lose. Which happens, and how to compute $\alpha$, is a later lecture.
+
+---
+
+## 6. Examples: bounding the gap from both sides
+
+### 6.1 Toolkit
+
+**Upper bounds — test functions.** Any non-constant $f$ gives $\lambda\le\mathcal E(f,f)/\operatorname{Var}_\pi(f)$. Choose $f$ to vary slowly across a bottleneck.
+
+**Degree comparison.** If $d_{\min}\le d_i\le d_{\max}$, then
+$$
+\frac{\lambda_2(L)}{d_{\max}}\le\lambda_2(L_{rw})\le\frac{\lambda_2(L)}{d_{\min}},
+$$
+because both are $\min_f \frac{f^\top Lf}{\min_c\|f-c\|^2_m}$ with $m=d$ resp. $m=\mathbf 1$, and $d_{\min}\|g\|^2\le\|g\|_d^2\le d_{\max}\|g\|^2$. All our examples have degrees in $[1,4]$, so we can work with the unnormalized $L$ and convert at the end.
+
+**Lower bounds — canonical paths.** This is the discrete version of the textbook proof of the 1-D Poincaré inequality: write $f(b)-f(a) = \int_a^b f'$ and apply Cauchy–Schwarz. On a graph, choose for every ordered pair $(a,b)$, $a\ne b$, a path $\gamma_{ab}$ from $a$ to $b$, and choose edge lengths $\ell_e>0$ (default: $\ell\equiv1$). Write $\ell(\gamma)=\sum_{e\in\gamma}\ell_e$ and define the **congestion**
+$$
+\kappa := \max_{e\in E}\ \frac{1}{w_e\,\ell_e}\sum_{(a,b):\,e\in\gamma_{ab}}\ell(\gamma_{ab}).
+$$
+
+**Theorem (canonical paths; Jerrum–Sinclair, Diaconis–Stroock).** $\displaystyle\sum_{a,b\in V}(f_a-f_b)^2\le\kappa\,f^\top Lf$ for all $f$; hence $\lambda_2(L)\ge\dfrac{2n}{\kappa}$.
+
+*Proof.* Telescoping along $\gamma_{ab}$ and weighted Cauchy–Schwarz:
+$$
+(f_b-f_a)^2 = \Big(\sum_{e\in\gamma_{ab}}\nabla_ef\Big)^2\le\Big(\sum_{e\in\gamma_{ab}}\ell_e\Big)\Big(\sum_{e\in\gamma_{ab}}\frac{(\nabla_ef)^2}{\ell_e}\Big).
+$$
+Sum over ordered pairs and swap sums:
+$$
+\sum_{a,b}(f_a-f_b)^2\le\sum_e w_e(\nabla_ef)^2\cdot\frac1{w_e\ell_e}\sum_{(a,b):e\in\gamma_{ab}}\ell(\gamma_{ab})
+$$
+$$
+\le\kappa\sum_ew_e(\nabla_ef)^2 = \kappa\,f^\top Lf .
+$$
+Finally $\sum_{a,b}(f_a-f_b)^2 = 2n\|f-\bar f\|^2$, so $f^\top Lf\ge\frac{2n}{\kappa}\|f-\bar f\|^2$. $\square$
+
+**$\pi$-weighted version** (for non-regular graphs, directly for $\lambda$): since $\operatorname{Var}_\pi f = \frac12\sum_{a,b}\pi_a\pi_b(f_a-f_b)^2$ and $\mathcal E(f,f) = \sum_eQ(e)(\nabla_ef)^2$ with $Q(e) = \pi_iP_{ij} = w_e/\mathrm{vol}(V)$, the same proof gives
+$$
+\lambda\ge\frac1{\kappa_\pi},\qquad\kappa_\pi = \max_e\frac{1}{Q(e)\ell_e}\cdot\frac12\sum_{(a,b):e\in\gamma_{ab}}\pi_a\pi_b\,\ell(\gamma_{ab}).
+$$
+**Interpretation.** $\kappa$ is the cost of routing a unit of "demand" between every pair simultaneously (a multicommodity flow, here unsplittable). If some edge set is a bottleneck, every routing congests it — so canonical paths certify the *absence* of bottlenecks, the dual of the test-function certificate. (This is the flow/cut duality behind Cheeger next week and Leighton–Rao later.)
+
+### 6.2 The cycle $C_n$
+
+**Exact.** $L$ is circulant; $f_j(x) = e^{2\pi\mathrm i jx/n}$ gives $(Lf_j)(x) = (2-e^{2\pi\mathrm ij/n}-e^{-2\pi\mathrm ij/n})f_j(x)$, so the eigenvalues are $2-2\cos(2\pi j/n)$, $j=0,\dots,n-1$ (real eigenvectors: cos and sin). Since $D=2I$,
+$$
+\lambda = 1-\cos\frac{2\pi}n = 2\sin^2\frac\pi n\approx\frac{2\pi^2}{n^2}.
+$$
+**Test function** (upper bound without Fourier): $f(x) = \cos(2\pi x/n)$ is exact; even the "tent" $f(x) = \min(x,n-x)-\text{mean}$ gives $\lambda\le O(1/n^2)$.
+
+**Canonical paths** ($n=2m+1$ odd, shortest paths, which are unique; $\ell\equiv1$). For each vertex there are 2 vertices at each distance $1,\dots,m$, so $\sum_{(a,b)}|\gamma_{ab}|^2 = 2n\sum_{s=1}^m s^2$. By rotation symmetry every edge carries the same load, and $\sum_e(\text{load of }e) = \sum_{(a,b)}|\gamma_{ab}|^2$, so
+$$
+\kappa = \frac{2n\sum_{s\le m}s^2}{n} = \frac{m(m+1)(2m+1)}3 = \frac{n(n^2-1)}{12}
+$$
+$$
+\Longrightarrow\quad\lambda_2(L)\ge\frac{24}{n^2-1},\quad\lambda = \tfrac12\lambda_2(L)\ge\frac{12}{n^2-1}.
+$$
+Compare $2\pi^2\approx19.7$: canonical paths get the right order with constant $12$ vs $19.7$.
+
+### 6.3 The $k\times k$ grid ($n=k^2$)
+
+**Exact (optional).** $L(G\,\square\,H) = L_G\otimes I+I\otimes L_H$, so $\operatorname{spec}L(P_k\square P_k) = \{\mu_i+\mu_j\}$ with $\mu_j = 2-2\cos(\pi j/k)$ the path eigenvalues (eigenvectors $\cos(\pi j(x-\frac12)/k)$ — the Neumann cosines). Hence $\lambda_2(L) = 2-2\cos(\pi/k)\approx\pi^2/k^2$. (The normalized $L_{rw}$ does *not* tensorize exactly because boundary degrees differ; use degree comparison, $2\le d\le4$.)
+
+**Test function.** $f(x,y) = x-\frac{k+1}2$ (coordinates $1..k$): $f^\top Lf = k(k-1)$ (only horizontal edges, each difference 1), $\|f\|^2 = k\cdot\frac{k(k^2-1)}{12}$, so $\lambda_2(L)\le\frac{12}{k(k+1)}$. With $d_{\min}=2$: $\lambda\le\frac{6}{k(k+1)}$.
+
+**Canonical paths: "L-shaped" routing** — from $a=(a_x,a_y)$ go horizontally along row $a_y$ to column $b_x$, then vertically to $b$. Lengths $\le2(k-1)$.
+- Horizontal edge in row $r$ between columns $c,c+1$: used by $(a,b)$ iff $a$ is in row $r$ and $a_x,b_x$ are on opposite sides. Count: $2\cdot c(k-c)\cdot k\le k^3/2$.
+- Vertical edge in column $c$ between rows $r,r+1$: used iff $b$ is in column $c$ and $a_y,b_y$ on opposite sides; $a_x$ arbitrary. Count: $2\cdot r(k-r)\cdot k\le k^3/2$.
+
+So $\kappa\le\frac{k^3}2\cdot2(k-1) = k^3(k-1)$ and $\lambda_2(L)\ge\frac{2k^2}{k^3(k-1)} = \frac2{k(k-1)}$; with $d_{\max}=4$, $\lambda\ge\frac1{2k(k-1)}$. Together: **$\lambda = \Theta(1/k^2) = \Theta(1/n)$.**
+
+### 6.4 The complete binary tree (depth $h$, $n = 2^{h+1}-1$)
+
+**Test function (bottleneck at the root).** $f=+1$ on the left subtree, $-1$ on the right, $0$ at the root. By symmetry $\mathbb E_\pi f=0$; only the two root edges see a difference, so $\sum w(\nabla f)^2 = 2$; and $\sum_id_if_i^2 = \mathrm{vol}(V)-d_{\rm root} = 2(n-1)-2$. Hence
+$$
+\lambda\le\frac{2}{2n-4} = \frac1{n-2}.
+$$
+**Canonical paths, unit lengths.** Paths in a tree are forced. An edge whose lower endpoint is at depth $j$ cuts off a subtree of size $s_j = 2^{h-j+1}-1$; it is used by $2s_j(n-s_j)\le n^2/2$ ordered pairs, each of length $\le2h$. So $\kappa\le n^2h$ and $\lambda_2(L)\ge\frac2{nh}$ — **off by a factor $h\approx\log_2n$.** The culprit: Cauchy–Schwarz with $\ell\equiv1$ charges every edge of a long path equally, but only the top edges are congested.
+
+**Canonical paths, weighted lengths.** Put $\ell_e = 2^{-j/2}$ on depth-$j$ edges (cheap where congested). Then $\ell(\gamma)\le2\sum_{j\ge1}2^{-j/2} = 2(\sqrt2+1)$, and using $s_j<(n+1)2^{-j}$,
+$$
+\frac1{\ell_e}\sum_{\gamma\ni e}\ell(\gamma)\le2^{j/2}\cdot2s_jn\cdot2(\sqrt2+1)
+$$
+$$
+<4(\sqrt2+1)\,n(n+1)\,2^{-j/2}\le2(2+\sqrt2)\,n(n+1).
+$$
+So $\kappa<2(2+\sqrt2)n(n+1)$ and $\lambda_2(L)>\frac1{(2+\sqrt2)(n+1)}$; with $d_{\max}=3$, $\lambda>\frac1{3(2+\sqrt2)(n+1)}$. Together: **$\lambda = \Theta(1/n)$.**
+
+Moral: the choice of lengths $\ell$ is the discrete analog of choosing a weight in a weighted Poincaré/Hardy inequality; with the right choice, paths are tight up to constants here.
+
+### 6.5 Summary and tightness of the different notions of convergence
+
+Bounds proved above (unnormalized $\lambda_2(L)$; numerically verified, see table):
+
+| Graph | lower (paths) | true $\lambda_2(L)$ | upper (test fn) |
+|---|---|---|---|
+| $C_n$, $n$ odd | $24/(n^2-1)$ | $4\sin^2(\pi/n)\approx 39.5/n^2$ | exact |
+| $k\times k$ grid | $2/(k(k-1))$ | $4\sin^2(\pi/2k)\approx 9.87/k^2$ | $12/(k(k+1))$ |
+| binary tree | $1/((2+\sqrt2)(n+1))$ | $\Theta(1/n)$ | $2/(n-1)$ |
+
+Numerical check (spot values): $C_{201}$: bound $5.9\times10^{-4}$, truth $9.8\times10^{-4}$. Grid $k=30$: $2.3\times10^{-3}\le1.10\times10^{-2}\le1.29\times10^{-2}$. Tree $n=1023$: $2.9\times10^{-4}\le9.9\times10^{-4}\le2.0\times10^{-3}$, and $n\lambda\to\approx0.5$.
+
+Plugging into §5.1 (continuous-time walk, $\varepsilon=1/4$; "true" = computed numerically, consistent with the known orders in Levin–Peres–Wilmer):
+
+| Graph | $t_{\rm rel}=1/\lambda$ | lower bound $t_{\rm rel}\log 2$ | $\chi^2$ upper bound | true $t_{\rm mix}$ |
+|---|---|---|---|---|
+| cycle $C_n$ | $\approx n^2/2\pi^2$ | $\Theta(n^2)$ | $\Theta(n^2\log n)$ | $\approx0.047\,n^2$ |
+| grid $k\times k$ | $\Theta(k^2)=\Theta(n)$ | $\Theta(n)$ | $\Theta(n\log n)$ | $\approx0.46\,k^2$ |
+| binary tree | $\Theta(n)$ | $\Theta(n)$ | $\Theta(n\log n)$ | $\approx1.37\,n$ (lower bound $\approx1.36\,n$!) |
+| hypercube $\{0,1\}^d$ (preview) | $d/2$ | $\Theta(d)$ | $\Theta(d^2)$ | $\sim\frac d4\log d$ |
+
+(Numbers: $C_{161}$: $t_{\rm mix}=1230$, lower $910$, upper $4247$. Grid $k=24$: $267$ vs $152$ / $921$. Tree $n=1023$: $1402$ vs $1388$ / $9022$.)
+
+**Discussion points.**
+
+1. **The lower bound $t_{\rm rel}$ is tight on all three graphs; the generic $\chi^2$ upper bound loses exactly $\log n$.**
+2. **The loss is not in $\chi^2$ as a distance — it's in using only $\lambda_2$.** By the spectral formula, $\chi^2(\delta_xH_t\Vert\pi) = \sum_{k\ge2}e^{-2\lambda_kt}\varphi_k(x)^2$, and $\sum_k\varphi_k(x)^2 = 1/\pi_x$. On a vertex-transitive graph each eigenspace contributes equally at every vertex, so $\chi^2(\delta_xH_t\Vert\pi) = \sum_{k\ge2}e^{-2\lambda_kt}$ exactly. For the cycle, $1-\cos\theta\ge2\theta^2/\pi^2$ on $[-\pi,\pi]$ gives $\chi^2\le2\sum_{j\ge1}e^{-16tj^2/n^2}$, which is $O(1)$ at $t = \Theta(n^2)$: the $\ell^2$ mixing time is $\Theta(n^2)$, not $n^2\log n$. The generic bound pretends all $n-1$ modes decay as slowly as the slowest one.
+3. **When even $t_{\rm rel}$ is not tight: the hypercube.** Continuous-time walk on $\{0,1\}^d$ (flip a uniform coordinate at rate 1): eigenvalues $2|S|/d$, $S\subseteq[d]$, so $t_{\rm rel}=d/2$, and exactly $\chi^2(t) = (1+e^{-4t/d})^d-1$, which drops below a constant at $t\approx\frac d4\log d$; TV has cutoff at the same time (Diaconis; LPW). Here $\log(1/\pi_{\min}) = d\log2$: the $\chi^2$-from-gap bound gives $\Theta(d^2)$, the gap lower bound gives $\Theta(d)$, the truth is $\Theta(d\log d)$. The log-Sobolev constant of the hypercube is $\Theta(1/d)$ (tensorization of the two-point LSI), so §5.3 gives $\Theta(d\cdot\log\log 2^d) = \Theta(d\log d)$ — **tight**. This is the motivating example for LSIs.
+4. **Bipartiteness:** all three graphs (and the hypercube) are bipartite — the non-lazy discrete walk never mixes; continuous time or laziness is not a technicality.
+
+---
+
+## Appendix: proof details to have at hand
+
+- $\sum_{a,b}(f_a-f_b)^2 = 2n\sum_af_a^2-2(\sum_af_a)^2 = 2n\|f-\bar f\|^2$; $\pi$-weighted: $\sum_{a,b}\pi_a\pi_b(f_a-f_b)^2 = 2\operatorname{Var}_\pi f$.
+- Variance of $x\mapsto x$ on $\{1,\dots,k\}$: $(k^2-1)/12$.
+- $\operatorname{Ent}_\pi(1+\epsilon g) = \mathbb E_\pi[(1+\epsilon g)\log(1+\epsilon g)] = \mathbb E_\pi[\epsilon g+\tfrac{\epsilon^2}2g^2]+O(\epsilon^3) = \tfrac{\epsilon^2}2\operatorname{Var}_\pi g+O(\epsilon^3)$ when $\mathbb E_\pi g = 0$.
+- $\mathcal E(1+\epsilon g,\log(1+\epsilon g)) = \mathcal E(\epsilon g,\epsilon g-\tfrac{\epsilon^2}2g^2+\dots) = \epsilon^2\mathcal E(g,g)+O(\epsilon^3)$.
+- Log-mean inequality: for $x>y>0$, $\frac{x-y}{\log x-\log y}\le\frac{x+y}2$.
+
+## References
+
+- D. Levin, Y. Peres, E. Wilmer, *Markov Chains and Mixing Times* (2nd ed.) — Ch. 4 (TV, mixing time), Ch. 12 (spectral bounds), Ch. 13 (canonical paths, comparison), Ch. 20 (continuous time).
+- P. Diaconis, D. Stroock, "Geometric bounds for eigenvalues of Markov chains," *Ann. Appl. Probab.* 1 (1991).
+- A. Sinclair, "Improved bounds for mixing rates of Markov chains and multicommodity flow," *Combin. Probab. Comput.* 1 (1992).
+- P. Diaconis, L. Saloff-Coste, "Logarithmic Sobolev inequalities for finite Markov chains," *Ann. Appl. Probab.* 6 (1996).
+- R. Jordan, D. Kinderlehrer, F. Otto, "The variational formulation of the Fokker–Planck equation," *SIAM J. Math. Anal.* 29 (1998).
+- J. Maas, "Gradient flows of the entropy for finite Markov chains," *J. Funct. Anal.* 261 (2011).
+- S. Bobkov, P. Tetali, "Modified logarithmic Sobolev inequalities in discrete settings," *J. Theoret. Probab.* 19 (2006).
+

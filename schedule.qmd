@@ -9,7 +9,7 @@ Tentative and updated as the quarter goes. Slides open in presentation mode (pre
 | \# | Date | Topic | Materials | Reading | Recommended Exercises |
 |------------|------------|-------------|------------|------------|------------|
 | 1 | 9/29 | Why eigenvectors? A tour of spectral methods | [Slides](lectures/lecture01/lecture1.qmd) · demos: [PageRank](lectures/lecture01/demos/pagerank.html), [Fiedler vector](lectures/lecture01/demos/fiedler.html), [Heat diffusion](lectures/lecture01/demos/heat.html) | [LA Review I](notes/la-review-part1.qmd) | [Perron–Frobenius](exercises/perron-frobenius.qmd) · [ℓ₁ contraction](exercises/l1-contraction.qmd) |
-| 2 | 10/1 | Spectral Graph Theory for Undirected Graphs. Heat Kernels, Random Walks and their Convergence. |  |  |  |
+| 2 | 10/1 | Spectral Graph Theory for Undirected Graphs. Heat Kernels, Random Walks and their Convergence. | [Slides](lectures/lecture02/lecture2.qmd) | [Lecture 2 notes](notes/lecture2-notes.qmd) |  |
 | 3 | 10/6 | Spectral Clustering and Eigenvector Perturbation |  | [Davis–Kahan](notes/davis-kahan.qmd) |  |
 | 4 | 10/8 | Conductance and Cheeger's Inequality |  |  |  |
 | 5 | 10/13 | Higher-order and k-way Cheeger's Inequalities |  |  |  |
