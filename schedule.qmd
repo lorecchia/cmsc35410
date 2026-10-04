@@ -9,8 +9,8 @@ Tentative and updated as the quarter goes. Slides open in presentation mode (pre
 | \# | Date | Topic | Materials | Reading | Recommended Exercises |
 |------------|------------|-------------|------------|------------|------------|
 | 1 | 9/29 | Why eigenvectors? A tour of spectral methods | [Slides](lectures/lecture01/lecture1.qmd) · demos: [PageRank](lectures/lecture01/demos/pagerank.html), [Fiedler vector](lectures/lecture01/demos/fiedler.html), [Heat diffusion](lectures/lecture01/demos/heat.html) | [LA Review I](notes/la-review-part1.qmd) | [Perron–Frobenius](exercises/perron-frobenius.qmd) · [ℓ₁ contraction](exercises/l1-contraction.qmd) |
-| 2 | 10/1 | Graphs as Differential Operators. Random Walks, the Heat Kernel, Measures vs. Densities. | [Slides](lectures/lecture02/lecture2.qmd) · demo: [Split and aggregate](lectures/lecture02/demos/split-aggregate.html) | [Lecture 2 notes](notes/lecture2-notes.qmd) §1–2 |  |
-| 3 | 10/6 | Random Walks and their Convergence: Mixing Times, the Spectral Gap, Canonical Paths | [Slides](lectures/lecture03/lecture3.qmd) | [Lecture 2 notes](notes/lecture2-notes.qmd) §3–6 |  |
+| 2 | 10/1 | Graphs as Differential Operators. Random Walks, the Heat Kernel, Measures vs. Densities. | [Slides](lectures/lecture02/lecture2.qmd) · demo: [Split and aggregate](lectures/lecture02/demos/split-aggregate.html) | [Lecture 2 notes](notes/lecture2-notes.qmd) §1–2 | [Computing with Laplacians](exercises/laplacian-computations.qmd), Ex. 1–7 |
+| 3 | 10/6 | Random Walks and their Convergence: Mixing Times, the Spectral Gap, Canonical Paths | [Slides](lectures/lecture03/lecture3.qmd) | [Lecture 2 notes](notes/lecture2-notes.qmd) §3–6 | [Computing with Laplacians](exercises/laplacian-computations.qmd), Ex. [8](exercises/laplacian-computations.qmd#ex-two-state)–[9](exercises/laplacian-computations.qmd#ex-barbell) |
 | 4 | 10/8 | Spectral Clustering and Eigenvector Perturbation |  | [Davis–Kahan](notes/davis-kahan.qmd) |  |
 | 5 | 10/13 | Conductance and Cheeger's Inequality |  |  |  |
 | 6 | 10/15 | Higher-order and k-way Cheeger's Inequalities |  |  |  |
