@@ -1,0 +1,100 @@
+---
+title: "Non-Reversible Walks and the Dissipative/Poisson Split"
+subtitle: "Directed graphs, probability currents, and GENERIC"
+description: "Draft. For the lecture on directed graphs and non-reversible Markov chains."
+order: 5
+---
+
+Lecture 2 (§2.4 of the [lecture notes](lecture2-notes.qmd)) flagged this and moved on: *"Without reversibility, $h_t$ evolves under $H_t^*$, the semigroup of the time-reversed chain... we'll redo this for general Markov semigroups."* This note is that redo. The punchline: every random walk on a directed graph splits canonically into a **reversible part** (all of Lecture 2's machinery applies unchanged) and a **pure-circulation part** (an isometry — no dissipation at all), and this is exactly the Poisson/dissipative split of GENERIC, the formalism used in non-equilibrium statistical mechanics to combine reversible and irreversible dynamics.
+
+Notation follows the [lecture notes](lecture2-notes.qmd): $P$ is the one-step transition matrix of an **irreducible** chain on $G=(V,E,w)$, now directed, with unique stationary distribution $\pi$ (Perron–Frobenius). We do *not* assume detailed balance.
+
+---
+
+## 1. The adjoint is the reversed chain
+
+**Definition.** The *time-reversed chain* is $\hat P := \Pi^{-1}P^\top\Pi$, i.e. $\pi_i\hat P_{ij} = \pi_jP_{ji}$. (This is the one-step version of $H_t^*=\Pi^{-1}H_t^\top\Pi$ from Lecture 2 §2.4.) $\hat P$ is itself a stochastic matrix with the *same* stationary distribution $\pi$: $\pi^\top\hat P = \pi^\top$ iff $\sum_i\pi_i\hat P_{ij}=\sum_i\pi_jP_{ji}=\pi_j\sum_iP_{ji}=\pi_j$. ✓.
+
+**Proposition.** $\hat P$ is the $L^2(\pi)$-adjoint of $P$: $\langle f,Pg\rangle_\pi=\langle\hat Pf,g\rangle_\pi$.
+
+*Proof.* $\langle f,Pg\rangle_\pi = \sum_{i,j}\pi_iP_{ij}f_ig_j$ and $\langle\hat Pf,g\rangle_\pi=\sum_{i,j}\pi_j\hat P_{ji}f_ig_j$; the definition of $\hat P$ (with $i,j$ swapped) gives $\pi_j\hat P_{ji}=\pi_iP_{ij}$. $\square$
+
+$G$ is reversible iff $P=\hat P$, iff $L_{rw}=L_{rw}^*$ (self-adjoint) — the case the whole of Lecture 2 handles. Write $\hat L_{rw}:=I-\hat P = L_{rw}^*$ for the Laplacian of the reversed chain in general.
+
+---
+
+## 2. The symmetric/antisymmetric split
+
+**Definition.** $\bar P := \tfrac12(P+\hat P)$ (the *additive reversibilization*), and
+$$
+L_{rw}^{\rm sym} := \tfrac12(L_{rw}+L_{rw}^*) = I-\bar P, \qquad L_{rw}^{\rm anti} := \tfrac12(L_{rw}-L_{rw}^*) = \tfrac12(\hat P-P),
+$$
+so $L_{rw} = L_{rw}^{\rm sym}+L_{rw}^{\rm anti}$, with $L_{rw}^{\rm sym}$ self-adjoint and $L_{rw}^{\rm anti}$ skew-adjoint in $L^2(\pi)$ (standard decomposition of any operator).
+
+**Proposition.** $\bar P$ is a reversible chain with stationary distribution $\pi$.
+
+*Proof.* $\bar P$ is stochastic (average of two stochastic matrices) and $\pi_i\bar P_{ij} = \tfrac12(\pi_iP_{ij}+\pi_i\hat P_{ij}) = \tfrac12(\pi_iP_{ij}+\pi_jP_{ji})$, symmetric under $i\leftrightarrow j$. $\square$
+
+So $L_{rw}^{\rm sym}$ is the random-walk Laplacian of a genuine reversible graph — **every fact from Lecture 2 (self-adjointness, PSD, Dirichlet form $\mathcal E^{\rm sym}(f,g):=\langle f,L_{rw}^{\rm sym}g\rangle_\pi$, Poincaré, $\chi^2$-decay, Proof 2, the gradient-flow picture) applies to $\bar P$ unchanged.** All the "dissipation" lives here.
+
+$L_{rw}^{\rm anti}$, being skew-adjoint, generates a one-parameter group of **isometries** of $L^2(\pi)$: $\|e^{-tL_{rw}^{\rm anti}}f\|_\pi = \|f\|_\pi$ for all $t$ (standard fact: $\frac{d}{dt}\|e^{tA}f\|^2 = 2\langle Af,f\rangle=0$ when $A^*=-A$, since a skew form vanishes on the diagonal). No distance to $\pi$ shrinks under this flow alone — it only *moves mass around*, in loops.
+
+---
+
+## 3. Probability currents
+
+**Definition.** The *(stationary) current* across the directed pair $(i,j)$ is $J_{ij} := \pi_iP_{ij}-\pi_jP_{ji}$.
+
+**Proposition.** $(L_{rw}^{\rm anti})_{ij} = -J_{ij}/(2\pi_i)$ for $i\ne j$. In particular $L_{rw}^{\rm anti}\equiv0$ iff $J\equiv0$ iff detailed balance holds.
+
+*Proof.* $\hat P_{ij}=\pi_jP_{ji}/\pi_i$ from §1, so $(L_{rw}^{\rm anti})_{ij}=\tfrac12(\hat P_{ij}-P_{ij}) = \tfrac{1}{2\pi_i}(\pi_jP_{ji}-\pi_iP_{ij}) = -J_{ij}/(2\pi_i)$. $\square$
+
+A nonzero stationary current is exactly the signature of a **non-equilibrium steady state** (NESS) in the statistical-mechanics sense: the system has settled into a stationary distribution, but mass is still perpetually circulating around directed cycles rather than sitting still. (Kirchhoff-type fact, not proved here: $J$ is divergence-free, $\sum_jJ_{ij}=0$ for every $i$ — stationary currents have no sources or sinks, so they decompose into a sum of circulations around cycles. Good exercise.)
+
+---
+
+## 4. This is the GENERIC / metriplectic split
+
+GENERIC (Grmela–Öttinger; "metriplectic," Morrison) writes dynamics as $\dot x = \{x,E\}+(x,S)$: a **Poisson bracket** $\{\cdot,\cdot\}$ (antisymmetric, generates reversible/energy-conserving motion) plus a **dissipative bracket** $(\cdot,\cdot)$ (symmetric, semi-definite, generates irreversible relaxation), with degeneracy conditions $\{E,\cdot\}=\{\cdot,S\}=0$-type statements linking the two.
+
+Here, with $h_t=H_th_0$ densities and $\partial_th_t=-L_{rw}h_t = -L_{rw}^{\rm sym}h_t - L_{rw}^{\rm anti}h_t$:
+
+- $-L_{rw}^{\rm sym}h_t$ is the familiar gradient flow $-\nabla_\pi F(h_t)$ of $F(h)=\tfrac12\mathcal E^{\rm sym}(h,h)$ — the **dissipative** part.
+- $-L_{rw}^{\rm anti}h_t$ is generated by a skew-adjoint operator — the **Poisson/circulatory** part.
+- Both parts conserve total mass individually ($L_{rw}^{\rm sym}\mathbf1=L_{rw}^{\rm anti}\mathbf1=0$ — check the second: $\hat P\mathbf1=P\mathbf1=\mathbf1$), the discrete analogue of GENERIC's energy-conservation degeneracy condition, with $E(h):=\mathbb E_\pi h$ as the conserved quantity.
+
+**Caveat — don't oversell this.** The *full* GENERIC axiom would further require the Poisson part to leave the dissipative potential $F$ itself exactly invariant, $\langle\nabla_\pi F, L_{rw}^{\rm anti}h\rangle_\pi \equiv 0$. This holds iff $L_{rw}^{\rm sym}$ and $L_{rw}^{\rm anti}$ **commute** — not automatic for a general directed graph. What's unconditional is the weaker mass-conservation above, plus (next section) comparison results at the level of the spectral gap rather than instantaneous conservation.
+
+---
+
+## 5. Worked example: the directed cycle
+
+Let $P$ be the deterministic directed $n$-cycle, $P_{i,i+1}=1$. Then:
+
+- $\pi$ = uniform (the only stationary distribution of a permutation matrix on one cycle).
+- $\hat P_{i,i-1}=1$: the reversed chain is the deterministic *backward* cycle.
+- $\bar P = \tfrac12(P+\hat P)$: step to $i+1$ or $i-1$ each w.p. $\tfrac12$ — **exactly simple random walk on the undirected cycle $C_n$**, whose spectral gap was computed in Lecture 2 §6.2: $\lambda(\bar L_{rw}) = 1-\cos(2\pi/n)\approx 2\pi^2/n^2$.
+- $L_{rw}^{\rm anti}$ is pure rotation: in the Fourier/circulant eigenbasis already used for $C_n$ in §6.2, $L_{rw}^{\rm anti}$ is diagonal with purely imaginary eigenvalues (skew-adjoint operators are diagonalized by the same unitary eigenbasis that diagonalizes any circulant, with eigenvalues on the imaginary axis).
+
+So: *the directed cycle's walk is literally "simple random walk on $C_n$, plus a clock."* All the dissipation is the $C_n$ relaxation already computed; the directed-ness just adds a rotation that never affects any $\pi$-weighted quadratic functional (since here $L_{rw}^{\rm sym}$ and $L_{rw}^{\rm anti}$ *do* commute — both are circulant, hence simultaneously diagonalized by the Fourier basis — so this example sits in the clean/non-generic case of §4's caveat). Good first example to put on the board; a good second example is a directed cycle with *unequal* edge weights, where $\bar P\ne$ plain SRW and the commuting property generally fails.
+
+---
+
+## 6. Why this is useful, not just cute
+
+Adding a measure-preserving antisymmetric perturbation to a reversible chain is a known technique for **accelerating mixing** without changing the stationary distribution: it provably never increases, and generically decreases, relaxation time / asymptotic MCMC variance. Classical in continuous space (Hwang–Hwang–Sheu, accelerating Langevin diffusions by adding a divergence-free drift); discrete/finite-chain and "lifting" versions since (Diaconis–Holmes–Neal; Chen–Lovász–Pak). This is the finite-state cousin of underdamped vs. overdamped Langevin dynamics. (Citation details from memory: check before lecturing.)
+
+**Open questions worth posing in class:**
+
+1. Given a target $\pi$ and reversible $\bar P$, how large can you make $L_{rw}^{\rm anti}$ (i.e. how much current can you inject) while keeping $\pi$ fixed, and does the spectral gap of the *non-symmetric* $L_{rw}$ (suitably defined, e.g. via the real part of its spectrum) always dominate $\lambda(L_{rw}^{\rm sym})$?
+2. Does the commuting / clean case of §5 generalize beyond vertex-transitive graphs?
+3. Connection to Lecture 2 §5.3's discrete transport metric (Maas, Mielke): does their gradient-flow-of-entropy picture have a GENERIC-style analogue for non-reversible chains?
+
+## References
+
+- M. Grmela, H.C. Öttinger, "Dynamics and thermodynamics of complex fluids I," *Phys. Rev. E* 56 (1997).
+- P. Morrison, "Some observations regarding brackets and dissipation," Center for Pure and Applied Mathematics report, UC Berkeley (1984) — coined "metriplectic."
+- T.-Y. Jiang, Q. Qian, M. Qian, *Mathematical Theory of Nonequilibrium Steady States*, Lecture Notes in Mathematics 1833, Springer (2004) — the $J_{ij}$ / NESS picture in §3.
+- C.-R. Hwang, S.-Y. Hwang-Ma, S.-J. Sheu, "Accelerating diffusions," *Ann. Appl. Probab.* 15 (2005), and the earlier 1993 paper.
+- P. Diaconis, S. Holmes, R. Neal, "Analysis of a nonreversible Markov chain sampler," *Ann. Appl. Probab.* 10 (2000).
+(Citation details from memory: check.)
