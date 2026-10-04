@@ -90,6 +90,32 @@ Adding a measure-preserving antisymmetric perturbation to a reversible chain is 
 2. Does the commuting / clean case of §5 generalize beyond vertex-transitive graphs?
 3. Connection to Lecture 2 §5.3's discrete transport metric (Maas, Mielke): does their gradient-flow-of-entropy picture have a GENERIC-style analogue for non-reversible chains?
 
+## 7. Hypocoercivity: the genuinely degenerate regime
+
+§6 is the *easy* regime: for a connected directed graph, $\ker L_{rw}^{\rm sym}$ is always just the constants (1-dimensional), so $L_{rw}^{\rm sym}$ alone already has a spectral gap, and $L_{rw}^{\rm anti}$ is a bonus. Villani's **hypocoercivity** (2009 AMS Memoir) is the opposite, *hard* regime: the symmetric part is **massively degenerate** — a large kernel beyond the constants — and converges only because the antisymmetric part continually feeds information into the directions where dissipation can act. "Hypo" = below/under coercive, same prefix and spirit as Hörmander's hypoellipticity.
+
+**The model problem (kinetic Fokker–Planck).** On $(x,v)\in\mathbb R^{2d}$,
+$$
+\partial_tf = \underbrace{\Delta_vf+\nabla_v\!\cdot(vf)}_{L^{\rm sym}:\text{ velocity diffusion}}\ \underbrace{-\,v\cdot\nabla_xf+\nabla_xU\cdot\nabla_vf}_{L^{\rm anti}:\text{ transport/Liouville}}.
+$$
+$\ker L^{\rm sym}$ is *every* function of $x$ alone — infinite-dimensional. A function depending only on position is invisible to the dissipation and would never move under $L^{\rm sym}$ alone. Convergence of the full equation relies entirely on transport ($v\cdot\nabla_x$) continually mixing $x$-dependence into $v$-dependence.
+
+**No plain graph random walk can exhibit this** — connectedness forces $\ker L_{rw}^{\rm sym}=\operatorname{span}(\mathbf1)$, always 1-dimensional. To get a genuine finite-dimensional analogue of the kinetic picture, build a **lifted chain**: state space $V\times\{\text{auxiliary factor}\}$ (a discrete "velocity" — e.g. a direction bit, or more generally a finite set of momenta), with the symmetric part dissipating *only* in the auxiliary factor (so $\ker L^{\rm sym}$ = all functions of $V$ alone, genuinely large) and the antisymmetric part a discrete transport coupling the two factors (move in $V$ according to the current auxiliary state, as in discrete/lifted MCMC samplers — now read as the *kinetic* story rather than the acceleration story of §6). This is the same construction underlying discrete Hamiltonian/lifted MCMC, just with the opposite motivation foregrounded.
+
+**The abstract criterion (Dolbeault–Mouhot–Schmeiser form).** Write $L = A^*A + B$ on a Hilbert space, $A^*A = L^{\rm sym}\succeq0$ with kernel $\mathcal N$, $B=L^{\rm anti}$ skew-adjoint. If the commutator $[A,B]$, restricted to $\mathcal N$, is **coercive** —
+$$
+\|[A,B]\psi\|\ge\delta\|\psi\|\qquad\text{for all }\psi\in\mathcal N
+$$
+— (plus a mild boundedness condition on $[A,B]$ off $\mathcal N$), then the modified quadratic form
+$$
+\mathcal H[f] := \|f\|^2 + a\|Af\|^2 + 2b\langle Af,Bf\rangle + c\|Bf\|^2
+$$
+(for suitable small $a,b,c>0$) is equivalent to $\|f\|^2$ and decays exponentially, $\frac{d}{dt}\mathcal H[f_t]\le-\kappa\mathcal H[f_t]$, even though $\|f_t\|^2$ alone has no clean dissipation estimate (since $\langle f,L^{\rm sym}f\rangle=0$ on all of $\mathcal N$). Coercivity of $[A,B]$ on $\mathcal N$ is exactly a one-step Hörmander bracket-generating condition: $B$ must move every degenerate direction into a dissipated one.
+
+**Why this is a good teaching example.** In the PDE setting, checking the hypotheses and constructing $\mathcal H$ involves real functional-analytic care (unbounded operators, domains, weighted Sobolev spaces). For a *finite* lifted chain, $A,B$ are just matrices, $\mathcal N$ a genuine finite-dimensional subspace, and the coercivity condition on $[A,B]|_{\mathcal N}$ is literally a smallest-singular-value computation — no functional analysis overhead. A worked finite example (smallest lifted chain exhibiting the phenomenon: $V=$ a cycle or path, auxiliary factor $=\{+1,-1\}$, symmetric part flips the auxiliary bit at some rate, antisymmetric part moves in $V$ in the direction of the current bit) would make a genuinely good capstone exercise, possibly a nice bridge from this lecture toward later discrete-curvature material (Maas/Erbar, already flagged in Lecture 2's speaker notes).
+
+**Exercise to design:** write down the smallest lifted chain on a graph for which $L^{\rm sym}$ alone is reducible/disconnected on its nontrivial-kernel directions but $L=L^{\rm sym}+L^{\rm anti}$ has a provable spectral gap via the bracket condition above; compute $\delta$ and compare the resulting rate to the "naive" (non-lifted) chain's gap.
+
 ## References
 
 - M. Grmela, H.C. Öttinger, "Dynamics and thermodynamics of complex fluids I," *Phys. Rev. E* 56 (1997).
@@ -97,4 +123,6 @@ Adding a measure-preserving antisymmetric perturbation to a reversible chain is 
 - T.-Y. Jiang, Q. Qian, M. Qian, *Mathematical Theory of Nonequilibrium Steady States*, Lecture Notes in Mathematics 1833, Springer (2004) — the $J_{ij}$ / NESS picture in §3.
 - C.-R. Hwang, S.-Y. Hwang-Ma, S.-J. Sheu, "Accelerating diffusions," *Ann. Appl. Probab.* 15 (2005), and the earlier 1993 paper.
 - P. Diaconis, S. Holmes, R. Neal, "Analysis of a nonreversible Markov chain sampler," *Ann. Appl. Probab.* 10 (2000).
-(Citation details from memory: check.)
+- C. Villani, *Hypocoercivity*, Memoirs of the AMS 202 (2009).
+- J. Dolbeault, C. Mouhot, C. Schmeiser, "Hypocoercivity for linear kinetic equations conserving mass," *Trans. AMS* 367 (2015) — the $A,B$ / commutator-coercivity form used in §7.
+(Citation details from memory: check — especially whether a discrete/lifted-chain hypocoercivity reference already exists in the literature to cite directly, rather than building the analogy from scratch in lecture.)
