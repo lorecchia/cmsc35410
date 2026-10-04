@@ -215,8 +215,17 @@ CMSC 35410 · Lecture 2
 </section>
 <section id="example-f-and-nabla-f-on-a-graph" class="slide level2">
 <h2>Example: <span class="math inline">\(f\)</span> and <span class="math inline">\(\nabla f\)</span> on a graph</h2>
-
-<img data-src="lecture2_files/figure-revealjs/cell-3-output-1.svg" class="r-stretch quarto-figure-center"><p class="caption">Blue = <span class="math inline">\(f\)</span> at each vertex; orange = <span class="math inline">\((\nabla f)(e) = f(j)-f(i)\)</span> on each oriented edge. Each row of <span class="math inline">\(B\)</span> is <span class="math inline">\(-1\)</span> at the tail, <span class="math inline">\(+1\)</span> at the head: <span class="math inline">\((Bf)_e = (\nabla f)(e)\)</span>.</p><div class="fragment">
+<div id="30c340a0" class="cell" data-fig-height="3.8" data-fig-width="11" data-execution_count="2">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="lecture2_files/figure-html/cell-3-output-1.png" width="938" height="347"></p>
+<figcaption>Blue = <span class="math inline">\(f\)</span> at each vertex; orange = <span class="math inline">\((\nabla f)(e) = f(j)-f(i)\)</span> on each oriented edge. Each row of <span class="math inline">\(B\)</span> is <span class="math inline">\(-1\)</span> at the tail, <span class="math inline">\(+1\)</span> at the head: <span class="math inline">\((Bf)_e = (\nabla f)(e)\)</span>.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="fragment">
 <div class="box small">
 <p>The flow <span class="math inline">\(\nabla f \in \mathbb{R}^E\)</span> can be thought of as a vector field, i.e., a member of the tangent bundle, where <span class="math inline">\((\nabla f)_e\)</span> represents the directional derivative of the function <span class="math inline">\(f\)</span> along edge <span class="math inline">\(e\)</span>.</p>
 </div>
@@ -266,8 +275,17 @@ CMSC 35410 · Lecture 2
 </section>
 <section id="example-the-divergence-of-nabla-f" class="slide level2">
 <h2>Example: the divergence of <span class="math inline">\(\nabla f\)</span></h2>
-
-<img data-src="lecture2_files/figure-revealjs/cell-4-output-1.svg" class="r-stretch quarto-figure-center"><p class="caption">Green = <span class="math inline">\(\operatorname{div}(\nabla f)_i\)</span> (counting measure, <span class="math inline">\(m\equiv1\)</span>, unweighted): outflow minus inflow at <span class="math inline">\(i\)</span>. E.g. at <span class="math inline">\(D\)</span>: <span class="math inline">\((-3.5) - \big((-1.5)+(2.5)\big) = -4.5\)</span>.</p><div class="fragment">
+<div id="33f4cdc1" class="cell" data-fig-height="3.6" data-fig-width="6" data-execution_count="3">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="lecture2_files/figure-html/cell-4-output-1.png" width="523" height="327"></p>
+<figcaption>Green = <span class="math inline">\(\operatorname{div}(\nabla f)_i\)</span> (counting measure, <span class="math inline">\(m\equiv1\)</span>, unweighted): outflow minus inflow at <span class="math inline">\(i\)</span>. E.g. at <span class="math inline">\(D\)</span>: <span class="math inline">\((-3.5) - \big((-1.5)+(2.5)\big) = -4.5\)</span>.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="fragment">
 <div class="box small">
 <p>Like in continuous space, <span class="math inline">\(-\nabla^*\)</span> measures the net outflow of a vector field per unit volume (or vertex mass, in the graph case).</p>
 </div>
@@ -400,8 +418,16 @@ CMSC 35410 · Lecture 2
 <li><strong>Path</strong>, weights <span class="math inline">\(h^{-2}\)</span>: <span class="math inline">\(\;(Lf)_i = h^{-2}(2f_i - f_{i-1} - f_{i+1})\to -f''\)</span> — the <strong>3-point stencil</strong>.</li>
 <li><strong>Grid</strong>, weights <span class="math inline">\(h^{-2}\)</span>: <span class="math inline">\(\;(Lf)_{i,j} = h^{-2}(4f_{i,j} - f_{i\pm1,j} - f_{i,j\pm1})\to-\Delta f\)</span> — the <strong>5-point stencil</strong>.</li>
 </ul>
-
-<img data-src="lecture2_files/figure-revealjs/cell-5-output-1.svg" class="r-stretch"><aside class="notes">
+<div id="e14f7122" class="cell" data-fig-height="4.6" data-fig-width="11" data-execution_count="4">
+<div class="cell-output cell-output-display">
+<div>
+<figure>
+<p><img data-src="lecture2_files/figure-html/cell-5-output-1.png" width="985" height="424"></p>
+</figure>
+</div>
+</div>
+</div>
+<aside class="notes">
 <p>Interior grid vertex: degree 4, so L is exactly the 5-point stencil for −Δ. Boundary vertex (green): degree 3; L drops the missing term, equivalent to a ghost value equal to the vertex’s own value, i.e.&nbsp;zero normal derivative (Neumann). Dirichlet would keep the diagonal at 4/h² and lose 1 from the kernel. The cycle’s spectrum (sampled Fourier modes) is computed in Lecture 3, §4.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
