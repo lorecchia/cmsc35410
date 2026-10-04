@@ -6,8 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="description" content="Draft. For the lecture on directed graphs and non-reversible Markov chains.">
 
-<title>Schedule – CMSC 35410</title>
+<title>Non-Reversible Walks and the Dissipative/Poisson Split – CMSC 35410</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -29,27 +30,27 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-ec6c034766f78be6d2b3c979ae054acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-79f87882548c91cf1952f391da7ff80a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-ec6c034766f78be6d2b3c979ae054acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ec6c034766f78be6d2b3c979ae054acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-79f87882548c91cf1952f391da7ff80a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-ec6c034766f78be6d2b3c979ae054acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -78,10 +79,39 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
-<body class="nav-fixed fullcontent quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+<body class="nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
     const toggleBodyColorMode = (bsSheetEl) => {
       const mode = bsSheetEl.getAttribute("data-mode");
       const bodyEl = window.document.querySelector("body");
@@ -250,7 +280,7 @@ ul.task-list li input[type="checkbox"] {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">CMSC 35410</span>
     </a>
   </div>
@@ -261,19 +291,19 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./index.html"> 
+    <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="./schedule.html" aria-current="page"> 
+    <a class="nav-link" href="../schedule.html"> 
 <span class="menu-text">Schedule</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./notes.html"> 
+    <a class="nav-link" href="../notes.html"> 
 <span class="menu-text">Notes</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./resources.html"> 
+    <a class="nav-link" href="../resources.html"> 
 <span class="menu-text">Resources</span></a>
   </li>  
 </ul>
@@ -295,16 +325,36 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-adjoint-is-the-reversed-chain" id="toc-the-adjoint-is-the-reversed-chain" class="nav-link active" data-scroll-target="#the-adjoint-is-the-reversed-chain">1. The adjoint is the reversed chain</a></li>
+  <li><a href="#the-symmetricantisymmetric-split" id="toc-the-symmetricantisymmetric-split" class="nav-link" data-scroll-target="#the-symmetricantisymmetric-split">2. The symmetric/antisymmetric split</a></li>
+  <li><a href="#probability-currents" id="toc-probability-currents" class="nav-link" data-scroll-target="#probability-currents">3. Probability currents</a></li>
+  <li><a href="#this-is-the-generic-metriplectic-split" id="toc-this-is-the-generic-metriplectic-split" class="nav-link" data-scroll-target="#this-is-the-generic-metriplectic-split">4. This is the GENERIC / metriplectic split</a></li>
+  <li><a href="#worked-example-the-directed-cycle" id="toc-worked-example-the-directed-cycle" class="nav-link" data-scroll-target="#worked-example-the-directed-cycle">5. Worked example: the directed cycle</a></li>
+  <li><a href="#why-this-is-useful-not-just-cute" id="toc-why-this-is-useful-not-just-cute" class="nav-link" data-scroll-target="#why-this-is-useful-not-just-cute">6. Why this is useful, not just cute</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/notes/non-reversible-generic.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Schedule</h1>
+<h1 class="title">Non-Reversible Walks and the Dissipative/Poisson Split</h1>
+<p class="subtitle lead">Directed graphs, probability currents, and GENERIC</p>
 </div>
 
+<div>
+  <div class="description">
+    Draft. For the lecture on directed graphs and non-reversible Markov chains.
+  </div>
+</div>
 
 
 <div class="quarto-title-meta">
@@ -319,97 +369,82 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>Tentative and updated as the quarter goes. Slides open in presentation mode (press <strong>F</strong> for fullscreen, <strong>S</strong> for speaker view, <strong>E</strong> for print/PDF mode).</p>
-<div class="schedule-table">
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>#</th>
-<th>Date</th>
-<th>Topic</th>
-<th>Materials</th>
-<th>Reading</th>
-<th>Recommended Exercises</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>1</td>
-<td>9/29</td>
-<td>Why eigenvectors? A tour of spectral methods</td>
-<td><a href="./lectures/lecture01/lecture1.html">Slides</a> · demos: <a href="lectures/lecture01/demos/pagerank.html">PageRank</a>, <a href="lectures/lecture01/demos/fiedler.html">Fiedler vector</a>, <a href="lectures/lecture01/demos/heat.html">Heat diffusion</a></td>
-<td><a href="./notes/la-review-part1.html">LA Review I</a></td>
-<td><a href="./exercises/perron-frobenius.html">Perron–Frobenius</a> · <a href="./exercises/l1-contraction.html">ℓ₁ contraction</a></td>
-</tr>
-<tr class="even">
-<td>2</td>
-<td>10/1</td>
-<td>Graphs as Differential Operators. Random Walks, the Heat Kernel, Measures vs.&nbsp;Densities.</td>
-<td><a href="./lectures/lecture02/lecture2.html">Slides</a> · demo: <a href="lectures/lecture02/demos/split-aggregate.html">Split and aggregate</a></td>
-<td><a href="./notes/lecture2-notes.html">Lecture 2 notes</a> §1–2</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>3</td>
-<td>10/6</td>
-<td>Random Walks and their Convergence: Mixing Times, the Spectral Gap, Canonical Paths</td>
-<td><a href="./lectures/lecture03/lecture3.html">Slides</a></td>
-<td><a href="./notes/lecture2-notes.html">Lecture 2 notes</a> §3–6</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>4</td>
-<td>10/8</td>
-<td>Spectral Clustering and Eigenvector Perturbation</td>
-<td></td>
-<td><a href="./notes/davis-kahan.html">Davis–Kahan</a></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>5</td>
-<td>10/13</td>
-<td>Conductance and Cheeger’s Inequality</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>6</td>
-<td>10/15</td>
-<td>Higher-order and k-way Cheeger’s Inequalities</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>7</td>
-<td>10/20</td>
-<td>Electrical Flows and Fast Laplacian Solvers</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>8</td>
-<td>10/22</td>
-<td>Semidefinite Programming and MMWUs</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td></td>
-<td></td>
-<td></td>
-<td><a href="./notes/la-review-part2.html">LA Review II</a></td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</div>
+<p>Lecture 2 (§2.4 of the <a href="../notes/lecture2-notes.html">lecture notes</a>) flagged this and moved on: <em>“Without reversibility, <span class="math inline">\(h_t\)</span> evolves under <span class="math inline">\(H_t^*\)</span>, the semigroup of the time-reversed chain… we’ll redo this for general Markov semigroups.”</em> This note is that redo. The punchline: every random walk on a directed graph splits canonically into a <strong>reversible part</strong> (all of Lecture 2’s machinery applies unchanged) and a <strong>pure-circulation part</strong> (an isometry — no dissipation at all), and this is exactly the Poisson/dissipative split of GENERIC, the formalism used in non-equilibrium statistical mechanics to combine reversible and irreversible dynamics.</p>
+<p>Notation follows the <a href="../notes/lecture2-notes.html">lecture notes</a>: <span class="math inline">\(P\)</span> is the one-step transition matrix of an <strong>irreducible</strong> chain on <span class="math inline">\(G=(V,E,w)\)</span>, now directed, with unique stationary distribution <span class="math inline">\(\pi\)</span> (Perron–Frobenius). We do <em>not</em> assume detailed balance.</p>
+<hr>
+<section id="the-adjoint-is-the-reversed-chain" class="level2">
+<h2 class="anchored" data-anchor-id="the-adjoint-is-the-reversed-chain">1. The adjoint is the reversed chain</h2>
+<p><strong>Definition.</strong> The <em>time-reversed chain</em> is <span class="math inline">\(\hat P := \Pi^{-1}P^\top\Pi\)</span>, i.e.&nbsp;<span class="math inline">\(\pi_i\hat P_{ij} = \pi_jP_{ji}\)</span>. (This is the one-step version of <span class="math inline">\(H_t^*=\Pi^{-1}H_t^\top\Pi\)</span> from Lecture 2 §2.4.) <span class="math inline">\(\hat P\)</span> is itself a stochastic matrix with the <em>same</em> stationary distribution <span class="math inline">\(\pi\)</span>: <span class="math inline">\(\pi^\top\hat P = \pi^\top\)</span> iff <span class="math inline">\(\sum_i\pi_i\hat P_{ij}=\sum_i\pi_jP_{ji}=\pi_j\sum_iP_{ji}=\pi_j\)</span>. ✓.</p>
+<p><strong>Proposition.</strong> <span class="math inline">\(\hat P\)</span> is the <span class="math inline">\(L^2(\pi)\)</span>-adjoint of <span class="math inline">\(P\)</span>: <span class="math inline">\(\langle f,Pg\rangle_\pi=\langle\hat Pf,g\rangle_\pi\)</span>.</p>
+<p><em>Proof.</em> <span class="math inline">\(\langle f,Pg\rangle_\pi = \sum_{i,j}\pi_iP_{ij}f_ig_j\)</span> and <span class="math inline">\(\langle\hat Pf,g\rangle_\pi=\sum_{i,j}\pi_j\hat P_{ji}f_ig_j\)</span>; the definition of <span class="math inline">\(\hat P\)</span> (with <span class="math inline">\(i,j\)</span> swapped) gives <span class="math inline">\(\pi_j\hat P_{ji}=\pi_iP_{ij}\)</span>. <span class="math inline">\(\square\)</span></p>
+<p><span class="math inline">\(G\)</span> is reversible iff <span class="math inline">\(P=\hat P\)</span>, iff <span class="math inline">\(L_{rw}=L_{rw}^*\)</span> (self-adjoint) — the case the whole of Lecture 2 handles. Write <span class="math inline">\(\hat L_{rw}:=I-\hat P = L_{rw}^*\)</span> for the Laplacian of the reversed chain in general.</p>
+<hr>
+</section>
+<section id="the-symmetricantisymmetric-split" class="level2">
+<h2 class="anchored" data-anchor-id="the-symmetricantisymmetric-split">2. The symmetric/antisymmetric split</h2>
+<p><strong>Definition.</strong> <span class="math inline">\(\bar P := \tfrac12(P+\hat P)\)</span> (the <em>additive reversibilization</em>), and <span class="math display">\[
+L_{rw}^{\rm sym} := \tfrac12(L_{rw}+L_{rw}^*) = I-\bar P, \qquad L_{rw}^{\rm anti} := \tfrac12(L_{rw}-L_{rw}^*) = \tfrac12(\hat P-P),
+\]</span> so <span class="math inline">\(L_{rw} = L_{rw}^{\rm sym}+L_{rw}^{\rm anti}\)</span>, with <span class="math inline">\(L_{rw}^{\rm sym}\)</span> self-adjoint and <span class="math inline">\(L_{rw}^{\rm anti}\)</span> skew-adjoint in <span class="math inline">\(L^2(\pi)\)</span> (standard decomposition of any operator).</p>
+<p><strong>Proposition.</strong> <span class="math inline">\(\bar P\)</span> is a reversible chain with stationary distribution <span class="math inline">\(\pi\)</span>.</p>
+<p><em>Proof.</em> <span class="math inline">\(\bar P\)</span> is stochastic (average of two stochastic matrices) and <span class="math inline">\(\pi_i\bar P_{ij} = \tfrac12(\pi_iP_{ij}+\pi_i\hat P_{ij}) = \tfrac12(\pi_iP_{ij}+\pi_jP_{ji})\)</span>, symmetric under <span class="math inline">\(i\leftrightarrow j\)</span>. <span class="math inline">\(\square\)</span></p>
+<p>So <span class="math inline">\(L_{rw}^{\rm sym}\)</span> is the random-walk Laplacian of a genuine reversible graph — <strong>every fact from Lecture 2 (self-adjointness, PSD, Dirichlet form <span class="math inline">\(\mathcal E^{\rm sym}(f,g):=\langle f,L_{rw}^{\rm sym}g\rangle_\pi\)</span>, Poincaré, <span class="math inline">\(\chi^2\)</span>-decay, Proof 2, the gradient-flow picture) applies to <span class="math inline">\(\bar P\)</span> unchanged.</strong> All the “dissipation” lives here.</p>
+<p><span class="math inline">\(L_{rw}^{\rm anti}\)</span>, being skew-adjoint, generates a one-parameter group of <strong>isometries</strong> of <span class="math inline">\(L^2(\pi)\)</span>: <span class="math inline">\(\|e^{-tL_{rw}^{\rm anti}}f\|_\pi = \|f\|_\pi\)</span> for all <span class="math inline">\(t\)</span> (standard fact: <span class="math inline">\(\frac{d}{dt}\|e^{tA}f\|^2 = 2\langle Af,f\rangle=0\)</span> when <span class="math inline">\(A^*=-A\)</span>, since a skew form vanishes on the diagonal). No distance to <span class="math inline">\(\pi\)</span> shrinks under this flow alone — it only <em>moves mass around</em>, in loops.</p>
+<hr>
+</section>
+<section id="probability-currents" class="level2">
+<h2 class="anchored" data-anchor-id="probability-currents">3. Probability currents</h2>
+<p><strong>Definition.</strong> The <em>(stationary) current</em> across the directed pair <span class="math inline">\((i,j)\)</span> is <span class="math inline">\(J_{ij} := \pi_iP_{ij}-\pi_jP_{ji}\)</span>.</p>
+<p><strong>Proposition.</strong> <span class="math inline">\((L_{rw}^{\rm anti})_{ij} = -J_{ij}/(2\pi_i)\)</span> for <span class="math inline">\(i\ne j\)</span>. In particular <span class="math inline">\(L_{rw}^{\rm anti}\equiv0\)</span> iff <span class="math inline">\(J\equiv0\)</span> iff detailed balance holds.</p>
+<p><em>Proof.</em> <span class="math inline">\(\hat P_{ij}=\pi_jP_{ji}/\pi_i\)</span> from §1, so <span class="math inline">\((L_{rw}^{\rm anti})_{ij}=\tfrac12(\hat P_{ij}-P_{ij}) = \tfrac{1}{2\pi_i}(\pi_jP_{ji}-\pi_iP_{ij}) = -J_{ij}/(2\pi_i)\)</span>. <span class="math inline">\(\square\)</span></p>
+<p>A nonzero stationary current is exactly the signature of a <strong>non-equilibrium steady state</strong> (NESS) in the statistical-mechanics sense: the system has settled into a stationary distribution, but mass is still perpetually circulating around directed cycles rather than sitting still. (Kirchhoff-type fact, not proved here: <span class="math inline">\(J\)</span> is divergence-free, <span class="math inline">\(\sum_jJ_{ij}=0\)</span> for every <span class="math inline">\(i\)</span> — stationary currents have no sources or sinks, so they decompose into a sum of circulations around cycles. Good exercise.)</p>
+<hr>
+</section>
+<section id="this-is-the-generic-metriplectic-split" class="level2">
+<h2 class="anchored" data-anchor-id="this-is-the-generic-metriplectic-split">4. This is the GENERIC / metriplectic split</h2>
+<p>GENERIC (Grmela–Öttinger; “metriplectic,” Morrison) writes dynamics as <span class="math inline">\(\dot x = \{x,E\}+(x,S)\)</span>: a <strong>Poisson bracket</strong> <span class="math inline">\(\{\cdot,\cdot\}\)</span> (antisymmetric, generates reversible/energy-conserving motion) plus a <strong>dissipative bracket</strong> <span class="math inline">\((\cdot,\cdot)\)</span> (symmetric, semi-definite, generates irreversible relaxation), with degeneracy conditions <span class="math inline">\(\{E,\cdot\}=\{\cdot,S\}=0\)</span>-type statements linking the two.</p>
+<p>Here, with <span class="math inline">\(h_t=H_th_0\)</span> densities and <span class="math inline">\(\partial_th_t=-L_{rw}h_t = -L_{rw}^{\rm sym}h_t - L_{rw}^{\rm anti}h_t\)</span>:</p>
+<ul>
+<li><span class="math inline">\(-L_{rw}^{\rm sym}h_t\)</span> is the familiar gradient flow <span class="math inline">\(-\nabla_\pi F(h_t)\)</span> of <span class="math inline">\(F(h)=\tfrac12\mathcal E^{\rm sym}(h,h)\)</span> — the <strong>dissipative</strong> part.</li>
+<li><span class="math inline">\(-L_{rw}^{\rm anti}h_t\)</span> is generated by a skew-adjoint operator — the <strong>Poisson/circulatory</strong> part.</li>
+<li>Both parts conserve total mass individually (<span class="math inline">\(L_{rw}^{\rm sym}\mathbf1=L_{rw}^{\rm anti}\mathbf1=0\)</span> — check the second: <span class="math inline">\(\hat P\mathbf1=P\mathbf1=\mathbf1\)</span>), the discrete analogue of GENERIC’s energy-conservation degeneracy condition, with <span class="math inline">\(E(h):=\mathbb E_\pi h\)</span> as the conserved quantity.</li>
+</ul>
+<p><strong>Caveat — don’t oversell this.</strong> The <em>full</em> GENERIC axiom would further require the Poisson part to leave the dissipative potential <span class="math inline">\(F\)</span> itself exactly invariant, <span class="math inline">\(\langle\nabla_\pi F, L_{rw}^{\rm anti}h\rangle_\pi \equiv 0\)</span>. This holds iff <span class="math inline">\(L_{rw}^{\rm sym}\)</span> and <span class="math inline">\(L_{rw}^{\rm anti}\)</span> <strong>commute</strong> — not automatic for a general directed graph. What’s unconditional is the weaker mass-conservation above, plus (next section) comparison results at the level of the spectral gap rather than instantaneous conservation.</p>
+<hr>
+</section>
+<section id="worked-example-the-directed-cycle" class="level2">
+<h2 class="anchored" data-anchor-id="worked-example-the-directed-cycle">5. Worked example: the directed cycle</h2>
+<p>Let <span class="math inline">\(P\)</span> be the deterministic directed <span class="math inline">\(n\)</span>-cycle, <span class="math inline">\(P_{i,i+1}=1\)</span>. Then:</p>
+<ul>
+<li><span class="math inline">\(\pi\)</span> = uniform (the only stationary distribution of a permutation matrix on one cycle).</li>
+<li><span class="math inline">\(\hat P_{i,i-1}=1\)</span>: the reversed chain is the deterministic <em>backward</em> cycle.</li>
+<li><span class="math inline">\(\bar P = \tfrac12(P+\hat P)\)</span>: step to <span class="math inline">\(i+1\)</span> or <span class="math inline">\(i-1\)</span> each w.p. <span class="math inline">\(\tfrac12\)</span> — <strong>exactly simple random walk on the undirected cycle <span class="math inline">\(C_n\)</span></strong>, whose spectral gap was computed in Lecture 2 §6.2: <span class="math inline">\(\lambda(\bar L_{rw}) = 1-\cos(2\pi/n)\approx 2\pi^2/n^2\)</span>.</li>
+<li><span class="math inline">\(L_{rw}^{\rm anti}\)</span> is pure rotation: in the Fourier/circulant eigenbasis already used for <span class="math inline">\(C_n\)</span> in §6.2, <span class="math inline">\(L_{rw}^{\rm anti}\)</span> is diagonal with purely imaginary eigenvalues (skew-adjoint operators are diagonalized by the same unitary eigenbasis that diagonalizes any circulant, with eigenvalues on the imaginary axis).</li>
+</ul>
+<p>So: <em>the directed cycle’s walk is literally “simple random walk on <span class="math inline">\(C_n\)</span>, plus a clock.”</em> All the dissipation is the <span class="math inline">\(C_n\)</span> relaxation already computed; the directed-ness just adds a rotation that never affects any <span class="math inline">\(\pi\)</span>-weighted quadratic functional (since here <span class="math inline">\(L_{rw}^{\rm sym}\)</span> and <span class="math inline">\(L_{rw}^{\rm anti}\)</span> <em>do</em> commute — both are circulant, hence simultaneously diagonalized by the Fourier basis — so this example sits in the clean/non-generic case of §4’s caveat). Good first example to put on the board; a good second example is a directed cycle with <em>unequal</em> edge weights, where <span class="math inline">\(\bar P\ne\)</span> plain SRW and the commuting property generally fails.</p>
+<hr>
+</section>
+<section id="why-this-is-useful-not-just-cute" class="level2">
+<h2 class="anchored" data-anchor-id="why-this-is-useful-not-just-cute">6. Why this is useful, not just cute</h2>
+<p>Adding a measure-preserving antisymmetric perturbation to a reversible chain is a known technique for <strong>accelerating mixing</strong> without changing the stationary distribution: it provably never increases, and generically decreases, relaxation time / asymptotic MCMC variance. Classical in continuous space (Hwang–Hwang–Sheu, accelerating Langevin diffusions by adding a divergence-free drift); discrete/finite-chain and “lifting” versions since (Diaconis–Holmes–Neal; Chen–Lovász–Pak). This is the finite-state cousin of underdamped vs.&nbsp;overdamped Langevin dynamics. (Citation details from memory: check before lecturing.)</p>
+<p><strong>Open questions worth posing in class:</strong></p>
+<ol type="1">
+<li>Given a target <span class="math inline">\(\pi\)</span> and reversible <span class="math inline">\(\bar P\)</span>, how large can you make <span class="math inline">\(L_{rw}^{\rm anti}\)</span> (i.e.&nbsp;how much current can you inject) while keeping <span class="math inline">\(\pi\)</span> fixed, and does the spectral gap of the <em>non-symmetric</em> <span class="math inline">\(L_{rw}\)</span> (suitably defined, e.g.&nbsp;via the real part of its spectrum) always dominate <span class="math inline">\(\lambda(L_{rw}^{\rm sym})\)</span>?</li>
+<li>Does the commuting / clean case of §5 generalize beyond vertex-transitive graphs?</li>
+<li>Connection to Lecture 2 §5.3’s discrete transport metric (Maas, Mielke): does their gradient-flow-of-entropy picture have a GENERIC-style analogue for non-reversible chains?</li>
+</ol>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li>M. Grmela, H.C. Öttinger, “Dynamics and thermodynamics of complex fluids I,” <em>Phys. Rev.&nbsp;E</em> 56 (1997).</li>
+<li>P. Morrison, “Some observations regarding brackets and dissipation,” Center for Pure and Applied Mathematics report, UC Berkeley (1984) — coined “metriplectic.”</li>
+<li>T.-Y. Jiang, Q. Qian, M. Qian, <em>Mathematical Theory of Nonequilibrium Steady States</em>, Lecture Notes in Mathematics 1833, Springer (2004) — the <span class="math inline">\(J_{ij}\)</span> / NESS picture in §3.</li>
+<li>C.-R. Hwang, S.-Y. Hwang-Ma, S.-J. Sheu, “Accelerating diffusions,” <em>Ann. Appl. Probab.</em> 15 (2005), and the earlier 1993 paper.</li>
+<li>P. Diaconis, S. Holmes, R. Neal, “Analysis of a nonreversible Markov chain sampler,” <em>Ann. Appl. Probab.</em> 10 (2000). (Citation details from memory: check.)</li>
+</ul>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -838,7 +873,7 @@ ul.task-list li input[type="checkbox"] {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/schedule.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/notes/non-reversible-generic.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>Built with <a href="https://quarto.org">Quarto</a></p>
 </div>

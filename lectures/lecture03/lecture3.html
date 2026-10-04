@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/tabby.min.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.10.18">
+
+  <meta name="author" content="CMSC 35410 · Lecture 3">
+  <title>CMSC 35410 – Random Walks and Their Convergence</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/reveal.css">
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/theme/quarto-1f8f038d323cfa9b8e0ebdaff5794497.css">
+  <link href="../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="../../site_libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="../../site_libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">Random Walks and Their Convergence</h1>
+  <p class="subtitle">Distances to equilibrium · spectral gap · mixing times · canonical paths</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+CMSC 35410 · Lecture 3
+</div>
+</div>
+</div>
+
+</section>
+<section>
+<section id="where-we-are" class="title-slide slide level1 center" data-background-color="#1c1b19">
+<h1>§0 Where we are</h1>
+
+</section>
+<section id="recap-lecture-2" class="slide level2 smaller">
+<h2>Recap: Lecture 2</h2>
+<p><span class="math inline">\(G = (V,E,w)\)</span> undirected, connected; <span class="math inline">\(\pi_i = d_i/\mathrm{vol}(V)\)</span>; <span class="math inline">\(P = D^{-1}A\)</span>; random-walk Laplacian <span class="math inline">\(L_{rw} = D^{-1}L = I - P\)</span>.</p>
+<div class="box">
+<p><strong>Graphs as differential operators.</strong> <span class="math inline">\(L = \nabla^*\nabla\)</span> and <span class="math inline">\(L_{rw} = \nabla_\pi^*\nabla\)</span> (up to <span class="math inline">\(\mathrm{vol}(V)\)</span>): the same <span class="math inline">\(-\operatorname{div}\nabla\)</span> with different vertex measures. Dirichlet form <span class="math display">\[\mathcal E(f,g) = \langle f,L_{rw}g\rangle_\pi = \tfrac{1}{\mathrm{vol}(V)}\textstyle\sum_{\{i,j\}\in E}w_{ij}(f_i-f_j)(g_i-g_j).\]</span></p>
+</div>
+<div class="fragment">
+<div class="box">
+<p><strong>The walk.</strong> Heat kernel <span class="math inline">\(H_t = e^{-tL_{rw}}\)</span>: measures evolve as <span class="math inline">\(\mu_t^\top = \mu_0^\top H_t\)</span>, functions as <span class="math inline">\(f_t = H_tf\)</span>. Detailed balance makes <span class="math inline">\(H_t\)</span> self-adjoint in <span class="math inline">\(L^2(\pi)\)</span>, so <strong>densities <span class="math inline">\(h_t = \mu_t/\pi\)</span> obey <span class="math inline">\(h_t = H_th_0\)</span>.</strong></p>
+</div>
+</div>
+<div class="fragment">
+<div class="box">
+<p><strong>The gap.</strong> Eigenbasis <span class="math inline">\(\varphi_1 = \mathbf 1,\dots,\varphi_n\)</span> of <span class="math inline">\(L_{rw}\)</span> in <span class="math inline">\(L^2(\pi)\)</span>, <span class="math inline">\(0 = \lambda_1&lt;\lambda_2\le\dots\le\lambda_n\le2\)</span>. Spectral gap <span class="math inline">\(\lambda := \lambda_2\)</span> = best constant in <strong>Poincaré</strong>: <span class="math inline">\(\lambda\operatorname{Var}_\pi(f)\le\mathcal E(f,f)\)</span>. Relaxation time <span class="math inline">\(t_{\rm rel} = 1/\lambda\)</span>.</p>
+</div>
+<aside class="notes">
+<p>~5 min. Everything today happens in L²(π): we track the density h_t = μ_t/π, which evolves by the same heat kernel as functions. That is what lets us measure convergence with Var_π, Ent_π, and the Dirichlet form. Recall the split-and-aggregate demo: μ_t → π (uneven, ∝ degree) while h_t → 1 (flat).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="today" class="slide level2 scrollable">
+<h2>Today</h2>
+<p>How fast does the walk forget where it started?</p>
+<ol type="1">
+<li>How to measure convergence: <span class="math inline">\(\ell_1\)</span>, <span class="math inline">\(\chi^2\)</span>, entropy. <strong>Mixing time.</strong></li>
+<li>Spectral gap <span class="math inline">\(\Rightarrow\)</span> exponential decay of <span class="math inline">\(\chi^2\)</span>; the heat flow as a gradient flow.</li>
+<li>Consequences for <span class="math inline">\(\ell_1\)</span> and entropy (→ log-Sobolev, later).</li>
+<li>Cycle, grid, binary tree: <strong>upper and lower</strong> bounds on the gap; how tight is all this?</li>
+</ol>
+</section></section>
+<section>
+<section id="measuring-convergence" class="title-slide slide level1 center" data-background-color="#1c1b19">
+<h1>§1 · Measuring convergence</h1>
+
+</section>
+<section id="three-distances-to-pi" class="slide level2 smaller">
+<h2>Three distances to <span class="math inline">\(\pi\)</span></h2>
+<p>For <span class="math inline">\(\mu\)</span> with density <span class="math inline">\(h = \mu/\pi\)</span>:</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>measure form</th>
+<th>density form</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TV</strong></td>
+<td><span class="math inline">\(\|\mu-\pi\|_{TV} = \tfrac12\|\mu-\pi\|_1 = \max_S|\mu(S)-\pi(S)|\)</span></td>
+<td><span class="math inline">\(\tfrac12\,\mathbb E_\pi|h-1|\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\boldsymbol{\chi^2}\)</span></td>
+<td><span class="math inline">\(\chi^2(\mu\Vert\pi) = \sum_i\frac{(\mu_i-\pi_i)^2}{\pi_i} = \|\mu-\pi\|^2_{1/\pi}\)</span></td>
+<td><span class="math inline">\(\operatorname{Var}_\pi(h)\)</span></td>
+</tr>
+<tr class="odd">
+<td><strong>KL</strong></td>
+<td><span class="math inline">\(D(\mu\Vert\pi) = \sum_i\mu_i\log\frac{\mu_i}{\pi_i}\)</span></td>
+<td><span class="math inline">\(\operatorname{Ent}_\pi(h)\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>All of the form <span class="math inline">\(\mathbb E_\pi\Phi(h)\)</span>, <span class="math inline">\(\Phi\)</span> convex, <span class="math inline">\(\Phi(1) = 0\)</span>: <span class="math inline">\(\;\tfrac12|x-1|,\ (x-1)^2,\ x\log x\)</span>.</p>
+<div class="fragment">
+<p><strong>From a point mass</strong> <span class="math inline">\(\delta_x\)</span>, on a bounded-degree graph (<span class="math inline">\(\pi_x\approx1/n\)</span>):</p>
+<p><span class="math display">\[
+\|\delta_x-\pi\|_{TV} = 1-\pi_x\le1,\qquad D(\delta_x\Vert\pi) = \log\tfrac1{\pi_x}\approx\log n,\qquad\chi^2(\delta_x\Vert\pi) = \tfrac1{\pi_x}-1\approx n .
+\]</span></p>
+<div class="warn">
+<p>Remember <span class="math inline">\(1\)</span> vs.&nbsp;<span class="math inline">\(\log n\)</span> vs.&nbsp;<span class="math inline">\(n\)</span>. It is the whole story of §3.</p>
+</div>
+</div>
+</section>
+<section id="how-they-compare" class="slide level2 scrollable">
+<h2>How they compare</h2>
+<div class="box">
+<p><strong>Lemma.</strong> For every <span class="math inline">\(\mu\)</span>:</p>
+<ol type="1">
+<li><span class="math inline">\(2\|\mu-\pi\|_{TV}\le\sqrt{\chi^2(\mu\Vert\pi)}\)</span></li>
+<li>(Pinsker) <span class="math inline">\(\|\mu-\pi\|_{TV}\le\sqrt{\tfrac12D(\mu\Vert\pi)}\)</span></li>
+<li><span class="math inline">\(D(\mu\Vert\pi)\le\log\big(1+\chi^2(\mu\Vert\pi)\big)\le\chi^2(\mu\Vert\pi)\)</span></li>
+</ol>
+</div>
+<div class="fragment">
+<p><em>Proofs.</em> (1) Cauchy–Schwarz in <span class="math inline">\(L^2(\pi)\)</span>. (3) Jensen for concave <span class="math inline">\(\log\)</span> under <span class="math inline">\(\mu\)</span>: <span class="math display">\[
+D = \mathbb E_\mu\log h\le\log\mathbb E_\mu h = \log\mathbb E_\pi h^2 = \log(1+\operatorname{Var}_\pi h).
+\]</span> (2) Standard (reduce to two points, then calculus).</p>
+</div>
+</section>
+<section id="monotone-but-at-what-rate" class="slide level2 smaller">
+<h2>Monotone — but at what rate?</h2>
+<p><strong>Lemma.</strong> For convex <span class="math inline">\(\Phi:\mathbb R\to\mathbb R\)</span> (applied pointwise, as on the previous slide), <span class="math inline">\(t\mapsto\mathbb E_\pi\Phi(H_th)\)</span> is non-increasing.</p>
+<p><em>Proof.</em> Jensen pointwise, <span class="math inline">\(\Phi(H_th)\le H_t\Phi(h)\)</span>; stationarity, <span class="math inline">\(\mathbb E_\pi H_tg = \mathbb E_\pi g\)</span>. <span class="math inline">\(\square\)</span> (For TV: the <span class="math inline">\(\ell_1\)</span> contraction exercise.)</p>
+<div class="fragment">
+<div class="box">
+<p><strong>TV</strong> is the distance we <em>want</em>. <span class="math inline">\(\boldsymbol{\chi^2}\)</span> and <strong>entropy</strong> are the ones we can <em>differentiate along the flow</em> and close with a functional inequality.</p>
+</div>
+</div>
+<div class="fragment">
+<p><strong>Mixing time:</strong> worst case over starting vertices; by convexity of the distance, this is also the worst case over all starting distributions.</p>
+<p><span class="math display">\[
+d(t) := \max_x\|\delta_xH_t - \pi\|_{TV},\qquad t_{\rm mix}(\varepsilon) := \min\{t: d(t)\le\varepsilon\},
+\]</span></p>
+<p><span class="math display">\[
+t_{\rm mix} := t_{\rm mix}(\tfrac14).
+\]</span></p>
+<p>Same with <span class="math inline">\(\sqrt{\chi^2}\)</span> (<span class="math inline">\(\ell^2\)</span>-mixing) or <span class="math inline">\(D\)</span> (entropy mixing). Discrete/lazy: replace <span class="math inline">\(H_t\)</span> by <span class="math inline">\(P_{\rm lazy}^t\)</span>.</p>
+<aside class="notes">
+<p>Convexity: μ = Σ_x μ_x δ_x and H_t is linear, so ‖μH_t − π‖ = ‖Σ_x μ_x(δ_x H_t − π)‖ ≤ Σ_x μ_x ‖δ_x H_t − π‖ ≤ max_x ‖δ_x H_t − π‖ (TV is a norm; χ² and KL are convex f-divergences). A convex function on the simplex is maximized at a vertex = a point mass.</p>
+<p>d(t) is essentially submultiplicative, so t_mix(ε) ≤ ⌈log2(1/ε)⌉ t_mix (LPW Ch. 4): 1/4 is just a convention.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="monotone-again-by-differentiating" class="slide level2 smaller">
+<h2>Monotone, again: by differentiating</h2>
+<p><span class="math inline">\(h_t = H_th\)</span> satisfies <span class="math inline">\(\partial_th_t = -L_{rw}h_t\)</span>. Differentiate <span class="math inline">\(\mathbb E_\pi\Phi(h_t)\)</span> directly:</p>
+<p><span class="math display">\[
+\frac{d}{dt}\mathbb E_\pi\Phi(h_t) = \mathbb E_\pi\big[\Phi'(h_t)\,\partial_th_t\big] = -\langle\Phi'(h_t),L_{rw}h_t\rangle_\pi = -\mathcal E\big(\Phi'(h_t),h_t\big).
+\]</span></p>
+<div class="fragment">
+<p><span class="math display">\[
+\mathcal E(\Phi'(h_t),h_t) = \frac1{\mathrm{vol}(V)}\sum_{\{i,j\}\in E}w_{ij}\big(\Phi'(h_i)-\Phi'(h_j)\big)(h_i-h_j).
+\]</span></p>
+<p>Convex <span class="math inline">\(\Phi\)</span> <span class="math inline">\(\Rightarrow\)</span> <span class="math inline">\(\Phi'\)</span> non-decreasing <span class="math inline">\(\Rightarrow\)</span> every term <span class="math inline">\(\ge0\)</span> (same-signed factors). Hence</p>
+<p><span class="math display">\[
+\frac{d}{dt}\mathbb E_\pi\Phi(h_t) = -\mathcal E(\Phi'(h_t),h_t)\ \le\ 0. \qquad\square
+\]</span></p>
+</div>
+<div class="fragment">
+<div class="box">
+<p>Same template, two more times:</p>
+<ul>
+<li><span class="math inline">\(\Phi(x)=(x-1)^2\)</span>: <span class="math inline">\(\Phi'(x)=2(x-1)\)</span>, recovering <strong>Proof 2</strong> below, exactly.</li>
+<li><span class="math inline">\(\Phi(x)=x\log x\)</span>: <span class="math inline">\(\Phi'(x)=\log x+1\)</span>, recovering the entropy-production formula of §3.</li>
+</ul>
+</div>
+<aside class="notes">
+<p>Needs Φ differentiable — doesn’t cover TV (Φ(x) = |x-1|/2 is not differentiable at x=1), which is why the Monotone slide still cites the ℓ1-contraction exercise for that case. Key fact used for the sign: convex ⟺ Φ’ non-decreasing ⟺ (Φ’(a)-Φ’(b))(a-b) ≥ 0 for all a,b. This is the one-line generalization of “Proof 2: the template for the rest of the course” coming up: same differentiate-and-use-the-Dirichlet-form move, here for the qualitative statement (monotone decrease), there (Φ = (x-1)²) for the quantitative rate via Poincaré.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section></section>
+<section>
+<section id="spectral-gap-χ²-decay" class="title-slide slide level1 center" data-background-color="#1c1b19">
+<h1>§2 · Spectral gap ⇒ χ² decay</h1>
+
+</section>
+<section id="the-theorem" class="slide level2">
+<h2>The theorem</h2>
+<div class="box">
+<p><strong>Theorem.</strong> For all <span class="math inline">\(h\)</span> and <span class="math inline">\(t\ge0\)</span>: <span class="math display">\[\operatorname{Var}_\pi(H_th)\le e^{-2\lambda t}\operatorname{Var}_\pi(h),\qquad\text{i.e.}\qquad\chi^2(\mu_t\Vert\pi)\le e^{-2\lambda t}\chi^2(\mu_0\Vert\pi).\]</span> Sharp: equality for <span class="math inline">\(h = 1+\epsilon\varphi_2\)</span>.</p>
+</div>
+<div class="fragment">
+<p><em>Proof 1 (spectral).</em> <span class="math display">\[
+\operatorname{Var}_\pi(H_th) = \sum_{k\ge2}e^{-2\lambda_kt}\langle h,\varphi_k\rangle_\pi^2\le e^{-2\lambda t}\sum_{k\ge2}\langle h,\varphi_k\rangle_\pi^2 . \qquad\square
+\]</span></p>
+</div>
+</section>
+<section id="proof-2-the-template-for-the-rest-of-the-course" class="slide level2 smaller">
+<h2>Proof 2: the template for the rest of the course</h2>
+<p><span class="math inline">\(h_t = H_th\)</span>; <span class="math inline">\(\;\mathbb E_\pi h_t\equiv c\)</span> is conserved. Then</p>
+<p><span class="math display">\[
+\frac{d}{dt}\operatorname{Var}_\pi(h_t) = 2\langle h_t - c,\ \partial_th_t\rangle_\pi = -2\langle h_t - c, L_{rw}h_t\rangle_\pi = -2\,\mathcal E(h_t,h_t).
+\]</span></p>
+<div class="fragment">
+<p><strong>Variance dissipates at rate <span class="math inline">\(2\mathcal E\)</span>.</strong> Poincaré: <span class="math inline">\(\mathcal E\ge\lambda\operatorname{Var}\)</span>, so <span class="math inline">\(\frac d{dt}\operatorname{Var}\le-2\lambda\operatorname{Var}\)</span>; Grönwall. <span class="math inline">\(\square\)</span></p>
+</div>
+<div class="fragment">
+<div class="box">
+<p>No diagonalization. Only: <strong>(dissipation identity) + (functional inequality)</strong>.</p>
+<ul>
+<li>(Var, Poincaré) <span class="math inline">\(\to\)</span> <span class="math inline">\(\chi^2\)</span> decay at rate <span class="math inline">\(2\lambda\)</span>. (Today.)</li>
+<li>(Ent, log-Sobolev) <span class="math inline">\(\to\)</span> entropy decay. (§3, then later.)</li>
+<li>Graph <span class="math inline">\(\to\)</span> manifold: Bakry–Émery. (Later.)</li>
+</ul>
+</div>
+<p>Conversely, decay at rate <span class="math inline">\(2c\)</span> for all <span class="math inline">\(h\)</span> <span class="math inline">\(\Rightarrow\)</span> differentiate at <span class="math inline">\(t=0\)</span> <span class="math inline">\(\Rightarrow\)</span> <span class="math inline">\(c\le\lambda\)</span>. <strong>Gap = optimal <span class="math inline">\(\chi^2\)</span> rate.</strong></p>
+</div>
+</section>
+<section id="the-heat-flow-is-a-gradient-flow" class="slide level2 smaller">
+<h2>The heat flow is a gradient flow</h2>
+<p><strong>Geometry:</strong> densities in <span class="math inline">\(L^2(\pi)\)</span>, where the distance to equilibrium is <span class="math inline">\(\|h-1\|_\pi^2 = \chi^2(\mu\Vert\pi)\)</span>. <strong>Energy:</strong> <span class="math inline">\(F(h) := \tfrac12\mathcal E(h,h) = \tfrac12\,\|\nabla h\|_w^2/\mathrm{vol}(V)\)</span>.</p>
+<div class="fragment">
+<p><strong>Gradient.</strong> <span class="math inline">\(F(h+\epsilon v) = F(h) + \epsilon\,\mathcal E(h,v) + O(\epsilon^2) = F(h) + \epsilon\,\langle L_{rw}h, v\rangle_\pi + O(\epsilon^2)\)</span>, so</p>
+<p><span class="math display">\[
+\nabla_\pi F(h) = L_{rw}h
+\qquad\Longrightarrow\qquad
+\partial_th_t = -\nabla_\pi F(h_t) = -L_{rw}h_t ,
+\]</span></p>
+<p>which is the heat equation for densities from Lecture 2. <strong>Heat flow = steepest descent of the energy in the <span class="math inline">\(\chi^2\)</span> geometry.</strong></p>
+</div>
+<div class="fragment">
+<div class="box">
+<p><strong>Poincaré = strong convexity.</strong> <span class="math inline">\(F(h)\ge\frac\lambda2\|h-\mathbb E_\pi h\|_\pi^2\)</span>: the energy is <span class="math inline">\(\lambda\)</span>-strongly convex transverse to its minimizers (the constants). The gradient flow of a <span class="math inline">\(\lambda\)</span>-strongly convex function contracts the squared distance to its minimizer at rate <span class="math inline">\(2\lambda\)</span>: <strong>this is the <span class="math inline">\(\chi^2\)</span> theorem.</strong> Proof 2 was exactly this computation, <span class="math inline">\(\frac{d}{dt}\tfrac12\|h_t-1\|_\pi^2 = -\langle h_t-1,\nabla_\pi F(h_t)\rangle_\pi = -2F(h_t)\)</span>.</p>
+</div>
+</div>
+<div class="fragment">
+<div class="box">
+<p><strong>Aside: <span class="math inline">\(\mathcal E\)</span> is a dissipative bracket.</strong> In the language of GENERIC/metriplectic dynamics (Grmela–Öttinger; Morrison), <span class="math inline">\(\mathcal E\)</span> is symmetric, PSD, and degenerate on the conserved quantity — <span class="math inline">\(\mathcal E(f,\mathbf 1)=0\)</span> since <span class="math inline">\(L_{rw}\mathbf1=0\)</span> — exactly the axioms of a <em>dissipative</em> bracket. No Jacobi identity: that’s the axiom of the <em>other</em>, antisymmetric Poisson-bracket half of such systems, which is simply absent here — the heat flow is pure dissipation, no reversible/Hamiltonian part.</p>
+</div>
+</div>
+<div class="fragment">
+<p>Discretizing time: <span class="math inline">\(h_{k+1} = \arg\min_h\Big\{F(h) + \frac{1}{2\tau}\|h-h_k\|_\pi^2\Big\} = (I+\tau L_{rw})^{-1}h_k\ \to\ H_th_0\)</span> as <span class="math inline">\(\tau\to0\)</span>.</p>
+</div>
+<div class="fragment">
+<p><strong>Question:</strong> is there a geometry in which the heat flow is the gradient flow of the <strong>entropy</strong>, and does convexity of the entropy give entropy decay?</p>
+<aside class="notes">
+<p>χ² is the natural convergence measure for the heat flow because it is the squared norm of the Hilbert space in which the heat flow is a gradient flow; the gap is the strong-convexity modulus of the energy in that space. Minimizing movement: first-order condition L_rw h + (h − h_k)/τ = 0, i.e.&nbsp;implicit Euler. Answer to the question (for later): yes. On R^n, Jordan–Kinderlehrer–Otto (SIAM J. Math. Anal. 1998): the Fokker–Planck/heat flow is the gradient flow of relative entropy w.r.t. the Wasserstein-2 metric; λ-geodesic convexity of entropy (Bakry–Émery / Ricci ≥ λ) ⇒ LSI ⇒ entropy decay. On finite Markov chains, W2 fails (no geodesics through discrete measures); Maas (J. Funct. Anal. 2011) and Mielke (Nonlinearity 2011) built a discrete transport metric in which the continuous-time chain is the gradient flow of entropy; Erbar–Maas (2012): entropic Ricci curvature ≥ κ ⇒ MLSI with ρ₀ ≥ 2κ. (Citation details from memory: check.)</p>
+<p>On the dissipative-bracket aside: GENERIC splits dynamics as dx/dt = {x,E} + (x,S), Poisson bracket {.,.} antisymmetric and satisfying Jacobi (reversible, energy-conserving part), dissipative bracket (.,.) symmetric and semi-definite with (E,.)=0 (irreversible, entropy-producing part). Here there is no Poisson half at all — partial_t h_t = -L_rw h_t is pure gradient descent, no Hamiltonian term — so this is a maximally degenerate GENERIC system: all dissipation, no symplectic structure. The entropy-production identity d/dt E_pi Phi(h_t) = -E(Phi’(h_t), h_t), shown on “Monotone, again: by differentiating”, is exactly the GENERIC formula dS/dt = (dS,dS) for this bracket. References: Grmela &amp; Öttinger, “Dynamics and thermodynamics of complex fluids I” (Phys. Rev.&nbsp;E, 1997); P. Morrison, “Some observations regarding brackets and dissipation” (1984), who coined “metriplectic.” (Citation details from memory: check.)</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="discrete-time" class="slide level2">
+<h2>Discrete time</h2>
+<ul>
+<li>Lazy chain: <span class="math inline">\(\operatorname{Var}_\pi(P_{\rm lazy}^th)\le(1-\tfrac\lambda2)^{2t}\operatorname{Var}_\pi(h)\)</span>.</li>
+<li>Non-lazy: factor <span class="math inline">\(\lambda_\star^{2t}\)</span>, <span class="math inline">\(\;\lambda_\star = \max_{k\ge2}|1-\lambda_k|\)</span> — equal to <span class="math inline">\(1\)</span> on bipartite graphs.</li>
+</ul>
+</section></section>
+<section>
+<section id="consequences-for-ℓ₁-and-entropy" class="title-slide slide level1 center" data-background-color="#1c1b19">
+<h1>§3 · Consequences for ℓ₁ and entropy</h1>
+
+</section>
+<section id="the-gap-pins-down-the-mixing-time" class="slide level2">
+<h2>The gap pins down the mixing time</h2>
+<div class="box">
+<p><strong>Theorem.</strong> For the continuous-time walk, <span class="math inline">\(\pi_{\min} = \min_x\pi_x\)</span>: <span class="math display">\[
+\frac1\lambda\log\frac1{2\varepsilon}\ \le\ t_{\rm mix}(\varepsilon)\ \le\ \frac1\lambda\Big(\tfrac12\log\frac1{\pi_{\min}} + \log\frac1{2\varepsilon}\Big).
+\]</span></p>
+</div>
+<div class="fragment">
+<p><strong>Upper.</strong> Lemma (1) + §2: <span class="math inline">\(\;\|\delta_xH_t-\pi\|_{TV}\le\tfrac12\sqrt{\chi^2(\delta_xH_t\Vert\pi)}\le\tfrac12e^{-\lambda t}\pi_x^{-1/2}\)</span>.</p>
+</div>
+<div class="fragment">
+<p><strong>Lower.</strong> Scale <span class="math inline">\(f = \varphi_2\)</span> so <span class="math inline">\(\|f\|_\infty = 1 = |f(x)|\)</span>. Then <span class="math inline">\(\mathbb E_\pi f = 0\)</span>, <span class="math inline">\((H_tf)(x) = e^{-\lambda t}f(x)\)</span>, and <span class="math display">\[
+e^{-\lambda t} = |\mathbb E_{\delta_xH_t}f - \mathbb E_\pi f|\le\|\delta_xH_t-\pi\|_1\|f\|_\infty = 2\|\delta_xH_t-\pi\|_{TV}. \qquad\square
+\]</span></p>
+<aside class="notes">
+<p>Lazy discrete version: (2/λ − 1) log(1/2ε) ≤ t_mix(ε) ≤ (2/λ)(½ log(1/π_min) + log(1/2ε)); lower bound uses log(1/(1−x)) ≤ x/(1−x). Cf. LPW Thms 12.4–12.5 (check numbering).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="where-the-log1pi_min-comes-from" class="slide level2">
+<h2>Where the <span class="math inline">\(\log(1/\pi_{\min})\)</span> comes from</h2>
+
+<img data-src="lecture3_files/figure-revealjs/cell-3-output-1.svg" class="r-stretch"><p><span class="math inline">\(\chi^2\)</span> starts at <span class="math inline">\(\approx n\)</span> and must spend time <span class="math inline">\(\approx\frac{\log n}{2\lambda}\)</span> just getting below <span class="math inline">\(1\)</span>. TV starts at <span class="math inline">\(\le1\)</span>.</p>
+<aside class="notes">
+<p>x-axis in units of t_rel. TV (blue) stays sandwiched between the lower bound (grey dotted) and the χ²-bound (orange dashed). The orange solid χ² curve only drops below 1/4 well after TV. Entropy (green) starts at log n, much lower than n.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="entropy-along-the-flow" class="slide level2">
+<h2>Entropy along the flow</h2>
+<p>Same computation as Proof 2, with <span class="math inline">\(\operatorname{Ent}_\pi\)</span> in place of <span class="math inline">\(\operatorname{Var}_\pi\)</span>:</p>
+<p><span class="math display">\[
+\frac d{dt}\operatorname{Ent}_\pi(h_t) = \mathbb E_\pi\big[(1+\log h_t)\,\partial_th_t\big] = -\langle\log h_t, L_{rw}h_t\rangle_\pi
+\]</span></p>
+<p><span class="math display">\[
+= -\mathcal E(h_t,\log h_t)\ \le\ 0 .
+\]</span></p>
+<p><span class="math inline">\(\mathcal E(h,\log h)\)</span>: <strong>entropy production</strong> (discrete Fisher information).</p>
+<div class="fragment">
+<p>From the gap alone (Lemma 3): <span class="math inline">\(\;D(\mu_t\Vert\pi)\le\log\big(1 + e^{-2\lambda t}\chi^2(\mu_0\Vert\pi)\big)\)</span> — rate <span class="math inline">\(2\lambda\)</span> eventually, but the same <span class="math inline">\(\log n\)</span> burn-in.</p>
+</div>
+<div class="fragment">
+<p>To close the loop we need a new functional inequality, the <strong>modified log-Sobolev inequality</strong>:</p>
+<p><span class="math display">\[
+\rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)\quad\Longrightarrow\quad D(\mu_t\Vert\pi)\le e^{-\rho_0t}D(\mu_0\Vert\pi).
+\]</span></p>
+</div>
+</section>
+<section id="preview-log-sobolev-trades-log-n-for-loglog-n" class="slide level2 smaller">
+<h2>Preview: log-Sobolev trades <span class="math inline">\(\log n\)</span> for <span class="math inline">\(\log\log n\)</span></h2>
+<p>With Pinsker:</p>
+<p><span class="math display">\[
+t_{\rm mix}(\varepsilon)\le\frac1{\rho_0}\Big(\log\log\frac1{\pi_{\min}} + \log\frac1{2\varepsilon^2}\Big)
+\qquad\text{vs.}\qquad
+\frac1\lambda\Big(\tfrac12\log\frac1{\pi_{\min}} + \log\frac1{2\varepsilon}\Big).
+\]</span></p>
+<div class="fragment">
+<p>The price is the constant: entropy can’t decay faster than twice the gap,</p>
+<p><span class="math display">\[
+\rho_0\ \le\ 2\lambda .
+\]</span></p>
+<p><em>Proof.</em> Linearize at equilibrium, <span class="math inline">\(h = 1+\epsilon g\)</span>, <span class="math inline">\(\mathbb E_\pi g = 0\)</span>: <span class="math display">\[
+\operatorname{Ent}_\pi(h) = \tfrac{\epsilon^2}2\operatorname{Var}_\pi g + O(\epsilon^3),\qquad \mathcal E(h,\log h) = \epsilon^2\mathcal E(g,g) + O(\epsilon^3).
+\]</span> MLSI forces <span class="math inline">\(\rho_0\le 2\,\mathcal E(g,g)/\operatorname{Var}_\pi g\)</span> for every <span class="math inline">\(g\)</span>; take <span class="math inline">\(g = \varphi_2\)</span>. <span class="math inline">\(\square\)</span></p>
+<div class="box">
+<p>Entropy wins when <span class="math inline">\(\rho_0\)</span> is comparable to the gap. When is it? How do we bound it? → later lecture.</p>
+</div>
+<aside class="notes">
+<p>Say aloud: next time we meet the classical log-Sobolev inequality α Ent(f²) ≤ E(f,f) (Gross), which is how ρ₀ is bounded in practice (it tensorizes; ρ₀ ≥ 4α via (a−b)(log a − log b) ≥ 4(√a−√b)²), and which coincides with this one for diffusions (chain rule: E(h, log h) = 4E(√h,√h) exactly). If asked for a lower bound in terms of λ: Diaconis–Saloff-Coste give α ≥ (1−2π_<em>)λ / log(1/π_</em> − 1), so ρ₀ ≳ 4λ/log(1/π_min) — plugging it in is worse than the gap bound by log log, so the gap alone never certifies that entropy helps. K_n: λ ≍ 1, α ≍ 1/log n, ρ₀ ≍ 1 (Bobkov–Tetali). (Constants from memory — check.)</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section></section>
+<section>
+<section id="examples-the-gap-from-both-sides" class="title-slide slide level1 center" data-background-color="#1c1b19">
+<h1>§4 · Examples: the gap from both sides</h1>
+
+</section>
+<section id="toolkit" class="slide level2 smaller">
+<h2>Toolkit</h2>
+<p><strong>Upper bounds: test functions.</strong> Any non-constant <span class="math inline">\(f\)</span>: <span class="math inline">\(\;\lambda\le\mathcal E(f,f)/\operatorname{Var}_\pi(f)\)</span>. Make <span class="math inline">\(f\)</span> change slowly across a bottleneck.</p>
+<div class="fragment">
+<p><strong>Degree comparison.</strong> If <span class="math inline">\(d_{\min}\le d_i\le d_{\max}\)</span>:</p>
+<p><span class="math display">\[
+\frac{\lambda_2(L)}{d_{\max}}\le\lambda = \lambda_2(L_{rw})\le\frac{\lambda_2(L)}{d_{\min}}.
+\]</span></p>
+<p>(Both are <span class="math inline">\(\min_f f^\top Lf\,/\min_c\|f-c\|_m^2\)</span>, with <span class="math inline">\(m = d\)</span> vs.&nbsp;<span class="math inline">\(m = \mathbf 1\)</span>.) Our examples have <span class="math inline">\(1\le d\le4\)</span>: work with <span class="math inline">\(L\)</span>.</p>
+</div>
+<div class="fragment">
+<p><strong>Lower bounds: canonical paths</strong> — the discrete version of the 1-D Poincaré proof:</p>
+<p><span class="math display">\[
+f(b)-f(a) = \int_a^bf'\quad+\quad\text{Cauchy–Schwarz}.
+\]</span></p>
+</div>
+</section>
+<section id="canonical-paths" class="slide level2 smaller">
+<h2>Canonical paths</h2>
+<p>For each ordered pair <span class="math inline">\((a,b)\)</span> choose a path <span class="math inline">\(\gamma_{ab}\)</span>; choose edge lengths <span class="math inline">\(\ell_e&gt;0\)</span> (default <span class="math inline">\(\ell\equiv1\)</span>). <strong>Congestion:</strong></p>
+<p><span class="math display">\[
+\kappa := \max_{e\in E}\ \frac1{w_e\ell_e}\sum_{(a,b):\,e\in\gamma_{ab}}\ell(\gamma_{ab}),\qquad\ell(\gamma) = \sum_{e\in\gamma}\ell_e .
+\]</span></p>
+<div class="box">
+<p><strong>Theorem</strong> (Jerrum–Sinclair; Diaconis–Stroock). <span class="math inline">\(\;\sum_{a,b}(f_a-f_b)^2\le\kappa\,f^\top Lf\)</span>, hence <span class="math inline">\(\;\lambda_2(L)\ge\dfrac{2n}\kappa\)</span>.</p>
+</div>
+<div class="fragment">
+<p><em>Proof.</em> <span class="math inline">\((f_b - f_a)^2 = \big(\sum_{e\in\gamma_{ab}}\nabla_ef\big)^2\le\ell(\gamma_{ab})\sum_{e\in\gamma_{ab}}\frac{(\nabla_ef)^2}{\ell_e}\)</span>. Sum over pairs, swap sums:</p>
+<p><span class="math display">\[
+\sum_{a,b}(f_a-f_b)^2\le\sum_ew_e(\nabla_ef)^2\cdot\underbrace{\frac{1}{w_e\ell_e}\sum_{\gamma_{ab}\ni e}\ell(\gamma_{ab})}_{\le\kappa},\qquad\sum_{a,b}(f_a-f_b)^2 = 2n\|f-\bar f\|^2 . \ \square
+\]</span></p>
+<aside class="notes">
+<p>π-weighted version, directly for λ: Var_π f = ½ Σ π_a π_b (f_a − f_b)², E(f,f) = Σ_e Q(e)(∇<em>e f)², Q(e) = w_e/vol.&nbsp;Same proof: λ ≥ 1/κ_π, κ_π = max_e (1/(Q(e) ℓ_e)) · ½ Σ</em>{γ_ab ∋ e} π_a π_b ℓ(γ_ab). Interpretation: κ is the congestion of an (unsplittable) multicommodity flow routing one unit between every pair. A bottleneck forces congestion — paths certify the absence of bottlenecks, dual to the test-function certificate. Flow/cut duality → Cheeger next week, Leighton–Rao later.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="cycle-c_n" class="slide level2 smaller">
+<h2>Cycle <span class="math inline">\(C_n\)</span></h2>
+<p><strong>Exact</strong> (Fourier): <span class="math inline">\(L\)</span> has eigenvalues <span class="math inline">\(2-2\cos(2\pi j/n)\)</span>; since <span class="math inline">\(D = 2I\)</span>, <span class="math inline">\(\;L_{rw} = L/2\)</span> and <span class="math display">\[\lambda = 1-\cos\tfrac{2\pi}n = 2\sin^2\tfrac\pi n\approx\frac{2\pi^2}{n^2}\approx\frac{19.7}{n^2}.\]</span></p>
+<div class="fragment">
+<p><strong>Canonical paths</strong> (<span class="math inline">\(n = 2m+1\)</span>, shortest paths, <span class="math inline">\(\ell\equiv1\)</span>): each vertex has 2 vertices at each distance <span class="math inline">\(s = 1,\dots,m\)</span>. By rotation symmetry all edges carry equal load:</p>
+<p><span class="math display">\[
+\kappa = \frac1n\sum_{(a,b)}|\gamma_{ab}|^2 = 2\sum_{s=1}^ms^2 = \frac{n(n^2-1)}{12}
+\qquad\Longrightarrow\qquad
+\lambda_2(L)\ge\frac{2n}{\kappa} = \frac{24}{n^2-1}.
+\]</span></p>
+</div>
+<div class="fragment">
+<p>Divide by <span class="math inline">\(d = 2\)</span> to compare with the exact <span class="math inline">\(\lambda\)</span>: <span class="math display">\[
+\frac{12}{n^2-1}\ \le\ \lambda\ \approx\ \frac{19.7}{n^2}.
+\]</span> Right order; constant <span class="math inline">\(12\)</span> vs.&nbsp;<span class="math inline">\(2\pi^2\approx19.7\)</span>.</p>
+<aside class="notes">
+<p>Σ_e load(e) = Σ_{(a,b)} |γ_ab|² because each pair contributes |γ| to each of its |γ| edges. Careful with normalizations: λ₂(L) = 2λ ≈ 4π²/n² ≈ 39.5/n² ≥ 24/(n²−1); for λ = λ₂(L_rw): 12/(n²−1) ≤ 2π²/n².</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="the-ktimes-k-grid-n-k2" class="slide level2 smaller">
+<h2>The <span class="math inline">\(k\times k\)</span> grid, <span class="math inline">\(n = k^2\)</span></h2>
+<p><strong>Test function</strong> <span class="math inline">\(f(x,y) = x - \frac{k+1}2\)</span>: only horizontal edges see a difference (each 1),</p>
+<p><span class="math display">\[
+\lambda_2(L)\le\frac{k(k-1)}{k\cdot k(k^2-1)/12} = \frac{12}{k(k+1)},\qquad\lambda\le\frac{6}{k(k+1)}\ \ (d_{\min} = 2).
+\]</span></p>
+<div class="fragment">
+<p><strong>Canonical paths, “L-shaped”:</strong> horizontal along <span class="math inline">\(a\)</span>’s row to <span class="math inline">\(b\)</span>’s column, then vertical. Length <span class="math inline">\(\le2(k-1)\)</span>.</p>
+<ul>
+<li>horizontal edge, row <span class="math inline">\(r\)</span>, between columns <span class="math inline">\(c|c+1\)</span>: needs <span class="math inline">\(a\)</span> in row <span class="math inline">\(r\)</span>, <span class="math inline">\(a_x\)</span> and <span class="math inline">\(b_x\)</span> on opposite sides: <span class="math inline">\(\;2\,c(k-c)\,k\le k^3/2\)</span> pairs;</li>
+<li>vertical edge, column <span class="math inline">\(c\)</span>, between rows <span class="math inline">\(r|r+1\)</span>: needs <span class="math inline">\(b\)</span> in column <span class="math inline">\(c\)</span>, <span class="math inline">\(a_y,b_y\)</span> on opposite sides: <span class="math inline">\(\;2\,r(k-r)\,k\le k^3/2\)</span> pairs.</li>
+</ul>
+<p><span class="math display">\[
+\kappa\le\frac{k^3}2\cdot2(k-1)\quad\Longrightarrow\quad\lambda_2(L)\ge\frac{2}{k(k-1)},\qquad\lambda\ge\frac1{2k(k-1)}\ \ (d_{\max} = 4).
+\]</span></p>
+</div>
+<div class="fragment">
+<p>So <span class="math inline">\(\lambda = \Theta(1/k^2) = \Theta(1/n)\)</span>. (Exact: <span class="math inline">\(\lambda_2(L) = 2-2\cos\frac\pi k\approx\frac{\pi^2}{k^2}\)</span>, via <span class="math inline">\(L(G\,\square\,H) = L_G\otimes I + I\otimes L_H\)</span> and the Neumann cosines of the path.)</p>
+</div>
+</section>
+<section id="binary-tree-depth-h-n-2h1-1-upper-bound" class="slide level2">
+<h2>Binary tree, depth <span class="math inline">\(h\)</span>, <span class="math inline">\(n = 2^{h+1}-1\)</span>: upper bound</h2>
+<p><strong>Test function</strong>: <span class="math inline">\(+1\)</span> on the left subtree, <span class="math inline">\(-1\)</span> on the right, <span class="math inline">\(0\)</span> at the root.</p>
+<ul>
+<li><span class="math inline">\(\mathbb E_\pi f = 0\)</span> by symmetry;</li>
+<li>only the two root edges see a difference: <span class="math inline">\(\sum w(\nabla f)^2 = 2\)</span>;</li>
+<li><span class="math inline">\(\sum_id_if_i^2 = \mathrm{vol}(V) - d_{\rm root} = 2(n-1)-2\)</span>.</li>
+</ul>
+<p><span class="math display">\[
+\lambda\le\frac{2}{2n-4} = \frac1{n-2}.
+\]</span></p>
+<div class="fragment">
+<div class="box">
+<p>The root is a <strong>bottleneck</strong>: two edges separate two halves of size <span class="math inline">\(\approx n/2\)</span>. (Cheeger next week: conductance <span class="math inline">\(\approx 2/n\)</span>.)</p>
+</div>
+</div>
+</section>
+<section id="binary-tree-lower-bound-and-choosing-lengths" class="slide level2 smaller">
+<h2>Binary tree: lower bound, and choosing lengths</h2>
+<p>Paths are forced. An edge at depth <span class="math inline">\(j\)</span> cuts off <span class="math inline">\(s_j = 2^{h-j+1}-1\)</span> vertices: used by <span class="math inline">\(2s_j(n-s_j)\le n^2/2\)</span> ordered pairs.</p>
+<div class="fragment">
+<p><strong>Unit lengths:</strong> <span class="math inline">\(|\gamma|\le2h\)</span>, so <span class="math inline">\(\kappa\le n^2h\)</span> and <span class="math inline">\(\;\lambda_2(L)\ge\dfrac{2}{nh}\)</span> — <strong>off by <span class="math inline">\(\log_2n\)</span></strong>. Cauchy–Schwarz charges every edge of a long path equally, but only the top edges are congested.</p>
+</div>
+<div class="fragment">
+<p><strong>Weighted lengths</strong> <span class="math inline">\(\ell_e = 2^{-j/2}\)</span> at depth <span class="math inline">\(j\)</span> (cheap where congested): <span class="math inline">\(\ell(\gamma)\le2\sum_{j\ge1}2^{-j/2} = 2(\sqrt2+1)\)</span>, and with <span class="math inline">\(s_j&lt;(n+1)2^{-j}\)</span>,</p>
+<p><span class="math display">\[
+\frac1{\ell_e}\sum_{\gamma\ni e}\ell(\gamma)\le2^{j/2}\cdot2s_jn\cdot2(\sqrt2+1) &lt; 2(2+\sqrt2)\,n(n+1)
+\quad\Longrightarrow\quad
+\lambda_2(L) &gt; \frac{1}{(2+\sqrt2)(n+1)}.
+\]</span></p>
+</div>
+<div class="fragment">
+<p>With <span class="math inline">\(d\le3\)</span>: <span class="math inline">\(\;\dfrac{1}{3(2+\sqrt2)(n+1)}&lt;\lambda\le\dfrac1{n-2}\)</span>, so <span class="math inline">\(\lambda = \Theta(1/n)\)</span>.</p>
+<aside class="notes">
+<p>The choice of ℓ is the discrete analog of the weight in a weighted Poincaré / Hardy inequality. Numerically n·λ → ≈ 0.5 for the binary tree.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="bounds-vs.-truth" class="slide level2">
+<h2>Bounds vs.&nbsp;truth</h2>
+
+<img data-src="lecture3_files/figure-revealjs/cell-4-output-1.svg" class="r-stretch"><p>Parallel lines = right order. Unit-length paths on the tree drift away by <span class="math inline">\(\log n\)</span>.</p>
+</section>
+<section id="how-tight-are-the-convergence-bounds" class="slide level2 smaller">
+<h2>How tight are the convergence bounds?</h2>
+
+<img data-src="lecture3_files/figure-revealjs/cell-5-output-1.svg" class="r-stretch"><table class="caption-top">
+<thead>
+<tr class="header">
+<th></th>
+<th><span class="math inline">\(t_{\rm rel}\)</span></th>
+<th><span class="math inline">\(\chi^2\)</span> upper bound</th>
+<th>true <span class="math inline">\(t_{\rm mix}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>cycle</td>
+<td><span class="math inline">\(\Theta(n^2)\)</span></td>
+<td><span class="math inline">\(\Theta(n^2\log n)\)</span></td>
+<td><span class="math inline">\(\Theta(n^2)\)</span></td>
+</tr>
+<tr class="even">
+<td>grid</td>
+<td><span class="math inline">\(\Theta(n)\)</span></td>
+<td><span class="math inline">\(\Theta(n\log n)\)</span></td>
+<td><span class="math inline">\(\Theta(n)\)</span></td>
+</tr>
+<tr class="odd">
+<td>binary tree</td>
+<td><span class="math inline">\(\Theta(n)\)</span></td>
+<td><span class="math inline">\(\Theta(n\log n)\)</span></td>
+<td><span class="math inline">\(\Theta(n)\)</span></td>
+</tr>
+</tbody>
+</table>
+<aside class="notes">
+<p>Lower bound tight on all three; the generic χ² upper bound loses exactly log n.&nbsp;Numbers: C_161: t_mix ≈ 1230, lower 910, upper 4247. Tree n=1023: 1402 vs lower 1388 (!) vs upper 9022.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="the-loss-is-not-in-chi2-it-is-in-using-only-lambda_2" class="slide level2">
+<h2>The loss is not in <span class="math inline">\(\chi^2\)</span> — it is in using only <span class="math inline">\(\lambda_2\)</span></h2>
+<p>Exactly, from the spectral expansion of <span class="math inline">\(h_0 = \mathbf 1_x/\pi_x\)</span>:</p>
+<p><span class="math display">\[
+\chi^2(\delta_xH_t\Vert\pi) = \sum_{k\ge2}e^{-2\lambda_kt}\varphi_k(x)^2,\qquad\sum_k\varphi_k(x)^2 = \frac1{\pi_x}.
+\]</span></p>
+<p>The generic bound pretends <strong>all <span class="math inline">\(n-1\)</span> modes</strong> decay as slowly as <span class="math inline">\(\varphi_2\)</span>.</p>
+<div class="fragment">
+<p>Vertex-transitive graphs: <span class="math inline">\(\chi^2(\delta_xH_t\Vert\pi) = \sum_{k\ge2}e^{-2\lambda_kt}\)</span>. <strong>Cycle:</strong> <span class="math inline">\(1-\cos\theta\ge\frac{2\theta^2}{\pi^2}\)</span> gives</p>
+<p><span class="math display">\[
+\chi^2(\delta_xH_t\Vert\pi)\le2\sum_{j\ge1}e^{-16tj^2/n^2} = O(1)\quad\text{at } t = \Theta(n^2).
+\]</span></p>
+<p>So even <span class="math inline">\(\ell^2\)</span>-mixing on the cycle is <span class="math inline">\(\Theta(n^2)\)</span>, not <span class="math inline">\(n^2\log n\)</span>.</p>
+</div>
+</section>
+<section id="preview-when-even-t_rm-rel-is-not-the-answer" class="slide level2">
+<h2>Preview: when even <span class="math inline">\(t_{\rm rel}\)</span> is not the answer</h2>
+<p><strong>Hypercube</strong> <span class="math inline">\(\{0,1\}^d\)</span>, <span class="math inline">\(n = 2^d\)</span> (flip a uniform coordinate at rate 1): eigenvalues <span class="math inline">\(\frac{2|S|}d\)</span>, <span class="math inline">\(S\subseteq[d]\)</span>, so <span class="math inline">\(t_{\rm rel} = d/2\)</span>, and exactly</p>
+<p><span class="math display">\[
+\chi^2(\delta_xH_t\Vert\pi) = \big(1+e^{-4t/d}\big)^d - 1
+\]</span></p>
+<p>which is <span class="math inline">\(O(1)\)</span> iff <span class="math inline">\(t\ge\frac d4\log d - O(d)\)</span>. TV has a <strong>cutoff</strong> at the same time (Diaconis; LPW).</p>
+<div class="fragment">
+<table class="caption-top">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>lower: <span class="math inline">\(t_{\rm rel}\)</span></th>
+<th>upper: <span class="math inline">\(\chi^2\)</span> + gap</th>
+<th>upper: entropy + LSI</th>
+<th>truth</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>hypercube</td>
+<td><span class="math inline">\(\Theta(d)\)</span></td>
+<td><span class="math inline">\(\Theta(d^2)\)</span></td>
+<td><span class="math inline">\(\Theta(d\log d)\)</span></td>
+<td><span class="math inline">\(\sim\frac d4\log d\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>LSI constant <span class="math inline">\(\Theta(1/d)\)</span> (tensorization), and <span class="math inline">\(\log\log(1/\pi_{\min}) = \log(d\log2)\)</span>: <strong>tight.</strong> The motivating example for log-Sobolev inequalities.</p>
+</div>
+</section>
+<section id="takeaways" class="slide level2">
+<h2>Takeaways</h2>
+<ul>
+<li><strong>Want</strong> TV; <strong>differentiate</strong> <span class="math inline">\(\chi^2\)</span> and entropy: dissipation identity + functional inequality.</li>
+<li>Gap = optimal <span class="math inline">\(\chi^2\)</span> rate; <span class="math inline">\(\;t_{\rm rel}\log\frac1{2\varepsilon}\le t_{\rm mix}(\varepsilon)\le t_{\rm rel}\big(\frac12\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon}\big)\)</span>.</li>
+<li>Bound the gap with <strong>test functions</strong> (above) and <strong>canonical paths</strong> (below).</li>
+<li>Next: Cheeger — when do test functions and paths meet?</li>
+</ul>
+</section></section>
+<section>
+<section id="appendix-definitions-for-the-board" class="title-slide slide level1 center" data-background-color="#1c1b19">
+<h1>Appendix: definitions for the board</h1>
+
+</section>
+<section id="operators-and-the-walk" class="slide level2 defs">
+<h2>Operators and the walk</h2>
+<p><strong>Graph.</strong> <span class="math inline">\(G = (V,E,w)\)</span> undirected, connected; <span class="math inline">\(d_i = \sum_jw_{ij}\)</span>; <span class="math inline">\(\mathrm{vol}(S) = \sum_{i\in S}d_i\)</span>; <span class="math inline">\(\pi_i = d_i/\mathrm{vol}(V)\)</span>, <span class="math inline">\(\Pi = \operatorname{diag}(\pi)\)</span>.</p>
+<p><strong>Gradient / divergence.</strong> <span class="math inline">\((\nabla f)(i\to j) = f_j - f_i\)</span>; <span class="math inline">\(\operatorname{div}_m = -\nabla_m^*\)</span> w.r.t. <span class="math inline">\(\langle\cdot,\cdot\rangle_w\)</span> on edges and <span class="math inline">\(\langle\cdot,\cdot\rangle_m\)</span> on vertices. <span class="math inline">\(\nabla^*\nabla = L = D-A\)</span>; <span class="math inline">\(\nabla_d^*\nabla = L_{rw} = D^{-1}L = I-P\)</span>; <span class="math inline">\(\mathcal L = D^{-1/2}LD^{-1/2}\)</span>.</p>
+<p><strong>Dirichlet form.</strong> <span class="math inline">\(\mathcal E(f,g) = \langle f,L_{rw}g\rangle_\pi = \frac1{\mathrm{vol}(V)}\sum_{\{i,j\}\in E}w_{ij}(f_i-f_j)(g_i-g_j)\)</span>.</p>
+<p><strong>Walk.</strong> <span class="math inline">\(P = D^{-1}A\)</span>; measures <span class="math inline">\(\mu^\top P\)</span>, functions <span class="math inline">\(Pf\)</span>. Random-walk Laplacian <span class="math inline">\(L_{rw} = I - P\)</span>. Continuous time <span class="math inline">\(H_t = e^{-tL_{rw}}\)</span>, generator <span class="math inline">\(\mathcal A = P - I = -L_{rw}\)</span>. Lazy: <span class="math inline">\(P_{\rm lazy} = \frac12(I+P)\)</span>.</p>
+<p><strong>Reversibility.</strong> <span class="math inline">\(\Pi P = P^\top\Pi\)</span>; densities <span class="math inline">\(h = \mu/\pi\)</span> evolve as <span class="math inline">\(h_t = H_th_0\)</span>.</p>
+<p><strong>Gap / Poincaré.</strong> <span class="math inline">\(\lambda = \lambda_2(L_{rw}) = \min_f\mathcal E(f,f)/\operatorname{Var}_\pi(f)\)</span>; <span class="math inline">\(t_{\rm rel} = 1/\lambda\)</span>.</p>
+</section>
+<section id="convergence" class="slide level2 defs">
+<h2>Convergence</h2>
+<p><strong>Distances.</strong> <span class="math inline">\(\|\mu-\pi\|_{TV} = \frac12\mathbb E_\pi|h-1|\)</span>; <span class="math inline">\(\chi^2(\mu\Vert\pi) = \operatorname{Var}_\pi(h)\)</span>; <span class="math inline">\(D(\mu\Vert\pi) = \operatorname{Ent}_\pi(h)\)</span>. <span class="math inline">\(\;2\,\mathrm{TV}\le\sqrt{\chi^2}\)</span>; <span class="math inline">\(\mathrm{TV}\le\sqrt{D/2}\)</span>; <span class="math inline">\(D\le\log(1+\chi^2)\)</span>.</p>
+<p><strong>Mixing time.</strong> <span class="math inline">\(d(t) = \max_x\|\delta_xH_t-\pi\|_{TV}\)</span>; <span class="math inline">\(t_{\rm mix}(\varepsilon) = \min\{t: d(t)\le\varepsilon\}\)</span>.</p>
+<p><strong>χ² decay.</strong> <span class="math inline">\(\operatorname{Var}_\pi(H_th)\le e^{-2\lambda t}\operatorname{Var}_\pi(h)\)</span>; <span class="math inline">\(\frac d{dt}\operatorname{Var}_\pi(h_t) = -2\mathcal E(h_t,h_t)\)</span>.</p>
+<p><strong>Mixing from the gap.</strong> <span class="math inline">\(\frac1\lambda\log\frac1{2\varepsilon}\le t_{\rm mix}(\varepsilon)\le\frac1\lambda\big(\frac12\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon}\big)\)</span>.</p>
+<p><strong>Entropy.</strong> <span class="math inline">\(\frac d{dt}\operatorname{Ent}_\pi(h_t) = -\mathcal E(h_t,\log h_t)\)</span>. MLSI <span class="math inline">\(\rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)\)</span> <span class="math inline">\(\Rightarrow\)</span> <span class="math inline">\(D(\mu_t\Vert\pi)\le e^{-\rho_0t}D(\mu_0\Vert\pi)\)</span>; <span class="math inline">\(\;\rho_0\le2\lambda\)</span>.</p>
+<p><strong>Canonical paths.</strong> <span class="math inline">\(\kappa = \max_e\frac1{w_e\ell_e}\sum_{\gamma_{ab}\ni e}\ell(\gamma_{ab})\)</span> <span class="math inline">\(\Rightarrow\)</span> <span class="math inline">\(\lambda_2(L)\ge2n/\kappa\)</span>. Degree comparison: <span class="math inline">\(\lambda_2(L)/d_{\max}\le\lambda\le\lambda_2(L)/d_{\min}\)</span>.</p>
+
+
+</section></section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="../../site_libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="../../site_libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="../../site_libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="../../site_libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="../../site_libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="../../site_libs/revealjs/plugin/search/search.js"></script>
+  <script src="../../site_libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="../../site_libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'none',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1100,
+
+        height: 720,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 6.0e-2,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp("https:\/\/lorecchia\.github\.io\/cmsc35410");
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>

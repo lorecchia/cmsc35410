@@ -10,7 +10,7 @@
   <meta name="generator" content="quarto-1.10.18">
 
   <meta name="author" content="CMSC 35410 · Lecture 2">
-  <title>CMSC 35410 – Random Walks and Their Convergence</title>
+  <title>CMSC 35410 – Laplacians and Random Walks</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -134,8 +134,8 @@
     <div class="slides">
 
 <section id="title-slide" class="quarto-title-block center">
-  <h1 class="title">Random Walks and Their Convergence</h1>
-  <p class="subtitle">Graphs as differential operators · the generator · mixing</p>
+  <h1 class="title">Laplacians and Random Walks</h1>
+  <p class="subtitle">Graphs as differential operators · the random walk · measures vs.&nbsp;densities</p>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
@@ -155,15 +155,12 @@ CMSC 35410 · Lecture 2
 <h2>Last time → today</h2>
 <p>Lecture 1, §5: heat on a graph, <span class="math inline">\(\dot u = -Lu\)</span>, and on a manifold, <span class="math inline">\(\partial_t u = -\Delta u\)</span>, with <span class="math inline">\(\Delta = -\operatorname{div}\nabla\)</span>. “The Fiedler vector is the last non-uniform heat left.”</p>
 <div class="fragment">
-<p>Today we turn that picture into <strong>theorems</strong>:</p>
+<p>Today we make that picture precise:</p>
 <ol type="1">
 <li>Graph matrices <strong>are</strong> <span class="math inline">\(-\operatorname{div}\nabla\)</span> (for the right measures).</li>
-<li>The random walk and the heat kernel; measures vs.&nbsp;functions.</li>
-<li>How to measure convergence: <span class="math inline">\(\ell_1\)</span>, <span class="math inline">\(\chi^2\)</span>, entropy. <strong>Mixing time.</strong></li>
-<li>Spectral gap <span class="math inline">\(\Rightarrow\)</span> exponential decay of <span class="math inline">\(\chi^2\)</span>.</li>
-<li>Consequences for <span class="math inline">\(\ell_1\)</span> and entropy (→ log-Sobolev, later).</li>
-<li>Cycle, grid, binary tree: <strong>upper and lower</strong> bounds on the gap; how tight is all this?</li>
+<li>The random walk and the heat kernel; measures vs.&nbsp;functions; the spectral gap.</li>
 </ol>
+<p>Next lecture: how fast the walk converges — distances to <span class="math inline">\(\pi\)</span>, mixing time, and bounds on the spectral gap.</p>
 <aside class="notes">
 <p>~3 min. Conventions as in Lecture 1: P = D^{-1}A row-stochastic, distributions are row vectors on the left, functions are column vectors on the right.</p>
 <style type="text/css">
@@ -405,7 +402,7 @@ CMSC 35410 · Lecture 2
 </ul>
 
 <img data-src="lecture2_files/figure-revealjs/cell-5-output-1.svg" class="r-stretch"><aside class="notes">
-<p>Interior grid vertex: degree 4, so L is exactly the 5-point stencil for −Δ. Boundary vertex (green): degree 3; L drops the missing term, equivalent to a ghost value equal to the vertex’s own value, i.e.&nbsp;zero normal derivative (Neumann). Dirichlet would keep the diagonal at 4/h² and lose 1 from the kernel. The cycle’s spectrum (sampled Fourier modes) is computed in §6.</p>
+<p>Interior grid vertex: degree 4, so L is exactly the 5-point stencil for −Δ. Boundary vertex (green): degree 3; L drops the missing term, equivalent to a ghost value equal to the vertex’s own value, i.e.&nbsp;zero normal derivative (Neumann). Dirichlet would keep the diagonal at 4/h² and lose 1 from the kernel. The cycle’s spectrum (sampled Fourier modes) is computed in Lecture 3, §4.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -436,7 +433,7 @@ CMSC 35410 · Lecture 2
 </div>
 <div class="fragment">
 <blockquote>
-<p>Self-adjoint + PSD + bounded spectrum <span class="math inline">\(\Rightarrow\)</span> an orthonormal eigenbasis and a well-behaved heat kernel <span class="math inline">\(H_t = e^{-tL_{rw}}\)</span> — exactly what the rest of this lecture leans on.</p>
+<p>Self-adjoint + PSD + bounded spectrum <span class="math inline">\(\Rightarrow\)</span> an orthonormal eigenbasis and a well-behaved heat kernel <span class="math inline">\(H_t = e^{-tL_{rw}}\)</span> — exactly what the rest of this lecture, and the next, leans on.</p>
 </blockquote>
 <aside class="notes">
 <p>(1)-(2) are immediate from the A*A form shown on the “Both Laplacians” slide — nothing new to check for any m or any edge weights. (3): kernel = constants because G is connected (gradient slide, §1). Gershgorin for the upper bound: row i of L has diagonal d_i and off-diagonal entries summing to d_i in absolute value, so every eigenvalue lies in some disc [0, 2d_i], hence lambda_n &lt;= 2 d_max. For L_rw = D^{-1}L (similar to the symmetric L = D^{-1/2} L D^{-1/2}), the same argument with row sums of L_rw equal to 1 gives lambda_n &lt;= 2 directly — this is the bound quoted later (spectral decomposition slide, §2). This slide is pure bookkeeping — the content is all already on screen earlier, just gathered in one place before we start using it.</p>
@@ -458,11 +455,17 @@ CMSC 35410 · Lecture 2
 <h1>§2 · The random walk and measure/function duality</h1>
 
 </section>
-<section id="one-matrix-two-actions" class="slide level2">
-<h2>One matrix, two actions</h2>
+<section id="the-random-walk-transition-matrix" class="slide level2">
+<h2>The random walk transition matrix</h2>
 <div class="box">
 <p>At each step, the random walk picks a neighbor with probability proportional to the edge weight. The <strong>probability transition matrix</strong> is: <span class="math display">\[P = D^{-1}A, \quad P_{ij} = \Pr[X_{t+1}=j\mid X_t = i] = w_{ij}/d_i.\]</span></p>
 </div>
+<div class="fragment">
+<p><strong>Stationary distribution</strong> is <span class="math inline">\(\pi_i = d_i/\mathrm{vol}(V)\)</span>: <span class="math display">\[\pi^\top P = \pi^\top D^{-1}A = \frac{1}{\mathrm{vol}(V)}\mathbf 1^\top A = \frac{1}{\mathrm{vol}(V)}\mathbf 1^\top D = \pi^\top.\]</span></p>
+</div>
+</section>
+<section id="one-matrix-two-actions" class="slide level2">
+<h2>One matrix, two actions</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
 <p><strong>Measures</strong> (row vectors)</p>
@@ -474,7 +477,7 @@ CMSC 35410 · Lecture 2
 <p>local <strong>averaging</strong></p>
 </div></div>
 <div class="fragment">
-<p>Pairing <span class="math inline">\(\langle\mu,f\rangle = \mu^\top f = \mathbb E_\mu f\)</span>:</p>
+<p>Canoical pairing <span class="math inline">\(\langle\mu,f\rangle = \mu^\top f = \mathbb E_\mu f\)</span>:</p>
 <p><span class="math display">\[
 \langle\mu^\top P, f\rangle = \mu^\top Pf = \langle\mu, Pf\rangle .
 \]</span></p>
@@ -527,14 +530,15 @@ H_t = \sum_{k\ge0}e^{-t}\frac{t^k}{k!}P^k = e^{-t(I-P)} = e^{-tL_{rw}},\qquad (H
 <p>Cycle (<span class="math inline">\(n\)</span> even), grid, binary tree: all <strong>bipartite</strong> <span class="math inline">\(\Rightarrow\)</span> <span class="math inline">\(P\)</span> has eigenvalue <span class="math inline">\(-1\)</span>.</p>
 <p>The discrete walk from a vertex <strong>never converges</strong> — it alternates sides.</p>
 <div class="fragment">
-<p>This problem can alternatively be fixed by making the walk lazy:</p>
-<p><strong>lazy</strong> walk: <span class="math inline">\(P_{\rm lazy} = \tfrac12(I + P) = I - \tfrac12L_{rw}\)</span>, eigenvalues <span class="math inline">\(1 - \tfrac{\lambda_k}{2}\in[0,1]\)</span>.</p>
+<p>This problem can alternatively be fixed by making the walk <strong>lazy</strong>:</p>
+<p><span class="math display">\[P_{\rm lazy} = \tfrac12(I + P) = I - \tfrac12L_{rw}\]</span>,</p>
+<p>This has eigenvalues <span class="math inline">\(1 - \tfrac{\lambda_k}{2}\in[0,1]\)</span>.</p>
 <p>We work in continuous time; discrete-time statements follow with <span class="math inline">\(e^{-\lambda}\to 1-\lambda/2\)</span>.</p>
 </div>
 </section>
 <section id="stationarity-and-detailed-balance" class="slide level2">
 <h2>Stationarity and detailed balance</h2>
-<p><span class="math inline">\(\pi_i = d_i/\mathrm{vol}(V)\)</span> is stationary: <span class="math inline">\(\;(\pi^\top P)_j = \sum_i\frac{d_i}{\mathrm{vol}}\cdot\frac{w_{ij}}{d_i} = \pi_j\)</span>.</p>
+<p><strong>Question</strong>: What does self-adjointness in <span class="math inline">\(L^2(\pi)\)</span> imply for the behavior of the random walk?</p>
 <div class="fragment">
 <p><strong>Detailed balance:</strong></p>
 <p><span class="math display">\[
@@ -546,7 +550,7 @@ H_t = \sum_{k\ge0}e^{-t}\frac{t^k}{k!}P^k = e^{-t(I-P)} = e^{-tL_{rw}},\qquad (H
 <p><span class="math display">\[
 \langle f, Pg\rangle_\pi = f^\top\Pi Pg = f^\top P^\top\Pi g = \langle Pf, g\rangle_\pi .
 \]</span></p>
-<p>Same fact as <span class="math inline">\(L_{rw} = \nabla_\pi^*\nabla\)</span>, now seen probabilistically.</p>
+<p>Same fact as <span class="math inline">\(\nabla_\pi^*\nabla = \mathrm{vol}(V)\,L_{rw}\)</span>, now seen probabilistically.</p>
 </div>
 </section>
 <section id="densities-are-functions" class="slide level2 smaller">
@@ -564,6 +568,25 @@ H_t = \sum_{k\ge0}e^{-t}\frac{t^k}{k!}P^k = e^{-t(I-P)} = e^{-tL_{rw}},\qquad (H
 <li>Non-reversible chains: <span class="math inline">\(h_t\)</span> evolves by the <strong>time-reversed</strong> semigroup. We’ll meet this again with general Markov semigroups.</li>
 </ul>
 </div>
+</section>
+<section id="demo-measures-vs-densities-split-and-aggregate" class="slide level2 smaller">
+<h2>Demo: measures vs densities — split and aggregate</h2>
+<p><a class="demo-link" href="demos/split-aggregate.html" target="_blank">open in new tab ↗</a></p>
+<iframe class="demo" data-src="demos/split-aggregate.html">
+</iframe>
+<aside class="notes">
+<p>One loop: vertex mass –D⁻¹–&gt; value on each edge-end –send–&gt; far end –A–&gt; vertex mass. Measures and densities are the same loop cut at different places. Measures (start at red vertex mass): split (D⁻¹), send, aggregate (A): μᵀ ↦ μᵀD⁻¹A = μᵀP. Mass is conserved. Densities (start at blue value, x = D⁻¹μ = h/vol): send copies, aggregate (A), average (D⁻¹): x ↦ D⁻¹Ax = Px. Constants are preserved. Point out: in density mode the red intermediate Ax_t is exactly μ_{t+1}; the invariant μ_t = D x_t holds at every step. Run it: μ_t → π ∝ degree (uneven red bars), x_t → constant 1/vol (flat blue bars). This makes the previous two slides concrete: π is the fixed point of the measure loop, and densities evolve by the same P as functions (they converge to constants). Graph and starting values are from the old SGT figure (degrees 1,3,2,2; vol = 8). It has a triangle, so the discrete walk is aperiodic and converges.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="spectral-decomposition-and-the-poincaré-inequality" class="slide level2 smaller">
 <h2>Spectral decomposition and the Poincaré inequality</h2>
@@ -602,557 +625,15 @@ H_tf = \sum_ke^{-\lambda_kt}\langle f,\varphi_k\rangle_\pi\varphi_k,\qquad
           display:block!important;
       }</style></aside>
 </div>
-</section></section>
-<section>
-<section id="measuring-convergence" class="title-slide slide level1 center" data-background-color="#1c1b19">
-<h1>§3 · Measuring convergence</h1>
-
-</section>
-<section id="three-distances-to-pi" class="slide level2 smaller">
-<h2>Three distances to <span class="math inline">\(\pi\)</span></h2>
-<p>For <span class="math inline">\(\mu\)</span> with density <span class="math inline">\(h = \mu/\pi\)</span>:</p>
-<table class="caption-top">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th></th>
-<th>measure form</th>
-<th>density form</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><strong>TV</strong></td>
-<td><span class="math inline">\(\|\mu-\pi\|_{TV} = \tfrac12\|\mu-\pi\|_1 = \max_S|\mu(S)-\pi(S)|\)</span></td>
-<td><span class="math inline">\(\tfrac12\,\mathbb E_\pi|h-1|\)</span></td>
-</tr>
-<tr class="even">
-<td><span class="math inline">\(\boldsymbol{\chi^2}\)</span></td>
-<td><span class="math inline">\(\chi^2(\mu\Vert\pi) = \sum_i\frac{(\mu_i-\pi_i)^2}{\pi_i} = \|\mu-\pi\|^2_{1/\pi}\)</span></td>
-<td><span class="math inline">\(\operatorname{Var}_\pi(h)\)</span></td>
-</tr>
-<tr class="odd">
-<td><strong>KL</strong></td>
-<td><span class="math inline">\(D(\mu\Vert\pi) = \sum_i\mu_i\log\frac{\mu_i}{\pi_i}\)</span></td>
-<td><span class="math inline">\(\operatorname{Ent}_\pi(h)\)</span></td>
-</tr>
-</tbody>
-</table>
-<p>All of the form <span class="math inline">\(\mathbb E_\pi\Phi(h)\)</span>, <span class="math inline">\(\Phi\)</span> convex, <span class="math inline">\(\Phi(1) = 0\)</span>: <span class="math inline">\(\;\tfrac12|x-1|,\ (x-1)^2,\ x\log x\)</span>.</p>
-<div class="fragment">
-<p><strong>From a point mass</strong> <span class="math inline">\(\delta_x\)</span>, on a bounded-degree graph (<span class="math inline">\(\pi_x\approx1/n\)</span>):</p>
-<p><span class="math display">\[
-\|\delta_x-\pi\|_{TV} = 1-\pi_x\le1,\qquad D(\delta_x\Vert\pi) = \log\tfrac1{\pi_x}\approx\log n,\qquad\chi^2(\delta_x\Vert\pi) = \tfrac1{\pi_x}-1\approx n .
-\]</span></p>
-<div class="warn">
-<p>Remember <span class="math inline">\(1\)</span> vs.&nbsp;<span class="math inline">\(\log n\)</span> vs.&nbsp;<span class="math inline">\(n\)</span>. It is the whole story of §5.</p>
-</div>
-</div>
-</section>
-<section id="how-they-compare" class="slide level2 scrollable">
-<h2>How they compare</h2>
-<div class="box">
-<p><strong>Lemma.</strong> For every <span class="math inline">\(\mu\)</span>:</p>
-<ol type="1">
-<li><span class="math inline">\(2\|\mu-\pi\|_{TV}\le\sqrt{\chi^2(\mu\Vert\pi)}\)</span></li>
-<li>(Pinsker) <span class="math inline">\(\|\mu-\pi\|_{TV}\le\sqrt{\tfrac12D(\mu\Vert\pi)}\)</span></li>
-<li><span class="math inline">\(D(\mu\Vert\pi)\le\log\big(1+\chi^2(\mu\Vert\pi)\big)\le\chi^2(\mu\Vert\pi)\)</span></li>
-</ol>
-</div>
-<div class="fragment">
-<p><em>Proofs.</em> (1) Cauchy–Schwarz in <span class="math inline">\(L^2(\pi)\)</span>. (3) Jensen for concave <span class="math inline">\(\log\)</span> under <span class="math inline">\(\mu\)</span>: <span class="math display">\[
-D = \mathbb E_\mu\log h\le\log\mathbb E_\mu h = \log\mathbb E_\pi h^2 = \log(1+\operatorname{Var}_\pi h).
-\]</span> (2) Standard (reduce to two points, then calculus).</p>
-</div>
-</section>
-<section id="monotone-but-at-what-rate" class="slide level2 smaller">
-<h2>Monotone — but at what rate?</h2>
-<p><strong>Lemma.</strong> For convex <span class="math inline">\(\Phi\)</span>, <span class="math inline">\(t\mapsto\mathbb E_\pi\Phi(H_th)\)</span> is non-increasing.</p>
-<p><em>Proof.</em> Jensen pointwise, <span class="math inline">\(\Phi(H_th)\le H_t\Phi(h)\)</span>; stationarity, <span class="math inline">\(\mathbb E_\pi H_tg = \mathbb E_\pi g\)</span>. <span class="math inline">\(\square\)</span> (For TV: the <span class="math inline">\(\ell_1\)</span> contraction exercise.)</p>
-<div class="fragment">
-<div class="box">
-<p><strong>TV</strong> is the distance we <em>want</em>. <span class="math inline">\(\boldsymbol{\chi^2}\)</span> and <strong>entropy</strong> are the ones we can <em>differentiate along the flow</em> and close with a functional inequality.</p>
-</div>
-</div>
-<div class="fragment">
-<p><strong>Mixing time:</strong> worst case over starting vertices; by convexity of the distance, this is also the worst case over all starting distributions.</p>
-<p><span class="math display">\[
-d(t) := \max_x\|\delta_xH_t - \pi\|_{TV},\qquad t_{\rm mix}(\varepsilon) := \min\{t: d(t)\le\varepsilon\},
-\]</span></p>
-<p><span class="math display">\[
-t_{\rm mix} := t_{\rm mix}(\tfrac14).
-\]</span></p>
-<p>Same with <span class="math inline">\(\sqrt{\chi^2}\)</span> (<span class="math inline">\(\ell^2\)</span>-mixing) or <span class="math inline">\(D\)</span> (entropy mixing). Discrete/lazy: replace <span class="math inline">\(H_t\)</span> by <span class="math inline">\(P_{\rm lazy}^t\)</span>.</p>
-<aside class="notes">
-<p>Convexity: μ = Σ_x μ_x δ_x and H_t is linear, so ‖μH_t − π‖ = ‖Σ_x μ_x(δ_x H_t − π)‖ ≤ Σ_x μ_x ‖δ_x H_t − π‖ ≤ max_x ‖δ_x H_t − π‖ (TV is a norm; χ² and KL are convex f-divergences). A convex function on the simplex is maximized at a vertex = a point mass.</p>
-<p>d(t) is essentially submultiplicative, so t_mix(ε) ≤ ⌈log2(1/ε)⌉ t_mix (LPW Ch. 4): 1/4 is just a convention.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</div>
-</section></section>
-<section>
-<section id="spectral-gap-χ²-decay" class="title-slide slide level1 center" data-background-color="#1c1b19">
-<h1>§4 · Spectral gap ⇒ χ² decay</h1>
-
-</section>
-<section id="the-theorem" class="slide level2">
-<h2>The theorem</h2>
-<div class="box">
-<p><strong>Theorem.</strong> For all <span class="math inline">\(h\)</span> and <span class="math inline">\(t\ge0\)</span>: <span class="math display">\[\operatorname{Var}_\pi(H_th)\le e^{-2\lambda t}\operatorname{Var}_\pi(h),\qquad\text{i.e.}\qquad\chi^2(\mu_t\Vert\pi)\le e^{-2\lambda t}\chi^2(\mu_0\Vert\pi).\]</span> Sharp: equality for <span class="math inline">\(h = 1+\epsilon\varphi_2\)</span>.</p>
-</div>
-<div class="fragment">
-<p><em>Proof 1 (spectral).</em> <span class="math display">\[
-\operatorname{Var}_\pi(H_th) = \sum_{k\ge2}e^{-2\lambda_kt}\langle h,\varphi_k\rangle_\pi^2\le e^{-2\lambda t}\sum_{k\ge2}\langle h,\varphi_k\rangle_\pi^2 . \qquad\square
-\]</span></p>
-</div>
-</section>
-<section id="proof-2-the-template-for-the-rest-of-the-course" class="slide level2 smaller">
-<h2>Proof 2: the template for the rest of the course</h2>
-<p><span class="math inline">\(h_t = H_th\)</span>; <span class="math inline">\(\;\mathbb E_\pi h_t\equiv c\)</span> is conserved. Then</p>
-<p><span class="math display">\[
-\frac{d}{dt}\operatorname{Var}_\pi(h_t) = 2\langle h_t - c,\ \partial_th_t\rangle_\pi = -2\langle h_t - c, L_{rw}h_t\rangle_\pi = -2\,\mathcal E(h_t,h_t).
-\]</span></p>
-<div class="fragment">
-<p><strong>Variance dissipates at rate <span class="math inline">\(2\mathcal E\)</span>.</strong> Poincaré: <span class="math inline">\(\mathcal E\ge\lambda\operatorname{Var}\)</span>, so <span class="math inline">\(\frac d{dt}\operatorname{Var}\le-2\lambda\operatorname{Var}\)</span>; Grönwall. <span class="math inline">\(\square\)</span></p>
-</div>
-<div class="fragment">
-<div class="box">
-<p>No diagonalization. Only: <strong>(dissipation identity) + (functional inequality)</strong>.</p>
-<ul>
-<li>(Var, Poincaré) <span class="math inline">\(\to\)</span> <span class="math inline">\(\chi^2\)</span> decay at rate <span class="math inline">\(2\lambda\)</span>. (Today.)</li>
-<li>(Ent, log-Sobolev) <span class="math inline">\(\to\)</span> entropy decay. (§5, then later.)</li>
-<li>Graph <span class="math inline">\(\to\)</span> manifold: Bakry–Émery. (Later.)</li>
-</ul>
-</div>
-<p>Conversely, decay at rate <span class="math inline">\(2c\)</span> for all <span class="math inline">\(h\)</span> <span class="math inline">\(\Rightarrow\)</span> differentiate at <span class="math inline">\(t=0\)</span> <span class="math inline">\(\Rightarrow\)</span> <span class="math inline">\(c\le\lambda\)</span>. <strong>Gap = optimal <span class="math inline">\(\chi^2\)</span> rate.</strong></p>
-</div>
-</section>
-<section id="the-heat-flow-is-a-gradient-flow" class="slide level2 smaller">
-<h2>The heat flow is a gradient flow</h2>
-<p><strong>Geometry:</strong> densities in <span class="math inline">\(L^2(\pi)\)</span>, where the distance to equilibrium is <span class="math inline">\(\|h-1\|_\pi^2 = \chi^2(\mu\Vert\pi)\)</span>. <strong>Energy:</strong> <span class="math inline">\(F(h) := \tfrac12\mathcal E(h,h) = \tfrac12\,\|\nabla h\|_w^2/\mathrm{vol}(V)\)</span>.</p>
-<div class="fragment">
-<p><strong>Gradient.</strong> <span class="math inline">\(F(h+\epsilon v) = F(h) + \epsilon\,\mathcal E(h,v) + O(\epsilon^2) = F(h) + \epsilon\,\langle L_{rw}h, v\rangle_\pi + O(\epsilon^2)\)</span>, so</p>
-<p><span class="math display">\[
-\nabla_\pi F(h) = L_{rw}h
-\qquad\Longrightarrow\qquad
-\partial_th_t = -\nabla_\pi F(h_t) = -L_{rw}h_t ,
-\]</span></p>
-<p>which is the heat equation for densities from §2. <strong>Heat flow = steepest descent of the energy in the <span class="math inline">\(\chi^2\)</span> geometry.</strong></p>
-</div>
-<div class="fragment">
-<div class="box">
-<p><strong>Poincaré = strong convexity.</strong> <span class="math inline">\(F(h)\ge\frac\lambda2\|h-\mathbb E_\pi h\|_\pi^2\)</span>: the energy is <span class="math inline">\(\lambda\)</span>-strongly convex transverse to its minimizers (the constants). The gradient flow of a <span class="math inline">\(\lambda\)</span>-strongly convex function contracts the squared distance to its minimizer at rate <span class="math inline">\(2\lambda\)</span>: <strong>this is the <span class="math inline">\(\chi^2\)</span> theorem.</strong> Proof 2 was exactly this computation, <span class="math inline">\(\frac{d}{dt}\tfrac12\|h_t-1\|_\pi^2 = -\langle h_t-1,\nabla_\pi F(h_t)\rangle_\pi = -2F(h_t)\)</span>.</p>
-</div>
-</div>
-<div class="fragment">
-<p>Discretizing time: <span class="math inline">\(h_{k+1} = \arg\min_h\Big\{F(h) + \frac{1}{2\tau}\|h-h_k\|_\pi^2\Big\} = (I+\tau L_{rw})^{-1}h_k\ \to\ H_th_0\)</span> as <span class="math inline">\(\tau\to0\)</span>.</p>
-</div>
-<div class="fragment">
-<p><strong>Question:</strong> is there a geometry in which the heat flow is the gradient flow of the <strong>entropy</strong>, and does convexity of the entropy give entropy decay?</p>
-<aside class="notes">
-<p>χ² is the natural convergence measure for the heat flow because it is the squared norm of the Hilbert space in which the heat flow is a gradient flow; the gap is the strong-convexity modulus of the energy in that space. Minimizing movement: first-order condition L_rw h + (h − h_k)/τ = 0, i.e.&nbsp;implicit Euler. Answer to the question (for later): yes. On R^n, Jordan–Kinderlehrer–Otto (SIAM J. Math. Anal. 1998): the Fokker–Planck/heat flow is the gradient flow of relative entropy w.r.t. the Wasserstein-2 metric; λ-geodesic convexity of entropy (Bakry–Émery / Ricci ≥ λ) ⇒ LSI ⇒ entropy decay. On finite Markov chains, W2 fails (no geodesics through discrete measures); Maas (J. Funct. Anal. 2011) and Mielke (Nonlinearity 2011) built a discrete transport metric in which the continuous-time chain is the gradient flow of entropy; Erbar–Maas (2012): entropic Ricci curvature ≥ κ ⇒ MLSI with ρ₀ ≥ 2κ. (Citation details from memory: check.)</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</div>
-</section>
-<section id="discrete-time" class="slide level2">
-<h2>Discrete time</h2>
-<ul>
-<li>Lazy chain: <span class="math inline">\(\operatorname{Var}_\pi(P_{\rm lazy}^th)\le(1-\tfrac\lambda2)^{2t}\operatorname{Var}_\pi(h)\)</span>.</li>
-<li>Non-lazy: factor <span class="math inline">\(\lambda_\star^{2t}\)</span>, <span class="math inline">\(\;\lambda_\star = \max_{k\ge2}|1-\lambda_k|\)</span> — equal to <span class="math inline">\(1\)</span> on bipartite graphs.</li>
-</ul>
-</section></section>
-<section>
-<section id="consequences-for-ℓ₁-and-entropy" class="title-slide slide level1 center" data-background-color="#1c1b19">
-<h1>§5 · Consequences for ℓ₁ and entropy</h1>
-
-</section>
-<section id="the-gap-pins-down-the-mixing-time" class="slide level2">
-<h2>The gap pins down the mixing time</h2>
-<div class="box">
-<p><strong>Theorem.</strong> For the continuous-time walk, <span class="math inline">\(\pi_{\min} = \min_x\pi_x\)</span>: <span class="math display">\[
-\frac1\lambda\log\frac1{2\varepsilon}\ \le\ t_{\rm mix}(\varepsilon)\ \le\ \frac1\lambda\Big(\tfrac12\log\frac1{\pi_{\min}} + \log\frac1{2\varepsilon}\Big).
-\]</span></p>
-</div>
-<div class="fragment">
-<p><strong>Upper.</strong> Lemma (1) + §4: <span class="math inline">\(\;\|\delta_xH_t-\pi\|_{TV}\le\tfrac12\sqrt{\chi^2(\delta_xH_t\Vert\pi)}\le\tfrac12e^{-\lambda t}\pi_x^{-1/2}\)</span>.</p>
-</div>
-<div class="fragment">
-<p><strong>Lower.</strong> Scale <span class="math inline">\(f = \varphi_2\)</span> so <span class="math inline">\(\|f\|_\infty = 1 = |f(x)|\)</span>. Then <span class="math inline">\(\mathbb E_\pi f = 0\)</span>, <span class="math inline">\((H_tf)(x) = e^{-\lambda t}f(x)\)</span>, and <span class="math display">\[
-e^{-\lambda t} = |\mathbb E_{\delta_xH_t}f - \mathbb E_\pi f|\le\|\delta_xH_t-\pi\|_1\|f\|_\infty = 2\|\delta_xH_t-\pi\|_{TV}. \qquad\square
-\]</span></p>
-<aside class="notes">
-<p>Lazy discrete version: (2/λ − 1) log(1/2ε) ≤ t_mix(ε) ≤ (2/λ)(½ log(1/π_min) + log(1/2ε)); lower bound uses log(1/(1−x)) ≤ x/(1−x). Cf. LPW Thms 12.4–12.5 (check numbering).</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</div>
-</section>
-<section id="where-the-log1pi_min-comes-from" class="slide level2">
-<h2>Where the <span class="math inline">\(\log(1/\pi_{\min})\)</span> comes from</h2>
-
-<img data-src="lecture2_files/figure-revealjs/cell-6-output-1.svg" class="r-stretch"><p><span class="math inline">\(\chi^2\)</span> starts at <span class="math inline">\(\approx n\)</span> and must spend time <span class="math inline">\(\approx\frac{\log n}{2\lambda}\)</span> just getting below <span class="math inline">\(1\)</span>. TV starts at <span class="math inline">\(\le1\)</span>.</p>
-<aside class="notes">
-<p>x-axis in units of t_rel. TV (blue) stays sandwiched between the lower bound (grey dotted) and the χ²-bound (orange dashed). The orange solid χ² curve only drops below 1/4 well after TV. Entropy (green) starts at log n, much lower than n.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="entropy-along-the-flow" class="slide level2">
-<h2>Entropy along the flow</h2>
-<p>Same computation as Proof 2, with <span class="math inline">\(\operatorname{Ent}_\pi\)</span> in place of <span class="math inline">\(\operatorname{Var}_\pi\)</span>:</p>
-<p><span class="math display">\[
-\frac d{dt}\operatorname{Ent}_\pi(h_t) = \mathbb E_\pi\big[(1+\log h_t)\,\partial_th_t\big] = -\langle\log h_t, L_{rw}h_t\rangle_\pi
-\]</span></p>
-<p><span class="math display">\[
-= -\mathcal E(h_t,\log h_t)\ \le\ 0 .
-\]</span></p>
-<p><span class="math inline">\(\mathcal E(h,\log h)\)</span>: <strong>entropy production</strong> (discrete Fisher information).</p>
-<div class="fragment">
-<p>From the gap alone (Lemma 3): <span class="math inline">\(\;D(\mu_t\Vert\pi)\le\log\big(1 + e^{-2\lambda t}\chi^2(\mu_0\Vert\pi)\big)\)</span> — rate <span class="math inline">\(2\lambda\)</span> eventually, but the same <span class="math inline">\(\log n\)</span> burn-in.</p>
-</div>
-<div class="fragment">
-<p>To close the loop we need a new functional inequality, the <strong>modified log-Sobolev inequality</strong>:</p>
-<p><span class="math display">\[
-\rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)\quad\Longrightarrow\quad D(\mu_t\Vert\pi)\le e^{-\rho_0t}D(\mu_0\Vert\pi).
-\]</span></p>
-</div>
-</section>
-<section id="preview-log-sobolev-trades-log-n-for-loglog-n" class="slide level2 smaller">
-<h2>Preview: log-Sobolev trades <span class="math inline">\(\log n\)</span> for <span class="math inline">\(\log\log n\)</span></h2>
-<p>With Pinsker:</p>
-<p><span class="math display">\[
-t_{\rm mix}(\varepsilon)\le\frac1{\rho_0}\Big(\log\log\frac1{\pi_{\min}} + \log\frac1{2\varepsilon^2}\Big)
-\qquad\text{vs.}\qquad
-\frac1\lambda\Big(\tfrac12\log\frac1{\pi_{\min}} + \log\frac1{2\varepsilon}\Big).
-\]</span></p>
-<div class="fragment">
-<p>The price is the constant: entropy can’t decay faster than twice the gap,</p>
-<p><span class="math display">\[
-\rho_0\ \le\ 2\lambda .
-\]</span></p>
-<p><em>Proof.</em> Linearize at equilibrium, <span class="math inline">\(h = 1+\epsilon g\)</span>, <span class="math inline">\(\mathbb E_\pi g = 0\)</span>: <span class="math display">\[
-\operatorname{Ent}_\pi(h) = \tfrac{\epsilon^2}2\operatorname{Var}_\pi g + O(\epsilon^3),\qquad \mathcal E(h,\log h) = \epsilon^2\mathcal E(g,g) + O(\epsilon^3).
-\]</span> MLSI forces <span class="math inline">\(\rho_0\le 2\,\mathcal E(g,g)/\operatorname{Var}_\pi g\)</span> for every <span class="math inline">\(g\)</span>; take <span class="math inline">\(g = \varphi_2\)</span>. <span class="math inline">\(\square\)</span></p>
-<div class="box">
-<p>Entropy wins when <span class="math inline">\(\rho_0\)</span> is comparable to the gap. When is it? How do we bound it? → later lecture.</p>
-</div>
-<aside class="notes">
-<p>Say aloud: next time we meet the classical log-Sobolev inequality α Ent(f²) ≤ E(f,f) (Gross), which is how ρ₀ is bounded in practice (it tensorizes; ρ₀ ≥ 4α via (a−b)(log a − log b) ≥ 4(√a−√b)²), and which coincides with this one for diffusions (chain rule: E(h, log h) = 4E(√h,√h) exactly). If asked for a lower bound in terms of λ: Diaconis–Saloff-Coste give α ≥ (1−2π_<em>)λ / log(1/π_</em> − 1), so ρ₀ ≳ 4λ/log(1/π_min) — plugging it in is worse than the gap bound by log log, so the gap alone never certifies that entropy helps. K_n: λ ≍ 1, α ≍ 1/log n, ρ₀ ≍ 1 (Bobkov–Tetali). (Constants from memory — check.)</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</div>
-</section></section>
-<section>
-<section id="examples-the-gap-from-both-sides" class="title-slide slide level1 center" data-background-color="#1c1b19">
-<h1>§6 · Examples: the gap from both sides</h1>
-
-</section>
-<section id="toolkit" class="slide level2 smaller">
-<h2>Toolkit</h2>
-<p><strong>Upper bounds: test functions.</strong> Any non-constant <span class="math inline">\(f\)</span>: <span class="math inline">\(\;\lambda\le\mathcal E(f,f)/\operatorname{Var}_\pi(f)\)</span>. Make <span class="math inline">\(f\)</span> change slowly across a bottleneck.</p>
-<div class="fragment">
-<p><strong>Degree comparison.</strong> If <span class="math inline">\(d_{\min}\le d_i\le d_{\max}\)</span>:</p>
-<p><span class="math display">\[
-\frac{\lambda_2(L)}{d_{\max}}\le\lambda = \lambda_2(L_{rw})\le\frac{\lambda_2(L)}{d_{\min}}.
-\]</span></p>
-<p>(Both are <span class="math inline">\(\min_f f^\top Lf\,/\min_c\|f-c\|_m^2\)</span>, with <span class="math inline">\(m = d\)</span> vs.&nbsp;<span class="math inline">\(m = \mathbf 1\)</span>.) Our examples have <span class="math inline">\(1\le d\le4\)</span>: work with <span class="math inline">\(L\)</span>.</p>
-</div>
-<div class="fragment">
-<p><strong>Lower bounds: canonical paths</strong> — the discrete version of the 1-D Poincaré proof:</p>
-<p><span class="math display">\[
-f(b)-f(a) = \int_a^bf'\quad+\quad\text{Cauchy–Schwarz}.
-\]</span></p>
-</div>
-</section>
-<section id="canonical-paths" class="slide level2 smaller">
-<h2>Canonical paths</h2>
-<p>For each ordered pair <span class="math inline">\((a,b)\)</span> choose a path <span class="math inline">\(\gamma_{ab}\)</span>; choose edge lengths <span class="math inline">\(\ell_e&gt;0\)</span> (default <span class="math inline">\(\ell\equiv1\)</span>). <strong>Congestion:</strong></p>
-<p><span class="math display">\[
-\kappa := \max_{e\in E}\ \frac1{w_e\ell_e}\sum_{(a,b):\,e\in\gamma_{ab}}\ell(\gamma_{ab}),\qquad\ell(\gamma) = \sum_{e\in\gamma}\ell_e .
-\]</span></p>
-<div class="box">
-<p><strong>Theorem</strong> (Jerrum–Sinclair; Diaconis–Stroock). <span class="math inline">\(\;\sum_{a,b}(f_a-f_b)^2\le\kappa\,f^\top Lf\)</span>, hence <span class="math inline">\(\;\lambda_2(L)\ge\dfrac{2n}\kappa\)</span>.</p>
-</div>
-<div class="fragment">
-<p><em>Proof.</em> <span class="math inline">\((f_b - f_a)^2 = \big(\sum_{e\in\gamma_{ab}}\nabla_ef\big)^2\le\ell(\gamma_{ab})\sum_{e\in\gamma_{ab}}\frac{(\nabla_ef)^2}{\ell_e}\)</span>. Sum over pairs, swap sums:</p>
-<p><span class="math display">\[
-\sum_{a,b}(f_a-f_b)^2\le\sum_ew_e(\nabla_ef)^2\cdot\underbrace{\frac{1}{w_e\ell_e}\sum_{\gamma_{ab}\ni e}\ell(\gamma_{ab})}_{\le\kappa},\qquad\sum_{a,b}(f_a-f_b)^2 = 2n\|f-\bar f\|^2 . \ \square
-\]</span></p>
-<aside class="notes">
-<p>π-weighted version, directly for λ: Var_π f = ½ Σ π_a π_b (f_a − f_b)², E(f,f) = Σ_e Q(e)(∇<em>e f)², Q(e) = w_e/vol.&nbsp;Same proof: λ ≥ 1/κ_π, κ_π = max_e (1/(Q(e) ℓ_e)) · ½ Σ</em>{γ_ab ∋ e} π_a π_b ℓ(γ_ab). Interpretation: κ is the congestion of an (unsplittable) multicommodity flow routing one unit between every pair. A bottleneck forces congestion — paths certify the absence of bottlenecks, dual to the test-function certificate. Flow/cut duality → Cheeger next week, Leighton–Rao later.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</div>
-</section>
-<section id="cycle-c_n" class="slide level2 smaller">
-<h2>Cycle <span class="math inline">\(C_n\)</span></h2>
-<p><strong>Exact</strong> (Fourier): <span class="math inline">\(L\)</span> has eigenvalues <span class="math inline">\(2-2\cos(2\pi j/n)\)</span>; since <span class="math inline">\(D = 2I\)</span>, <span class="math inline">\(\;L_{rw} = L/2\)</span> and <span class="math display">\[\lambda = 1-\cos\tfrac{2\pi}n = 2\sin^2\tfrac\pi n\approx\frac{2\pi^2}{n^2}\approx\frac{19.7}{n^2}.\]</span></p>
-<div class="fragment">
-<p><strong>Canonical paths</strong> (<span class="math inline">\(n = 2m+1\)</span>, shortest paths, <span class="math inline">\(\ell\equiv1\)</span>): each vertex has 2 vertices at each distance <span class="math inline">\(s = 1,\dots,m\)</span>. By rotation symmetry all edges carry equal load:</p>
-<p><span class="math display">\[
-\kappa = \frac1n\sum_{(a,b)}|\gamma_{ab}|^2 = 2\sum_{s=1}^ms^2 = \frac{n(n^2-1)}{12}
-\qquad\Longrightarrow\qquad
-\lambda_2(L)\ge\frac{2n}{\kappa} = \frac{24}{n^2-1}.
-\]</span></p>
-</div>
-<div class="fragment">
-<p>Divide by <span class="math inline">\(d = 2\)</span> to compare with the exact <span class="math inline">\(\lambda\)</span>: <span class="math display">\[
-\frac{12}{n^2-1}\ \le\ \lambda\ \approx\ \frac{19.7}{n^2}.
-\]</span> Right order; constant <span class="math inline">\(12\)</span> vs.&nbsp;<span class="math inline">\(2\pi^2\approx19.7\)</span>.</p>
-<aside class="notes">
-<p>Σ_e load(e) = Σ_{(a,b)} |γ_ab|² because each pair contributes |γ| to each of its |γ| edges. Careful with normalizations: λ₂(L) = 2λ ≈ 4π²/n² ≈ 39.5/n² ≥ 24/(n²−1); for λ = λ₂(L_rw): 12/(n²−1) ≤ 2π²/n².</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</div>
-</section>
-<section id="the-ktimes-k-grid-n-k2" class="slide level2 smaller">
-<h2>The <span class="math inline">\(k\times k\)</span> grid, <span class="math inline">\(n = k^2\)</span></h2>
-<p><strong>Test function</strong> <span class="math inline">\(f(x,y) = x - \frac{k+1}2\)</span>: only horizontal edges see a difference (each 1),</p>
-<p><span class="math display">\[
-\lambda_2(L)\le\frac{k(k-1)}{k\cdot k(k^2-1)/12} = \frac{12}{k(k+1)},\qquad\lambda\le\frac{6}{k(k+1)}\ \ (d_{\min} = 2).
-\]</span></p>
-<div class="fragment">
-<p><strong>Canonical paths, “L-shaped”:</strong> horizontal along <span class="math inline">\(a\)</span>’s row to <span class="math inline">\(b\)</span>’s column, then vertical. Length <span class="math inline">\(\le2(k-1)\)</span>.</p>
-<ul>
-<li>horizontal edge, row <span class="math inline">\(r\)</span>, between columns <span class="math inline">\(c|c+1\)</span>: needs <span class="math inline">\(a\)</span> in row <span class="math inline">\(r\)</span>, <span class="math inline">\(a_x\)</span> and <span class="math inline">\(b_x\)</span> on opposite sides: <span class="math inline">\(\;2\,c(k-c)\,k\le k^3/2\)</span> pairs;</li>
-<li>vertical edge, column <span class="math inline">\(c\)</span>, between rows <span class="math inline">\(r|r+1\)</span>: needs <span class="math inline">\(b\)</span> in column <span class="math inline">\(c\)</span>, <span class="math inline">\(a_y,b_y\)</span> on opposite sides: <span class="math inline">\(\;2\,r(k-r)\,k\le k^3/2\)</span> pairs.</li>
-</ul>
-<p><span class="math display">\[
-\kappa\le\frac{k^3}2\cdot2(k-1)\quad\Longrightarrow\quad\lambda_2(L)\ge\frac{2}{k(k-1)},\qquad\lambda\ge\frac1{2k(k-1)}\ \ (d_{\max} = 4).
-\]</span></p>
-</div>
-<div class="fragment">
-<p>So <span class="math inline">\(\lambda = \Theta(1/k^2) = \Theta(1/n)\)</span>. (Exact: <span class="math inline">\(\lambda_2(L) = 2-2\cos\frac\pi k\approx\frac{\pi^2}{k^2}\)</span>, via <span class="math inline">\(L(G\,\square\,H) = L_G\otimes I + I\otimes L_H\)</span> and the Neumann cosines of the path.)</p>
-</div>
-</section>
-<section id="binary-tree-depth-h-n-2h1-1-upper-bound" class="slide level2">
-<h2>Binary tree, depth <span class="math inline">\(h\)</span>, <span class="math inline">\(n = 2^{h+1}-1\)</span>: upper bound</h2>
-<p><strong>Test function</strong>: <span class="math inline">\(+1\)</span> on the left subtree, <span class="math inline">\(-1\)</span> on the right, <span class="math inline">\(0\)</span> at the root.</p>
-<ul>
-<li><span class="math inline">\(\mathbb E_\pi f = 0\)</span> by symmetry;</li>
-<li>only the two root edges see a difference: <span class="math inline">\(\sum w(\nabla f)^2 = 2\)</span>;</li>
-<li><span class="math inline">\(\sum_id_if_i^2 = \mathrm{vol}(V) - d_{\rm root} = 2(n-1)-2\)</span>.</li>
-</ul>
-<p><span class="math display">\[
-\lambda\le\frac{2}{2n-4} = \frac1{n-2}.
-\]</span></p>
-<div class="fragment">
-<div class="box">
-<p>The root is a <strong>bottleneck</strong>: two edges separate two halves of size <span class="math inline">\(\approx n/2\)</span>. (Cheeger next week: conductance <span class="math inline">\(\approx 2/n\)</span>.)</p>
-</div>
-</div>
-</section>
-<section id="binary-tree-lower-bound-and-choosing-lengths" class="slide level2 smaller">
-<h2>Binary tree: lower bound, and choosing lengths</h2>
-<p>Paths are forced. An edge at depth <span class="math inline">\(j\)</span> cuts off <span class="math inline">\(s_j = 2^{h-j+1}-1\)</span> vertices: used by <span class="math inline">\(2s_j(n-s_j)\le n^2/2\)</span> ordered pairs.</p>
-<div class="fragment">
-<p><strong>Unit lengths:</strong> <span class="math inline">\(|\gamma|\le2h\)</span>, so <span class="math inline">\(\kappa\le n^2h\)</span> and <span class="math inline">\(\;\lambda_2(L)\ge\dfrac{2}{nh}\)</span> — <strong>off by <span class="math inline">\(\log_2n\)</span></strong>. Cauchy–Schwarz charges every edge of a long path equally, but only the top edges are congested.</p>
-</div>
-<div class="fragment">
-<p><strong>Weighted lengths</strong> <span class="math inline">\(\ell_e = 2^{-j/2}\)</span> at depth <span class="math inline">\(j\)</span> (cheap where congested): <span class="math inline">\(\ell(\gamma)\le2\sum_{j\ge1}2^{-j/2} = 2(\sqrt2+1)\)</span>, and with <span class="math inline">\(s_j&lt;(n+1)2^{-j}\)</span>,</p>
-<p><span class="math display">\[
-\frac1{\ell_e}\sum_{\gamma\ni e}\ell(\gamma)\le2^{j/2}\cdot2s_jn\cdot2(\sqrt2+1) &lt; 2(2+\sqrt2)\,n(n+1)
-\quad\Longrightarrow\quad
-\lambda_2(L) &gt; \frac{1}{(2+\sqrt2)(n+1)}.
-\]</span></p>
-</div>
-<div class="fragment">
-<p>With <span class="math inline">\(d\le3\)</span>: <span class="math inline">\(\;\dfrac{1}{3(2+\sqrt2)(n+1)}&lt;\lambda\le\dfrac1{n-2}\)</span>, so <span class="math inline">\(\lambda = \Theta(1/n)\)</span>.</p>
-<aside class="notes">
-<p>The choice of ℓ is the discrete analog of the weight in a weighted Poincaré / Hardy inequality. Numerically n·λ → ≈ 0.5 for the binary tree.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</div>
-</section>
-<section id="bounds-vs.-truth" class="slide level2">
-<h2>Bounds vs.&nbsp;truth</h2>
-
-<img data-src="lecture2_files/figure-revealjs/cell-7-output-1.svg" class="r-stretch"><p>Parallel lines = right order. Unit-length paths on the tree drift away by <span class="math inline">\(\log n\)</span>.</p>
-</section>
-<section id="how-tight-are-the-convergence-bounds" class="slide level2 smaller">
-<h2>How tight are the convergence bounds?</h2>
-
-<img data-src="lecture2_files/figure-revealjs/cell-8-output-1.svg" class="r-stretch"><table class="caption-top">
-<thead>
-<tr class="header">
-<th></th>
-<th><span class="math inline">\(t_{\rm rel}\)</span></th>
-<th><span class="math inline">\(\chi^2\)</span> upper bound</th>
-<th>true <span class="math inline">\(t_{\rm mix}\)</span></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>cycle</td>
-<td><span class="math inline">\(\Theta(n^2)\)</span></td>
-<td><span class="math inline">\(\Theta(n^2\log n)\)</span></td>
-<td><span class="math inline">\(\Theta(n^2)\)</span></td>
-</tr>
-<tr class="even">
-<td>grid</td>
-<td><span class="math inline">\(\Theta(n)\)</span></td>
-<td><span class="math inline">\(\Theta(n\log n)\)</span></td>
-<td><span class="math inline">\(\Theta(n)\)</span></td>
-</tr>
-<tr class="odd">
-<td>binary tree</td>
-<td><span class="math inline">\(\Theta(n)\)</span></td>
-<td><span class="math inline">\(\Theta(n\log n)\)</span></td>
-<td><span class="math inline">\(\Theta(n)\)</span></td>
-</tr>
-</tbody>
-</table>
-<aside class="notes">
-<p>Lower bound tight on all three; the generic χ² upper bound loses exactly log n.&nbsp;Numbers: C_161: t_mix ≈ 1230, lower 910, upper 4247. Tree n=1023: 1402 vs lower 1388 (!) vs upper 9022.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="the-loss-is-not-in-chi2-it-is-in-using-only-lambda_2" class="slide level2">
-<h2>The loss is not in <span class="math inline">\(\chi^2\)</span> — it is in using only <span class="math inline">\(\lambda_2\)</span></h2>
-<p>Exactly, from the spectral expansion of <span class="math inline">\(h_0 = \mathbf 1_x/\pi_x\)</span>:</p>
-<p><span class="math display">\[
-\chi^2(\delta_xH_t\Vert\pi) = \sum_{k\ge2}e^{-2\lambda_kt}\varphi_k(x)^2,\qquad\sum_k\varphi_k(x)^2 = \frac1{\pi_x}.
-\]</span></p>
-<p>The generic bound pretends <strong>all <span class="math inline">\(n-1\)</span> modes</strong> decay as slowly as <span class="math inline">\(\varphi_2\)</span>.</p>
-<div class="fragment">
-<p>Vertex-transitive graphs: <span class="math inline">\(\chi^2(\delta_xH_t\Vert\pi) = \sum_{k\ge2}e^{-2\lambda_kt}\)</span>. <strong>Cycle:</strong> <span class="math inline">\(1-\cos\theta\ge\frac{2\theta^2}{\pi^2}\)</span> gives</p>
-<p><span class="math display">\[
-\chi^2(\delta_xH_t\Vert\pi)\le2\sum_{j\ge1}e^{-16tj^2/n^2} = O(1)\quad\text{at } t = \Theta(n^2).
-\]</span></p>
-<p>So even <span class="math inline">\(\ell^2\)</span>-mixing on the cycle is <span class="math inline">\(\Theta(n^2)\)</span>, not <span class="math inline">\(n^2\log n\)</span>.</p>
-</div>
-</section>
-<section id="preview-when-even-t_rm-rel-is-not-the-answer" class="slide level2">
-<h2>Preview: when even <span class="math inline">\(t_{\rm rel}\)</span> is not the answer</h2>
-<p><strong>Hypercube</strong> <span class="math inline">\(\{0,1\}^d\)</span>, <span class="math inline">\(n = 2^d\)</span> (flip a uniform coordinate at rate 1): eigenvalues <span class="math inline">\(\frac{2|S|}d\)</span>, <span class="math inline">\(S\subseteq[d]\)</span>, so <span class="math inline">\(t_{\rm rel} = d/2\)</span>, and exactly</p>
-<p><span class="math display">\[
-\chi^2(\delta_xH_t\Vert\pi) = \big(1+e^{-4t/d}\big)^d - 1
-\]</span></p>
-<p>which is <span class="math inline">\(O(1)\)</span> iff <span class="math inline">\(t\ge\frac d4\log d - O(d)\)</span>. TV has a <strong>cutoff</strong> at the same time (Diaconis; LPW).</p>
-<div class="fragment">
-<table class="caption-top">
-<colgroup>
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-</colgroup>
-<thead>
-<tr class="header">
-<th></th>
-<th>lower: <span class="math inline">\(t_{\rm rel}\)</span></th>
-<th>upper: <span class="math inline">\(\chi^2\)</span> + gap</th>
-<th>upper: entropy + LSI</th>
-<th>truth</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>hypercube</td>
-<td><span class="math inline">\(\Theta(d)\)</span></td>
-<td><span class="math inline">\(\Theta(d^2)\)</span></td>
-<td><span class="math inline">\(\Theta(d\log d)\)</span></td>
-<td><span class="math inline">\(\sim\frac d4\log d\)</span></td>
-</tr>
-</tbody>
-</table>
-<p>LSI constant <span class="math inline">\(\Theta(1/d)\)</span> (tensorization), and <span class="math inline">\(\log\log(1/\pi_{\min}) = \log(d\log2)\)</span>: <strong>tight.</strong> The motivating example for log-Sobolev inequalities.</p>
-</div>
 </section>
 <section id="takeaways" class="slide level2">
 <h2>Takeaways</h2>
 <ul>
-<li><span class="math inline">\(L\)</span>, <span class="math inline">\(L_{rw}\)</span>: the same <span class="math inline">\(-\operatorname{div}\nabla\)</span> with different volume measures. Self-adjointness is automatic.</li>
-<li>Generator <span class="math inline">\(-L_{rw}\)</span>; semigroup <span class="math inline">\(H_t\)</span>. <strong>Densities evolve like functions</strong> (reversibility).</li>
-<li><strong>Want</strong> TV; <strong>differentiate</strong> <span class="math inline">\(\chi^2\)</span> and entropy: dissipation identity + functional inequality.</li>
-<li>Gap = optimal <span class="math inline">\(\chi^2\)</span> rate; <span class="math inline">\(\;t_{\rm rel}\log\frac1{2\varepsilon}\le t_{\rm mix}(\varepsilon)\le t_{\rm rel}\big(\frac12\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon}\big)\)</span>.</li>
-<li>Bound the gap with <strong>test functions</strong> (above) and <strong>canonical paths</strong> (below).</li>
-<li>Next: Cheeger — when do test functions and paths meet?</li>
+<li><span class="math inline">\(L\)</span>, <span class="math inline">\(L_{rw}\)</span>: the same <span class="math inline">\(-\operatorname{div}\nabla\)</span> with different volume measures. Self-adjointness and PSD are automatic.</li>
+<li>The walk <span class="math inline">\(P = D^{-1}A\)</span> acts on <strong>measures</strong> (row vectors, <span class="math inline">\(\mu^\top P\)</span>) and on <strong>functions</strong> (column vectors, <span class="math inline">\(Pf\)</span>); continuous time gives the heat kernel <span class="math inline">\(H_t = e^{-tL_{rw}}\)</span> with generator <span class="math inline">\(-L_{rw}\)</span>.</li>
+<li>Detailed balance <span class="math inline">\(\Leftrightarrow\)</span> <span class="math inline">\(L_{rw}\)</span> self-adjoint in <span class="math inline">\(L^2(\pi)\)</span> <span class="math inline">\(\Rightarrow\)</span> <strong>densities <span class="math inline">\(h = \mu/\pi\)</span> evolve like functions</strong>: <span class="math inline">\(h_t = H_th_0\)</span>.</li>
+<li>Spectral gap <span class="math inline">\(\lambda = \lambda_2(L_{rw})\)</span> = best Poincaré constant, <span class="math inline">\(\lambda\operatorname{Var}_\pi(f)\le\mathcal E(f,f)\)</span>.</li>
+<li>Next: measuring convergence to <span class="math inline">\(\pi\)</span>, and what the gap says about mixing times.</li>
 </ul>
 </section></section>
 <section>
@@ -1168,15 +649,6 @@ f(b)-f(a) = \int_a^bf'\quad+\quad\text{Cauchy–Schwarz}.
 <p><strong>Walk.</strong> <span class="math inline">\(P = D^{-1}A\)</span>; measures <span class="math inline">\(\mu^\top P\)</span>, functions <span class="math inline">\(Pf\)</span>. Random-walk Laplacian <span class="math inline">\(L_{rw} = I - P\)</span>. Continuous time <span class="math inline">\(H_t = e^{-tL_{rw}}\)</span>, generator <span class="math inline">\(\mathcal A = P - I = -L_{rw}\)</span>. Lazy: <span class="math inline">\(P_{\rm lazy} = \frac12(I+P)\)</span>.</p>
 <p><strong>Reversibility.</strong> <span class="math inline">\(\Pi P = P^\top\Pi\)</span>; densities <span class="math inline">\(h = \mu/\pi\)</span> evolve as <span class="math inline">\(h_t = H_th_0\)</span>.</p>
 <p><strong>Gap / Poincaré.</strong> <span class="math inline">\(\lambda = \lambda_2(L_{rw}) = \min_f\mathcal E(f,f)/\operatorname{Var}_\pi(f)\)</span>; <span class="math inline">\(t_{\rm rel} = 1/\lambda\)</span>.</p>
-</section>
-<section id="convergence" class="slide level2 defs">
-<h2>Convergence</h2>
-<p><strong>Distances.</strong> <span class="math inline">\(\|\mu-\pi\|_{TV} = \frac12\mathbb E_\pi|h-1|\)</span>; <span class="math inline">\(\chi^2(\mu\Vert\pi) = \operatorname{Var}_\pi(h)\)</span>; <span class="math inline">\(D(\mu\Vert\pi) = \operatorname{Ent}_\pi(h)\)</span>. <span class="math inline">\(\;2\,\mathrm{TV}\le\sqrt{\chi^2}\)</span>; <span class="math inline">\(\mathrm{TV}\le\sqrt{D/2}\)</span>; <span class="math inline">\(D\le\log(1+\chi^2)\)</span>.</p>
-<p><strong>Mixing time.</strong> <span class="math inline">\(d(t) = \max_x\|\delta_xH_t-\pi\|_{TV}\)</span>; <span class="math inline">\(t_{\rm mix}(\varepsilon) = \min\{t: d(t)\le\varepsilon\}\)</span>.</p>
-<p><strong>χ² decay.</strong> <span class="math inline">\(\operatorname{Var}_\pi(H_th)\le e^{-2\lambda t}\operatorname{Var}_\pi(h)\)</span>; <span class="math inline">\(\frac d{dt}\operatorname{Var}_\pi(h_t) = -2\mathcal E(h_t,h_t)\)</span>.</p>
-<p><strong>Mixing from the gap.</strong> <span class="math inline">\(\frac1\lambda\log\frac1{2\varepsilon}\le t_{\rm mix}(\varepsilon)\le\frac1\lambda\big(\frac12\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon}\big)\)</span>.</p>
-<p><strong>Entropy.</strong> <span class="math inline">\(\frac d{dt}\operatorname{Ent}_\pi(h_t) = -\mathcal E(h_t,\log h_t)\)</span>. MLSI <span class="math inline">\(\rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)\)</span> <span class="math inline">\(\Rightarrow\)</span> <span class="math inline">\(D(\mu_t\Vert\pi)\le e^{-\rho_0t}D(\mu_0\Vert\pi)\)</span>; <span class="math inline">\(\;\rho_0\le2\lambda\)</span>.</p>
-<p><strong>Canonical paths.</strong> <span class="math inline">\(\kappa = \max_e\frac1{w_e\ell_e}\sum_{\gamma_{ab}\ni e}\ell(\gamma_{ab})\)</span> <span class="math inline">\(\Rightarrow\)</span> <span class="math inline">\(\lambda_2(L)\ge2n/\kappa\)</span>. Degree comparison: <span class="math inline">\(\lambda_2(L)/d_{\max}\le\lambda\le\lambda_2(L)/d_{\min}\)</span>.</p>
 
 
 </section></section>
