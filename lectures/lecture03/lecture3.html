@@ -6,8 +6,8 @@
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.10.18">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.10.19">
 
   <meta name="author" content="CMSC 35410 · Lecture 3">
   <title>CMSC 35410 – Random Walks and Their Convergence</title>
@@ -243,18 +243,53 @@ CMSC 35410 · Lecture 3
 </section>
 <section id="how-they-compare" class="slide level2 scrollable">
 <h2>How they compare</h2>
+<p>We will directly bound the total variation distance in terms of <span class="math inline">\(\chi^2\)</span> and KL divergences using the lemmata 1 and 2 below. We will use lemma 3 to bound the KL divergence in terms of <span class="math inline">\(\chi^2\)</span>.</p>
 <div class="box">
 <p><strong>Lemma.</strong> For every <span class="math inline">\(\mu\)</span>:</p>
 <ol type="1">
-<li><span class="math inline">\(2\|\mu-\pi\|_{TV}\le\sqrt{\chi^2(\mu\Vert\pi)}\)</span></li>
+<li><span class="math inline">\(\|\mu-\pi\|_{TV}\le \frac{1}{2} \sqrt{\chi^2(\mu\Vert\pi)}\)</span></li>
 <li>(Pinsker) <span class="math inline">\(\|\mu-\pi\|_{TV}\le\sqrt{\tfrac12D(\mu\Vert\pi)}\)</span></li>
 <li><span class="math inline">\(D(\mu\Vert\pi)\le\log\big(1+\chi^2(\mu\Vert\pi)\big)\le\chi^2(\mu\Vert\pi)\)</span></li>
 </ol>
 </div>
 <div class="fragment">
-<p><em>Proofs.</em> (1) Cauchy–Schwarz in <span class="math inline">\(L^2(\pi)\)</span>. (3) Jensen for concave <span class="math inline">\(\log\)</span> under <span class="math inline">\(\mu\)</span>: <span class="math display">\[
+<p><em>Proofs.</em></p>
+<ol type="1">
+<li>Cauchy–Schwarz in <span class="math inline">\(L^2(\pi)\)</span>: <span class="math display">\[\begin{align*}
+\|\mu-\pi\|_{TV} &amp;= \frac{1}{2} \mathbb{E}_\pi\big[|h-1|\big] \le \frac{1}{2} \sqrt{\mathbb{E}_\pi\big[(h-1)^2\big] \cdot \mathbb{E}_\pi[1]} \\
+&amp;= \frac{1}{2} \sqrt{\chi^2(\mu\Vert\pi)}.
+\end{align*}\]</span> Because <span class="math inline">\(\mathbb{E}_\pi[1] = 1\)</span> and <span class="math inline">\(\mathbb{E}_\pi[h] =1\)</span>, so that <span class="math inline">\(\mathbb{E}_\pi\big[(h-1)^2\big] = \operatorname{Var}_\pi [h] = \chi^2(\mu\Vert\pi)\)</span>, the inequality follows.</li>
+</ol>
+<ol start="2" type="1">
+<li>I prefer to think of this as a consequence of the strong convexity wrt the <span class="math inline">\(\ell_1\)</span> norm of the entropy function over probability densities. By Taylor’s theorem, we have the expansion:</li>
+</ol>
+<p><span class="math display">\[\begin{align*}
+D(\mu\Vert\pi) &amp;= \operatorname{Ent}_\pi(h) = \operatorname{Ent}_\pi(1) + \langle \nabla \operatorname{Ent}_\pi(1), h-1\rangle_\pi \\&amp;+ \frac{1}{2} \langle h-1, \nabla^2 \operatorname{Ent}_\pi(\xi)(h-1)\rangle_\pi
+\end{align*}\]</span></p>
+<p>But <span class="math inline">\(\operatorname{Ent}_\pi(1) = 0\)</span> and <span class="math inline">\(\nabla \operatorname{Ent}_\pi(1) = 0\)</span>, so that the first two terms vanish. Furthermore: <span class="math display">\[
+\nabla^2 \operatorname{Ent}_\pi(\xi) = \mathrm{diag}\Big(\frac{1}{\xi}\Big).
+\]</span> By Cauchy–Schwarz, we get: <span class="math display">\[\begin{align*}
+D(\mu\Vert\pi) &amp;= \frac{1}{2} \langle h-1, \nabla^2 \operatorname{Ent}_\pi(\xi)(h-1)\rangle_\pi \geq \frac{\Big(\mathbb{E}_\pi \|h-1\|_{1}\Big)^2}{2 \mathbb{E}_\pi[\xi]} \\
+&amp;= 2\|\mu-\pi\|_{TV}^2.
+\end{align*}\]</span></p>
+<ol start="3" type="1">
+<li>Jensen for concave <span class="math inline">\(\log\)</span> under <span class="math inline">\(\mu\)</span>: <span class="math inline">\(\|\mu - \pi\|_{TV} = \frac{1}{2} \sqrt{\chi^2(\mu\Vert\pi)}\)</span>. <span class="math display">\[
 D = \mathbb E_\mu\log h\le\log\mathbb E_\mu h = \log\mathbb E_\pi h^2 = \log(1+\operatorname{Var}_\pi h).
-\]</span> (2) Standard (reduce to two points, then calculus).</p>
+\]</span></li>
+</ol>
+<aside class="notes">
+<p>explain gradient, nablaEnt is wrong and check 2.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </div>
 </section>
 <section id="monotone-but-at-what-rate" class="slide level2 smaller">
@@ -452,16 +487,8 @@ e^{-\lambda t} = |\mathbb E_{\delta_xH_t}f - \mathbb E_\pi f|\le\|\delta_xH_t-\p
 </section>
 <section id="where-the-log1pi_min-comes-from" class="slide level2">
 <h2>Where the <span class="math inline">\(\log(1/\pi_{\min})\)</span> comes from</h2>
-<div id="179688e3" class="cell" data-fig-height="4.4" data-fig-width="11" data-execution_count="2">
-<div class="cell-output cell-output-display">
-<div>
-<figure>
-<p><img data-src="lecture3_files/figure-html/cell-3-output-1.png" width="1038" height="404"></p>
-</figure>
-</div>
-</div>
-</div>
-<p><span class="math inline">\(\chi^2\)</span> starts at <span class="math inline">\(\approx n\)</span> and must spend time <span class="math inline">\(\approx\frac{\log n}{2\lambda}\)</span> just getting below <span class="math inline">\(1\)</span>. TV starts at <span class="math inline">\(\le1\)</span>.</p>
+
+<img data-src="lecture3_files/figure-revealjs/cell-3-output-1.svg" class="r-stretch"><p><span class="math inline">\(\chi^2\)</span> starts at <span class="math inline">\(\approx n\)</span> and must spend time <span class="math inline">\(\approx\frac{\log n}{2\lambda}\)</span> just getting below <span class="math inline">\(1\)</span>. TV starts at <span class="math inline">\(\le1\)</span>.</p>
 <aside class="notes">
 <p>x-axis in units of t_rel. TV (blue) stays sandwiched between the lower bound (grey dotted) and the χ²-bound (orange dashed). The orange solid χ² curve only drops below 1/4 well after TV. Entropy (green) starts at log n, much lower than n.</p>
 <style type="text/css">
@@ -681,29 +708,13 @@ f(b)-f(a) = \int_a^bf'\quad+\quad\text{Cauchy–Schwarz}.
 </section>
 <section id="bounds-vs.-truth" class="slide level2">
 <h2>Bounds vs.&nbsp;truth</h2>
-<div id="02a09cc4" class="cell" data-fig-height="4.3" data-fig-width="11" data-execution_count="3">
-<div class="cell-output cell-output-display">
-<div>
-<figure>
-<p><img data-src="lecture3_files/figure-html/cell-4-output-1.png" width="1036" height="394"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>Parallel lines = right order. Unit-length paths on the tree drift away by <span class="math inline">\(\log n\)</span>.</p>
+
+<img data-src="lecture3_files/figure-revealjs/cell-4-output-1.svg" class="r-stretch"><p>Parallel lines = right order. Unit-length paths on the tree drift away by <span class="math inline">\(\log n\)</span>.</p>
 </section>
 <section id="how-tight-are-the-convergence-bounds" class="slide level2 smaller">
 <h2>How tight are the convergence bounds?</h2>
-<div id="0fe3d0b5" class="cell" data-fig-height="3.9" data-fig-width="11" data-execution_count="4">
-<div class="cell-output cell-output-display">
-<div>
-<figure>
-<p><img data-src="lecture3_files/figure-html/cell-5-output-1.png" width="1038" height="356"></p>
-</figure>
-</div>
-</div>
-</div>
-<table class="caption-top">
+
+<img data-src="lecture3_files/figure-revealjs/cell-5-output-1.svg" class="r-stretch"><table class="caption-top">
 <thead>
 <tr class="header">
 <th></th>
