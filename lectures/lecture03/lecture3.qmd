@@ -108,21 +108,51 @@ Remember $1$ vs. $\log n$ vs. $n$. It is the whole story of §3.
 
 ## How they compare
 
+We will directly bound the total variation distance in terms of $\chi^2$ and KL divergences using the lemmata 1 and 2 below. We will use lemma 3 to bound the KL divergence in terms of $\chi^2$.
+
 ::: box
 **Lemma.** For every $\mu$:
 
-1. $2\|\mu-\pi\|_{TV}\le\sqrt{\chi^2(\mu\Vert\pi)}$
+1. $\|\mu-\pi\|_{TV}\le \frac{1}{2} \sqrt{\chi^2(\mu\Vert\pi)}$
 2. (Pinsker) $\|\mu-\pi\|_{TV}\le\sqrt{\tfrac12D(\mu\Vert\pi)}$
 3. $D(\mu\Vert\pi)\le\log\big(1+\chi^2(\mu\Vert\pi)\big)\le\chi^2(\mu\Vert\pi)$
+
 :::
 
 . . .
 
-*Proofs.* (1) Cauchy–Schwarz in $L^2(\pi)$. (3) Jensen for concave $\log$ under $\mu$:
+*Proofs.* 
+
+ 1. Cauchy–Schwarz in $L^2(\pi)$:
+ \begin{align*}
+ \|\mu-\pi\|_{TV} &= \frac{1}{2} \mathbb{E}_\pi\big[|h-1|\big] \le \frac{1}{2} \sqrt{\mathbb{E}_\pi\big[(h-1)^2\big] \cdot \mathbb{E}_\pi[1]} \\
+    &= \frac{1}{2} \sqrt{\chi^2(\mu\Vert\pi)}.
+ \end{align*}
+ Because $\mathbb{E}_\pi[1] = 1$ and $\mathbb{E}_\pi[h] =1$, so that  $\mathbb{E}_\pi\big[(h-1)^2\big] = \operatorname{Var}_\pi [h] = \chi^2(\mu\Vert\pi)$, the inequality follows.
+ (2) I prefer to think of this as a consequence of the strong convexity wrt the $\ell_1$ norm of the entropy function over probability densities. By Taylor's theorem, we have the expansion:
+
+\begin{align*}
+D(\mu\Vert\pi) &= \operatorname{Ent}_\pi(h) = \operatorname{Ent}_\pi(1) + \langle \nabla \operatorname{Ent}_\pi(1), h-1\rangle_\pi \\&+ \frac{1}{2} \langle h-1, \nabla^2 \operatorname{Ent}_\pi(\xi)(h-1)\rangle_\pi
+\end{align*}
+
+But $\operatorname{Ent}_\pi(1) = 0$ and $\nabla \operatorname{Ent}_\pi(1) = 0$, so that the first two terms vanish. Furthermore:
+$$
+\nabla^2 \operatorname{Ent}_\pi(\xi) = \mathrm{diag}\Big(\frac{1}{\xi}\Big).
+$$
+By Cauchy–Schwarz, we get:
+\begin{align*}
+D(\mu\Vert\pi) &= \frac{1}{2} \langle h-1, \nabla^2 \operatorname{Ent}_\pi(\xi)(h-1)\rangle_\pi \geq \frac{\Big(\mathbb{E}_\pi \|h-1\|_{1}\Big)^2}{2 \mathbb{E}_\pi[\xi]} \\
+&= 2\|\mu-\pi\|_{TV}^2.
+\end{align*}
+
+ (3) Jensen for concave $\log$ under $\mu$: $\|\mu - \pi\|_{TV} = \frac{1}{2} \sqrt{\chi^2(\mu\Vert\pi)}$.
 $$
 D = \mathbb E_\mu\log h\le\log\mathbb E_\mu h = \log\mathbb E_\pi h^2 = \log(1+\operatorname{Var}_\pi h).
 $$
-(2) Standard (reduce to two points, then calculus).
+
+::: notes
+explain gradient, nablaEnt is wrong and check 2.
+:::
 
 ## Monotone — but at what rate? {.smaller}
 
