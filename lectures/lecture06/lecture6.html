@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/tabby.min.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.10.19">
+
+  <meta name="author" content="CMSC 35410 · Lecture 6">
+  <title>CMSC 35410 – Conductance and Cheeger’s Inequality</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/reveal.css">
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/theme/quarto-1f8f038d323cfa9b8e0ebdaff5794497.css">
+  <link href="../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="../../site_libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="../../site_libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">Conductance and Cheeger’s Inequality</h1>
+  <p class="subtitle">Relaxation · ℓ₁ and ℓ₂² metrics · rounding by embedding</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+CMSC 35410 · Lecture 6
+</div>
+</div>
+</div>
+
+</section>
+<section>
+<section id="where-we-are" class="title-slide slide level1 center" data-background-color="#1c1b19">
+<h1>§0 Where we are</h1>
+
+</section>
+<section id="recap-lectures-25" class="slide level2 smaller">
+<h2>Recap: Lectures 2–5</h2>
+<p><span class="math inline">\(G = (V,E,w)\)</span> undirected, connected; <span class="math inline">\(d_i = \sum_j w_{ij}\)</span>, <span class="math inline">\(\mathrm{vol}(S) = \sum_{i\in S} d_i\)</span>, <span class="math inline">\(\pi = d/\mathrm{vol}(V)\)</span>. Random-walk Laplacian <span class="math inline">\(L_{rw} = I - D^{-1}A\)</span>, spectral gap <span class="math inline">\(\lambda := \lambda_2(L_{rw})\)</span>.</p>
+<div class="box">
+<p><strong>Poincaré.</strong> <span class="math inline">\(\;\lambda\,\mathrm{Var}_\pi(f)\le\mathcal E(f,f)\)</span>, i.e.&nbsp;<span class="math inline">\(\;\lambda = \min_{f\ \text{nonconstant}} \dfrac{\sum_{ij\in E}w_{ij}(f_i-f_j)^2}{\sum_i d_i (f_i-\bar f)^2}\)</span>.</p>
+</div>
+<div class="fragment">
+<div class="box">
+<p><strong>Two certificates for the gap (Lecture 5).</strong> <em>Upper bound on <span class="math inline">\(\lambda\)</span>:</em> exhibit a <strong>test function</strong> <span class="math inline">\(f\)</span>. <em>Lower bound on <span class="math inline">\(\lambda\)</span>:</em> route flow along <strong>canonical paths</strong>, <span class="math inline">\(\lambda_2(L)\ge 2n/\kappa\)</span>.</p>
+</div>
+</div>
+<div class="fragment">
+<div class="warn">
+<p><strong>Open question from Lecture 5.</strong> The binary tree has a <em>bottleneck at the root</em> and small <span class="math inline">\(\lambda\)</span>. Is a small gap <em>always</em> caused by a bottleneck? When do test functions and paths meet?</p>
+</div>
+<aside class="notes">
+<p>~3 min. Quick recap only. The point is to restate the open question that today answers: the gap is small iff there is a sparse cut (up to a square).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="today" class="slide level2 scrollable">
+<h2>Today</h2>
+<p><strong>Plan.</strong> Conductance is a combinatorial optimization problem. Its <strong>relaxation</strong> is <span class="math inline">\(\lambda\)</span>. Cheeger’s inequality says the relaxation can be <strong>rounded</strong>, and the rounding is a <strong>metric embedding</strong> (<span class="math inline">\(\ell_2^2\to\ell_1\)</span>) followed by a sweep.</p>
+<ol type="1">
+<li><strong>Conductance</strong> and a reformulation as an <span class="math inline">\(\ell_1\)</span> problem over functions.</li>
+<li><strong><span class="math inline">\(\lambda\)</span> as the <span class="math inline">\(\ell_2^2\)</span> relaxation.</strong> The easy direction. Statement of Cheeger. How tight is it?</li>
+<li><strong>Geometry:</strong> cut metrics, <span class="math inline">\(\ell_1\)</span>, and rounding in <span class="math inline">\(\ell_1\)</span>.</li>
+<li><strong>Proof of Cheeger</strong> in three lemmas. Demos: sweep cut, and what it costs to compute the eigenvector.</li>
+<li><strong>Beyond:</strong> Leighton–Rao and the landscape of relaxations. (Optional: Cheeger’s original manifold version.)</li>
+</ol>
+</section></section>
+<section>
+<section id="conductance" class="title-slide slide level1 center" data-background-color="#1c1b19">
+<h1>§1 · Conductance</h1>
+
+</section>
+<section id="bottlenecks-quantified" class="slide level2 smaller">
+<h2>Bottlenecks, quantified</h2>
+<p>Which of these graphs feel well connected? We want <strong>one number</strong> that says so.</p>
+
+<img data-src="lecture6_files/figure-revealjs/cell-3-output-1.svg" class="r-stretch"><p><em>Blue</em> = the set <span class="math inline">\(S\)</span> achieving the minimum, <em>orange</em> = the edges it cuts. Small <span class="math inline">\(\Phi\)</span> <span class="math inline">\(\Leftrightarrow\)</span> a sparse cut separating two large pieces.</p>
+</section>
+<section id="conductance-1" class="slide level2 smaller">
+<h2>Conductance</h2>
+<p>For <span class="math inline">\(S\subset V\)</span>, the <strong>conductance</strong> of <span class="math inline">\(S\)</span> and of the graph:</p>
+<p><span class="math display">\[
+\Phi(S) = \frac{w(S,\bar S)}{\min\{\mathrm{vol}(S),\mathrm{vol}(\bar S)\}},\qquad
+\Phi(G) = \min_{\emptyset\ne S\subsetneq V}\Phi(S),\qquad w(S,\bar S)=\sum_{i\in S,\,j\notin S}w_{ij}.
+\]</span></p>
+<div class="fragment">
+<div class="box">
+<p><strong>Random-walk reading.</strong> Start the stationary walk, conditioned on being in <span class="math inline">\(S\)</span> (so <span class="math inline">\(i\in S\)</span> w.p. <span class="math inline">\(\propto d_i\)</span>). Then <span class="math inline">\(\;\Pr[\text{leave } S\text{ in one step}] = \dfrac{w(S,\bar S)}{\mathrm{vol}(S)}\)</span>.</p>
+<p>So <span class="math inline">\(\Phi(S)\)</span> is the <strong>escape probability</strong> of the set (for the smaller side), and <span class="math inline">\(\Phi(G)\)</span> is the worst bottleneck. In the notation of Lecture 2: <span class="math inline">\(Q(S,\bar S)/\min\{\pi(S),\pi(\bar S)\}\)</span> with <span class="math inline">\(Q = w/\mathrm{vol}(V)\)</span>.</p>
+</div>
+</div>
+<div class="fragment">
+<p><span class="math inline">\(\Phi(G)\)</span> small <span class="math inline">\(\;\Rightarrow\;\)</span> a set the walk rarely leaves <span class="math inline">\(\;\Rightarrow\;\)</span> slow mixing. <strong>Is the converse true?</strong></p>
+<aside class="notes">
+<p>~3 min. Use the barbell: from the stationary distribution restricted to one clique, the escape probability is 1/21. Mixing between the two cliques takes ~21 steps at least.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="examples" class="slide level2 smaller">
+<h2>Examples</h2>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Graph (<span class="math inline">\(n\)</span> vertices)</th>
+<th><span class="math inline">\(\Phi(G)\)</span></th>
+<th><span class="math inline">\(\lambda = \lambda_2(L_{rw})\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Complete <span class="math inline">\(K_n\)</span></td>
+<td><span class="math inline">\(\lceil n/2\rceil/(n-1)\approx\tfrac12\)</span></td>
+<td><span class="math inline">\(\dfrac{n}{n-1}\)</span></td>
+</tr>
+<tr class="even">
+<td>Cycle <span class="math inline">\(C_n\)</span> (<span class="math inline">\(n\)</span> even)</td>
+<td><span class="math inline">\(\dfrac{2}{n}\)</span></td>
+<td><span class="math inline">\(1-\cos\dfrac{2\pi}{n}\approx\dfrac{2\pi^2}{n^2}\)</span></td>
+</tr>
+<tr class="odd">
+<td>Hypercube <span class="math inline">\(Q_d\)</span> (<span class="math inline">\(n=2^d\)</span>)</td>
+<td><span class="math inline">\(\dfrac1d=\dfrac1{\log_2 n}\)</span></td>
+<td><span class="math inline">\(\dfrac2d\)</span></td>
+</tr>
+<tr class="even">
+<td>Binary tree (<span class="math inline">\(n=2^{h+1}-1\)</span>)</td>
+<td><span class="math inline">\(\dfrac{1}{n-2}\)</span> (cut one root edge)</td>
+<td><span class="math inline">\(\Theta(1/n)\)</span> (numerically <span class="math inline">\(\approx 0.5/n\)</span>)</td>
+</tr>
+<tr class="odd">
+<td>Barbell (two <span class="math inline">\(K_m\)</span> + 1 edge)</td>
+<td><span class="math inline">\(\dfrac{1}{m(m-1)+1}\)</span></td>
+<td><span class="math inline">\(\approx\Phi\)</span></td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<div class="warn">
+<p><strong>Look at the cycle.</strong> <span class="math inline">\(\Phi\approx 2/n\)</span> but <span class="math inline">\(\lambda\approx 2\pi^2/n^2\)</span>. The gap is about the <strong>square</strong> of the conductance. Hold on to this: it is the square root in Cheeger’s inequality.</p>
+</div>
+<aside class="notes">
+<p>~3 min. Hypercube: dimension cut has n/2 edges, volume n d/2, so Φ = 1/d (this is the minimum, by the edge-isoperimetric inequality on the cube). Eigenvalues of L_rw on Q_d are 2k/d, k = 0..d, so λ = 2/d.&nbsp;The tree row: removing one root edge splits off a subtree of volume n-2, one edge cut.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="conductance-as-an-ell_1-problem-over-functions" class="slide level2 smaller">
+<h2>Conductance as an <span class="math inline">\(\ell_1\)</span> problem over functions</h2>
+<p>Define, for <span class="math inline">\(f\in\mathbb R^V\)</span>: <span class="math inline">\(\;\|\nabla f\|_1 = \sum_{ij\in E}w_{ij}|f_i-f_j|\)</span> and the <strong><span class="math inline">\(\ell_1\)</span> variance</strong> <span class="math inline">\(\;\mathrm{Var}_1(f) = \min_{c}\sum_i d_i|f_i-c|\)</span> (deviation from the <span class="math inline">\(\pi\)</span>-median).</p>
+<div class="box">
+<p><strong>Claim.</strong> <span class="math inline">\(\;\displaystyle\Phi(G) = \min_{f\ \text{nonconstant}}\frac{\|\nabla f\|_1}{\mathrm{Var}_1(f)}\)</span>, and the minimum is attained by a cut vector <span class="math inline">\(f=\mathbf 1_S\)</span>.</p>
+</div>
+<div class="fragment">
+<p><strong>(<span class="math inline">\(\le\)</span>)</strong> For <span class="math inline">\(f=\mathbf 1_S\)</span>: <span class="math inline">\(\|\nabla f\|_1 = w(S,\bar S)\)</span> and <span class="math inline">\(\mathrm{Var}_1(f) = \min_{c\in[0,1]}\big(\mathrm{vol}(S)(1-c)+\mathrm{vol}(\bar S)c\big) = \min\{\mathrm{vol}(S),\mathrm{vol}(\bar S)\}\)</span>.</p>
+</div>
+<div class="fragment">
+<p><strong>(<span class="math inline">\(\ge\)</span>)</strong> Let <span class="math inline">\(S_t=\{f&gt;t\}\)</span>. Layer-cake: <span class="math inline">\(\;|f_i-f_j| = \int_{\mathbb R}\big|\mathbf 1_{S_t}(i)-\mathbf 1_{S_t}(j)\big|\,dt\)</span>, so <span class="math inline">\(\|\nabla f\|_1=\int w(S_t,\bar S_t)\,dt\)</span>. With <span class="math inline">\(c\)</span> the median, <span class="math inline">\(\mathrm{Var}_1(f) = \int\min\{\mathrm{vol}(S_t),\mathrm{vol}(\bar S_t)\}\,dt\)</span>. A ratio of integrals is at least the smallest ratio of integrands: <span class="math display">\[\|\nabla f\|_1 = \int\Phi(S_t)\min\{\mathrm{vol}(S_t),\mathrm{vol}(\bar S_t)\}\,dt\ \ge\ \min_t\Phi(S_t)\cdot\mathrm{Var}_1(f).\ \square\]</span></p>
+<aside class="notes">
+<p>~4 min. Key message: this is an exact reformulation, nothing relaxed yet. The sweep sets S_t of ANY f are candidate cuts and one of them is at least as good as f.&nbsp;This is exactly the argument that will become Lemma 1. Why the min over t is over t with S_t nonempty and proper. For t below the median, vol(S_t) &gt;= vol/2 and the min is vol(S_t-bar); for t above the median it is vol(S_t). That is why the median appears.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="symmetrized-conductance-barphi-and-swapping-ell_1-for-ell_22" class="slide level2 smaller">
+<h2>Symmetrized conductance <span class="math inline">\(\bar\phi\)</span>, and swapping <span class="math inline">\(\ell_1\)</span> for <span class="math inline">\(\ell_2^2\)</span></h2>
+<p><strong>(a) Fix the denominator.</strong> The median is awkward. Use the <strong>pairwise</strong> spread instead, the <span class="math inline">\(\ell_1\)</span> analogue of <span class="math inline">\(\mathrm{Var}=\tfrac12\mathbb E(X-Y)^2\)</span>: <span class="math display">\[\mathrm{Spr}_1(f) = \frac1{\mathrm{vol}(V)}\sum_{i&lt;j}d_id_j|f_i-f_j|.\]</span> On <span class="math inline">\(\mathbf 1_S\)</span> it equals <span class="math inline">\(\mathrm{vol}(S)\mathrm{vol}(\bar S)/\mathrm{vol}(V)\in\big[\tfrac12,1\big]\cdot\min\{\mathrm{vol}(S),\mathrm{vol}(\bar S)\}\)</span>. The same layer-cake argument gives <span class="math display">\[\bar\phi(G):=\min_f\frac{\|\nabla f\|_1}{\mathrm{Spr}_1(f)}=\min_S\bar\phi(S),\quad \bar\phi(S) = \frac{w(S,\bar S)\,\mathrm{vol}(V)}{\mathrm{vol}(S)\mathrm{vol}(\bar S)},\qquad \Phi\le\bar\phi\le 2\Phi.\]</span></p>
+<div class="fragment">
+<p><strong>(b) Swap the norm.</strong> Replace <span class="math inline">\(|f_i-f_j|\)</span> by <span class="math inline">\((f_i-f_j)^2\)</span> in numerator <strong>and</strong> denominator. (Numerator too: the ratio must stay scale-invariant. The two agree on <span class="math inline">\(\{0,1\}\)</span>-vectors.)</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><span class="math inline">\(\ell_1\)</span></th>
+<th><span class="math inline">\(\ell_2^2\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>numerator</td>
+<td><span class="math inline">\(\sum_E w\,\lvert\Delta f\rvert\)</span></td>
+<td><span class="math inline">\(\sum_E w\,(\Delta f)^2\)</span></td>
+</tr>
+<tr class="even">
+<td>centered / pairwise denominator</td>
+<td><span class="math inline">\(\mathrm{Var}_1\)</span> (median) / <span class="math inline">\(\mathrm{Spr}_1\)</span> (differ by <span class="math inline">\(\le2\)</span>)</td>
+<td><span class="math inline">\(\mathrm{Var}_2\)</span> (mean) <span class="math inline">\(=\mathrm{Spr}_2\)</span> (<strong>identical</strong>)</td>
+</tr>
+<tr class="odd">
+<td>minimum over <span class="math inline">\(f\)</span></td>
+<td><span class="math inline">\(\Phi\)</span> / <span class="math inline">\(\bar\phi\)</span>, attained at cuts</td>
+<td><span class="math inline">\(\lambda\)</span>, attained at an eigenvector</td>
+</tr>
+<tr class="even">
+<td>difficulty</td>
+<td>NP-hard</td>
+<td>linear algebra</td>
+</tr>
+</tbody>
+</table>
+<aside class="notes">
+<p>~4 min. In l2^2 the identity Var_pi = (1/2) E (f_i - f_j)^2 means the centered and pairwise denominators coincide exactly; in l1 they do not (median vs mean absolute difference), and that gap is the factor 2 between Phi and phi-bar. phi-bar is the form in which “l1 -&gt; l2^2” is a one-line change.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="computational-status" class="slide level2">
+<h2>Computational status</h2>
+<ul>
+<li>Minimizing conductance (sparsest cut) is <strong>NP-hard</strong>.</li>
+<li>Best known polynomial-time approximation: <span class="math inline">\(O(\sqrt{\log n})\)</span> (Arora–Rao–Vazirani, 2004). Earlier: <span class="math inline">\(O(\log n)\)</span> (Leighton–Rao, 1988).</li>
+<li>Under the Unique Games Conjecture, <strong>no constant factor</strong> is possible (Chawla–Krauthgamer–Kumar–Rabani–Sivakumar).</li>
+</ul>
+<div class="fragment">
+<div class="box">
+<p><strong>So relax.</strong> Find a <em>fractional</em> solution that is easy to compute and gives a <em>lower bound</em>, then <strong>round</strong> it to a real cut and bound the loss.</p>
+</div>
+</div>
+</section></section>
+<section>
+<section id="lambda-as-a-relaxation" class="title-slide slide level1 center" data-background-color="#1c1b19">
+<h1>§2 · <span class="math inline">\(\lambda\)</span> as a relaxation</h1>
+
+</section>
+<section id="the-relaxation-from-cut-vectors-to-all-of-mathbb-rv" class="slide level2 smaller">
+<h2>The relaxation: from cut vectors to all of <span class="math inline">\(\mathbb R^V\)</span></h2>
+<p>On a cut vector the <span class="math inline">\(\ell_1\)</span> and <span class="math inline">\(\ell_2^2\)</span> quantities coincide, since <span class="math inline">\(|a|=a^2\)</span> for <span class="math inline">\(a\in\{0,\pm1\}\)</span>: <span class="math display">\[\mathbf 1_S^\top L\,\mathbf 1_S = w(S,\bar S),\qquad \mathrm{Spr}_2(\mathbf 1_S)=\frac{\mathrm{vol}(S)\mathrm{vol}(\bar S)}{\mathrm{vol}(V)}.\]</span></p>
+<div class="fragment">
+<p>Hence <span class="math display">\[\bar\phi(G)=\min_{x\in\{0,1\}^V\setminus\{\mathbf 0,\mathbf 1\}}\ \frac{\sum_{E}w_{ij}(x_i-x_j)^2}{\mathrm{Var}_2(x)}\qquad\longrightarrow\qquad \min_{x\in\mathbb R^V\ \text{nonconstant}}\ \frac{\sum_{E}w_{ij}(x_i-x_j)^2}{\mathrm{Var}_2(x)}=\lambda .\]</span></p>
+<div class="box">
+<p><strong>Drop integrality and you get the spectral gap.</strong> Same objective, larger feasible set. The new problem is an eigenvalue problem (Poincaré, Lecture 2), solved exactly by the Fiedler vector.</p>
+</div>
+</div>
+</section>
+<section id="the-easy-direction" class="slide level2 smaller">
+<h2>The easy direction</h2>
+<div class="box">
+<p><strong>Theorem (easy side).</strong> <span class="math inline">\(\;\lambda\le\bar\phi(G)\le 2\,\Phi(G)\)</span>, i.e.&nbsp;<span class="math inline">\(\;\tfrac12\lambda\le\Phi(G)\)</span>.</p>
+</div>
+<p><em>Proof.</em> Cut vectors are feasible for the relaxation, so the relaxed minimum is smaller: <span class="math inline">\(\lambda\le\bar\phi(S)\)</span> for every <span class="math inline">\(S\)</span>. Then <span class="math inline">\(\bar\phi\le2\Phi\)</span>. <span class="math inline">\(\square\)</span></p>
+<div class="fragment">
+<p><strong>Reading.</strong> If <span class="math inline">\(G\)</span> has a sparse cut <span class="math inline">\(S\)</span>, then <span class="math inline">\(x=\mathbf 1_S\)</span> is a <strong>test function</strong> with small Rayleigh quotient, so <span class="math inline">\(\lambda\)</span> is small and the walk mixes slowly: <em>bottlenecks cause small gaps</em>. (This is the Lecture 5 test-function argument, with a cut as the test function.)</p>
+</div>
+<div class="fragment">
+<p>Contrapositive: <strong>if <span class="math inline">\(\lambda\)</span> is large, every cut is large.</strong> The gap <em>certifies</em> expansion, in polynomial time.</p>
+</div>
+</section>
+<section id="template-relaxation-then-rounding" class="slide level2">
+<h2>Template: relaxation, then rounding</h2>
+
+<img data-src="lecture6_files/figure-revealjs/cell-4-output-1.svg" class="r-stretch"><p>The same pattern runs through this course: <strong>Leighton–Rao, ARV, <span class="math inline">\(k\)</span>-way Cheeger, SDPs</strong>. What changes is the relaxation and the rounding.</p>
+</section>
+<section id="cheegers-inequality" class="slide level2 smaller">
+<h2>Cheeger’s inequality</h2>
+<div class="box">
+<p><strong>Theorem (Cheeger; Alon–Milman, Dodziuk).</strong> For every connected weighted graph, <span class="math display">\[\tfrac12\,\lambda\ \le\ \Phi(G)\ \le\ \sqrt{2\lambda}.\]</span> Moreover, the sweep cuts of the Fiedler vector contain a set <span class="math inline">\(S\)</span> with <span class="math inline">\(\Phi(S)\le\sqrt{2\lambda}\)</span>.</p>
+</div>
+<ul>
+<li>Left: the easy side (relaxation). Done.</li>
+<li>Right: the <strong>rounding</strong>. Given a vector <span class="math inline">\(x\in\mathbb R^V\)</span>, produce a set <span class="math inline">\(S\)</span>.</li>
+</ul>
+<div class="fragment">
+<p><em>Equivalently:</em> <span class="math inline">\(\;\lambda\ \ge\ \Phi^2/2\)</span>. In the notation of the continuous version: <span class="math inline">\(\lambda\ge h^2/4\)</span>.</p>
+<p>Before the proof: <strong>is this sandwich tight? Can the square root be avoided?</strong></p>
+</div>
+</section>
+<section id="both-sides-of-cheeger-are-tight" class="slide level2">
+<h2>Both sides of Cheeger are tight</h2>
+
+<img data-src="lecture6_files/figure-revealjs/cell-5-output-1.svg" class="r-stretch"><aside class="notes">
+<p>~3 min. Cycle: Phi = 2/n, lambda ~ 2pi<sup>2/n</sup>2, so Phi/sqrt(lambda) ~ 2/(sqrt(2) pi) = 0.45: upper side tight up to a constant. Hypercube: Phi = 1/d, lambda = 2/d: lower side tight exactly. Neither side can be improved in terms of lambda alone. So any rounding of the spectral relaxation must lose a square root <em>somewhere</em>: watch for where in Lemma 2 (slide “Lemma 2”). It is a property of the relaxation, not of the proof.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="geometry-metrics-cut-metrics-ell_1" class="title-slide slide level1 center" data-background-color="#1c1b19">
+<h1>§3 · Geometry: metrics, cut metrics, <span class="math inline">\(\ell_1\)</span></h1>
+
+</section>
+<section id="metrics-and-volume" class="slide level2 smaller">
+<h2>Metrics and “volume”</h2>
+<p>A <strong>semimetric</strong> is a symmetric <span class="math inline">\(d:V\times V\to\mathbb R_{\ge0}\)</span> with <span class="math inline">\(d_{ii}=0\)</span>. A <strong>metric</strong> also satisfies the triangle inequality <span class="math inline">\(d_{ij}\le d_{ik}+d_{kj}\)</span>. For a semimetric <span class="math inline">\(d\)</span> define <span class="math display">\[d(G)=\sum_{ij\in E}w_{ij}d_{ij},\qquad d(K_G)=\sum_{i&lt;j}\frac{d_id_j}{\mathrm{vol}(V)}\,d_{ij},\]</span> the “total length” of <span class="math inline">\(d\)</span> on <span class="math inline">\(G\)</span> and on the complete graph <span class="math inline">\(K_G\)</span> with weights <span class="math inline">\(d_id_j/\mathrm{vol}(V)\)</span>.</p>
+<div class="fragment">
+<p><strong>Cut metric</strong> of <span class="math inline">\(S\)</span>: <span class="math inline">\(\;\delta^{S}_{ij}=\mathbf 1[\,i,j\text{ on different sides of }S\,]\)</span>. Then <span class="math display">\[\delta^S(G)=w(S,\bar S),\qquad \delta^S(K_G)=\frac{\mathrm{vol}(S)\mathrm{vol}(\bar S)}{\mathrm{vol}(V)}\qquad\Longrightarrow\qquad \bar\phi(S)=\frac{\delta^S(G)}{\delta^S(K_G)}.\]</span></p>
+</div>
+<div class="fragment">
+<div class="box">
+<p><strong>Metric form of the objective.</strong> <span class="math inline">\(\;\bar\phi(G)=\min_S\dfrac{\delta^S(G)}{\delta^S(K_G)}\)</span>. Moreover, a function <span class="math inline">\(f\)</span> gives the <em>line metric</em> <span class="math inline">\(d_{ij}=|f_i-f_j|\)</span> with <span class="math inline">\(d(G)=\|\nabla f\|_1\)</span> and <span class="math inline">\(d(K_G)=\mathrm{Spr}_1(f)\)</span>: slide 7 was already a statement about metrics.</p>
+</div>
+</div>
+</section>
+<section id="the-cut-cone-is-ell_1" class="slide level2">
+<h2>The cut cone is <span class="math inline">\(\ell_1\)</span></h2>
+<p>A metric <span class="math inline">\(d\)</span> is <strong><span class="math inline">\(\ell_1\)</span>-embeddable</strong> if <span class="math inline">\(d_{ij}=\|v_i-v_j\|_1\)</span> for some <span class="math inline">\(v_i\in\mathbb R^k\)</span>. The <strong>cut cone</strong> is <span class="math inline">\(\mathrm{CUT}_V=\{\sum_S\alpha_S\,\delta^S:\ \alpha_S\ge0\}\)</span>.</p>
+<div class="box">
+<p><strong>Theorem.</strong> A semimetric on <span class="math inline">\(V\)</span> is <span class="math inline">\(\ell_1\)</span>-embeddable <span class="math inline">\(\iff\)</span> it lies in the cut cone.</p>
+</div>
+
+<img data-src="lecture6_files/figure-revealjs/cell-6-output-1.svg" class="r-stretch"><p><span class="math display">\[|x_i-x_j|=\sum_{t}\alpha_t\,\delta^{S_t}_{ij},\qquad S_t=\{1,\dots,t\},\ \ \alpha_t=x_{t+1}-x_t\quad(\text{points sorted: }x_1\le\dots\le x_n).\]</span></p>
+</section>
+<section id="proof-cut-cone-ell_1" class="slide level2 smaller">
+<h2>Proof: cut cone <span class="math inline">\(=\ell_1\)</span></h2>
+<p><strong>(<span class="math inline">\(\Leftarrow\)</span>)</strong> A cut metric is <span class="math inline">\(\ell_1\)</span>-embeddable: <span class="math inline">\(\delta^S_{ij}=|\mathbf 1_S(i)-\mathbf 1_S(j)|\)</span>. A nonnegative combination is embedded by <em>concatenating</em> the coordinates, scaling the <span class="math inline">\(S\)</span>-th one by <span class="math inline">\(\alpha_S\)</span>: <span class="math inline">\(\|\cdot\|_1\)</span> adds over coordinates.</p>
+<div class="fragment">
+<p><strong>(<span class="math inline">\(\Rightarrow\)</span>)</strong> Suppose <span class="math inline">\(d_{ij}=\sum_{k}|v_i^{(k)}-v_j^{(k)}|\)</span>. Both sides are additive over coordinates, so it suffices to treat one coordinate <span class="math inline">\(x=v^{(k)}\in\mathbb R^V\)</span>. Order the vertices so that <span class="math inline">\(x_{1}\le\dots\le x_{n}\)</span> and put <span class="math inline">\(S_t=\{1,\dots,t\}\)</span>. For <span class="math inline">\(i&lt;j\)</span>, <span class="math display">\[|x_i-x_j| = x_j-x_i=\sum_{t=i}^{j-1}(x_{t+1}-x_t)=\sum_{t=1}^{n-1}(x_{t+1}-x_t)\,\delta^{S_t}_{ij},\]</span> because <span class="math inline">\(\delta^{S_t}_{ij}=1\)</span> exactly when <span class="math inline">\(i\le t&lt;j\)</span>. So <span class="math inline">\(|x_i-x_j|\)</span> is a nonnegative combination of cut metrics (the same layer-cake as slide 6). Summing over coordinates, <span class="math inline">\(d\in\mathrm{CUT}_V\)</span>. <span class="math inline">\(\square\)</span></p>
+</div>
+<div class="fragment">
+<div class="box">
+<p><strong>Why <span class="math inline">\(\ell_1\)</span> is the right geometry for rounding.</strong> A point set on a line <em>is</em> a family of nested cuts <span class="math inline">\(S_1\subset S_2\subset\cdots\)</span>. To round an <span class="math inline">\(\ell_1\)</span> solution, look at its cuts.</p>
+</div>
+</div>
+</section>
+<section id="lemma-1-rounding-an-ell_1-solution" class="slide level2 smaller">
+<h2>Lemma 1: rounding an <span class="math inline">\(\ell_1\)</span> solution</h2>
+<p>For <span class="math inline">\(x\in\mathbb R^V_{\ge0}\)</span> let <span class="math inline">\(\;R_1(x)=\dfrac{\sum_{ij\in E}w_{ij}|x_i-x_j|}{\sum_id_i|x_i|}\)</span> and <span class="math inline">\(S_t=\{i:x_i&gt;t\}\)</span>.</p>
+<div class="box">
+<p><strong>Lemma 1 (sweep).</strong> There is a <span class="math inline">\(t\ge0\)</span> with <span class="math inline">\(S_t\ne\emptyset\)</span> and <span class="math inline">\(\;\dfrac{w(S_t,\bar S_t)}{\mathrm{vol}(S_t)}\ \le\ R_1(x)\)</span>.</p>
+</div>
+<p><em>Proof.</em> Layer-cake identities, valid because <span class="math inline">\(x\ge0\)</span>: <span class="math display">\[\sum_{ij\in E}w_{ij}|x_i-x_j|=\int_0^\infty w(S_t,\bar S_t)\,dt,\qquad \sum_id_ix_i=\int_0^\infty\mathrm{vol}(S_t)\,dt.\]</span> Let <span class="math inline">\(t^*\)</span> minimize <span class="math inline">\(w(S_t,\bar S_t)/\mathrm{vol}(S_t)\)</span> over <span class="math inline">\(t\)</span> with <span class="math inline">\(S_t\neq\emptyset\)</span>. Then <span class="math display">\[\int_0^\infty w(S_t,\bar S_t)\,dt=\int_0^\infty\frac{w(S_t,\bar S_t)}{\mathrm{vol}(S_t)}\mathrm{vol}(S_t)\,dt\ \ge\ \frac{w(S_{t^*},\bar S_{t^*})}{\mathrm{vol}(S_{t^*})}\int_0^\infty\mathrm{vol}(S_t)\,dt.\ \square\]</span></p>
+<div class="fragment">
+<p><strong>Remark.</strong> The same “ratio of sums <span class="math inline">\(\ge\)</span> smallest ratio” argument shows that <em>any</em> <span class="math inline">\(\ell_1\)</span> metric <span class="math inline">\(d\)</span> has a cut with <span class="math inline">\(\bar\phi(S)\le d(G)/d(K_G)\)</span>. <strong>Rounding an <span class="math inline">\(\ell_1\)</span> solution is free</strong>: no loss at all.</p>
+<aside class="notes">
+<p>~3 min. This is the engine of the lecture. Everything else is about getting from the eigenvector (an l2^2 object) to an l1 object at small cost.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="lambda-as-an-ell_22-relaxation" class="slide level2 smaller">
+<h2><span class="math inline">\(\lambda\)</span> as an <span class="math inline">\(\ell_2^2\)</span> relaxation</h2>
+<p>A semimetric <span class="math inline">\(g\)</span> is <strong><span class="math inline">\(\ell_2^2\)</span>-embeddable</strong> if <span class="math inline">\(g_{ij}=\|v_i-v_j\|_2^2\)</span> for some <span class="math inline">\(v_i\in\mathbb R^k\)</span>.</p>
+<div class="box">
+<p><strong>Lemma.</strong> <span class="math inline">\(\;\lambda=\min\Big\{\dfrac{g(G)}{g(K_G)}:\ g\ \ell_2^2\text{-embeddable, }g\ne0\Big\}.\)</span> Cut metrics are <span class="math inline">\(\ell_2^2\)</span>-embeddable (<span class="math inline">\(\delta^S_{ij}=(\mathbf 1_S(i)-\mathbf 1_S(j))^2\)</span>), so this is a relaxation of <span class="math inline">\(\bar\phi\)</span>.</p>
+</div>
+<p><em>Proof.</em> (<span class="math inline">\(\le\)</span>) One-dimensional embeddings <span class="math inline">\(v_i=x_i\in\mathbb R\)</span> give <span class="math inline">\(g(G)/g(K_G)=\sum_Ew(\Delta x)^2/\mathrm{Var}_2(x)\)</span>, minimized at <span class="math inline">\(\lambda\)</span>. (<span class="math inline">\(\ge\)</span>) For <span class="math inline">\(v_i\in\mathbb R^k\)</span>, split into coordinates and use the <strong>mediant inequality</strong> <span class="math inline">\(\dfrac{\sum_ua_u}{\sum_ub_u}\ge\min_u\dfrac{a_u}{b_u}\)</span>: <span class="math display">\[\frac{g(G)}{g(K_G)}=\frac{\sum_{u=1}^k\sum_Ew_{ij}(v_i^{u}-v_j^{u})^2}{\sum_{u=1}^k\mathrm{Var}_2(v^u)}\ \ge\ \min_u\frac{\sum_Ew_{ij}(v_i^{u}-v_j^{u})^2}{\mathrm{Var}_2(v^u)}\ \ge\ \lambda.\ \square\]</span></p>
+<div class="fragment">
+<p><strong>Remarks.</strong> (i) Higher-dimensional embeddings add nothing: the relaxation is the same as for scalars. (ii) An <span class="math inline">\(\ell_2^2\)</span> semimetric need <em>not</em> satisfy the triangle inequality (three collinear points: <span class="math inline">\(1^2+1^2&lt;2^2\)</span> fails). It is not a metric.</p>
+</div>
+</section>
+<section id="nested-relaxations-of-the-cut-cone" class="slide level2">
+<h2>Nested relaxations of the cut cone</h2>
+
+<img data-src="lecture6_files/figure-revealjs/cell-7-output-1.svg" class="r-stretch"><p>Both relaxations <strong>enlarge</strong> the cut cone: optimizing over a bigger set gives a <strong>smaller</strong> value (a lower bound). The price is paid at rounding, when we must come back down to <span class="math inline">\(\ell_1\)</span>.</p>
+<aside class="notes">
+<p>~2 min. This is where “metric embeddings as a rounding technique” is introduced. Leighton–Rao: drop l1-ness, keep the triangle inequality (LP). Spectral: drop the triangle inequality, keep l2^2 (eigenproblem). ARV: keep both (SDP). Rounding = embed the relaxed solution into l1, with the loss measured on the objective.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="proof-of-cheegers-inequality" class="title-slide slide level1 center" data-background-color="#1c1b19">
+<h1>§4 · Proof of Cheeger’s inequality</h1>
+
+</section>
+<section id="plan-three-lemmas" class="slide level2 smaller">
+<h2>Plan: three lemmas</h2>
+<p>Let <span class="math inline">\(R_2(x)=\dfrac{\sum_Ew_{ij}(x_i-x_j)^2}{\sum_id_ix_i^2}\)</span> and <span class="math inline">\(R_1(x)=\dfrac{\sum_Ew_{ij}|x_i-x_j|}{\sum_id_i|x_i|}\)</span> (uncentered). Let <span class="math inline">\(f\)</span> be the Fiedler vector: <span class="math inline">\(f\perp_d\mathbf 1\)</span> and <span class="math inline">\(R_2(f)=\lambda\)</span>.</p>
+
+<img data-src="lecture6_files/figure-revealjs/cell-8-output-1.svg" class="r-stretch"><p>Lemma 1 (slide 16) is already proved. Now Lemmas 2 and 3.</p>
+</section>
+<section id="lemma-2-ell_22toell_1-by-squaring" class="slide level2 smaller">
+<h2>Lemma 2: <span class="math inline">\(\ell_2^2\to\ell_1\)</span> by squaring</h2>
+<div class="box">
+<p><strong>Lemma 2.</strong> For <span class="math inline">\(x\ge0\)</span>: <span class="math inline">\(\;R_1(x^2)\le\sqrt{2R_2(x)}\)</span>, where <span class="math inline">\((x^2)_i=x_i^2\)</span>.</p>
+</div>
+<p><em>Proof.</em> Since <span class="math inline">\(x\ge0\)</span>, <span class="math inline">\(|x_i^2-x_j^2|=|x_i-x_j|(x_i+x_j)\)</span>. By Cauchy–Schwarz and <span class="math inline">\((a+b)^2\le2(a^2+b^2)\)</span>: <span class="math display">\[\sum_Ew_{ij}|x_i^2-x_j^2|\le\sqrt{\sum_Ew_{ij}(x_i-x_j)^2}\ \sqrt{\sum_Ew_{ij}(x_i+x_j)^2}\le\sqrt{R_2(x)\textstyle\sum_id_ix_i^2}\ \sqrt{2\sum_id_ix_i^2}=\sqrt{2R_2(x)}\sum_id_ix_i^2 .\]</span> (We used <span class="math inline">\(\sum_Ew_{ij}(x_i^2+x_j^2)=\sum_id_ix_i^2\)</span>.) Divide by <span class="math inline">\(\sum_id_ix_i^2=\sum_id_i|x_i^2|\)</span>. <span class="math inline">\(\square\)</span></p>
+<div class="fragment">
+<div class="warn">
+<p><strong>This is where the square root is lost.</strong> The map <span class="math inline">\(x\mapsto x^2\)</span> turns an <span class="math inline">\(\ell_2^2\)</span> object into an <span class="math inline">\(\ell_1\)</span> one, but it is <strong>not a distortion-bounded embedding of all pairs</strong>. It preserves the <em>ratio</em> of the two sums only up to a square root, via Cauchy–Schwarz. On the cycle (slide 13) the eigenvector is a cosine and Cauchy–Schwarz is nearly tight: that is the example showing the loss is real.</p>
+</div>
+<aside class="notes">
+<p>~4 min. Contrast with Bourgain’s theorem (slide on Leighton–Rao): that gives a <em>true</em> embedding of the whole metric into l1 with O(log n) distortion on every pair. Here the loss is only on the objective, which is much weaker, and that is why the spectral rounding is dimension-free (no log n) but pays a square root in the <em>value</em>.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="lemma-3-a-nonnegative-vector-with-half-the-support" class="slide level2 smaller">
+<h2>Lemma 3: a nonnegative vector with half the support</h2>
+<div class="box">
+<p><strong>Lemma 3.</strong> If <span class="math inline">\(f\perp_d\mathbf 1\)</span>, there is <span class="math inline">\(f'\ge0\)</span> with <span class="math inline">\(\pi(\{f'&gt;0\})\le\tfrac12\)</span> and <span class="math inline">\(R_2(f')\le R_2(f)\)</span>.</p>
+</div>
+<p><em>Proof.</em> Let <span class="math inline">\(m\)</span> be a <span class="math inline">\(\pi\)</span>-median of <span class="math inline">\(f\)</span> and <span class="math inline">\(\bar f=f-m\mathbf 1\)</span>, so <span class="math inline">\(\pi(\bar f&gt;0)\le\frac12\)</span> and <span class="math inline">\(\pi(\bar f&lt;0)\le\frac12\)</span>. The numerator is unchanged. Since <span class="math inline">\(\sum_id_if_i=0\)</span>, <span class="math inline">\(\;\sum_id_i\bar f_i^2=\sum_id_if_i^2+m^2\mathrm{vol}(V)\ge\sum_id_if_i^2\)</span>, so <span class="math inline">\(R_2(\bar f)\le R_2(f)\)</span>.</p>
+<div class="fragment">
+<p>Write <span class="math inline">\(\bar f=a-b\)</span> with <span class="math inline">\(a=\max\{\bar f,0\}\)</span>, <span class="math inline">\(b=\max\{-\bar f,0\}\)</span>: <strong>disjointly supported</strong> and <span class="math inline">\(\ge0\)</span>. Then for each edge <span class="math inline">\(ij\)</span>, with <span class="math inline">\(x=a_i-a_j\)</span>, <span class="math inline">\(y=b_i-b_j\)</span>: <span class="math inline">\(\;xy=-(a_ib_j+a_jb_i)\le0\)</span>, so <span class="math display">\[(x-y)^2\ \ge\ x^2+y^2\ \Longrightarrow\ N(a-b)\ge N(a)+N(b),\qquad D(a-b)=D(a)+D(b).\]</span> Hence <span class="math inline">\(\;R_2(\bar f)\ge\dfrac{N(a)+N(b)}{D(a)+D(b)}\ge\min\{R_2(a),R_2(b)\}\)</span>. Take <span class="math inline">\(f'\)</span> to be the better of <span class="math inline">\(a,b\)</span>. <span class="math inline">\(\square\)</span></p>
+<aside class="notes">
+<p>~4 min. Note: N is the numerator sum_E w (x_i-x_j)^2, D the denominator sum d_i x_i^2. On a graph the numerators satisfy an inequality (cross terms across the boundary of the supports have a favorable sign), not an equality; in the continuous setting it becomes an equality because gradients of disjointly supported functions are orthogonal pointwise. Why we need this: it guarantees vol(S_t) &lt;= vol(V)/2 for all sweep sets of g = f’^2, so the minimum in Lemma 1 is the conductance Phi(S_t) and not the lopsided ratio w/vol(S).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="putting-it-together" class="slide level2 smaller">
+<h2>Putting it together</h2>
+<div class="box">
+<p><strong>Proof of Cheeger.</strong> Fiedler <span class="math inline">\(f\)</span> <span class="math inline">\(\xrightarrow{\text{L3}}\)</span> <span class="math inline">\(f'\)</span> <span class="math inline">\(\xrightarrow{\text{L2}}\)</span> <span class="math inline">\(g=f'^2\)</span> <span class="math inline">\(\xrightarrow{\text{L1}}\)</span> <span class="math inline">\(S_t\)</span>: <span class="math display">\[\Phi(S_t)=\frac{w(S_t,\bar S_t)}{\mathrm{vol}(S_t)}\ \le\ R_1(g)\ \le\ \sqrt{2R_2(f')}\ \le\ \sqrt{2\lambda}.\]</span> The first equality holds because <span class="math inline">\(S_t\subseteq\mathrm{supp}\,f'\)</span> has <span class="math inline">\(\pi(S_t)\le\frac12\)</span>, so <span class="math inline">\(\mathrm{vol}(S_t)=\min\{\mathrm{vol}(S_t),\mathrm{vol}(\bar S_t)\}\)</span>. <span class="math inline">\(\square\)</span></p>
+</div>
+
+<img data-src="lecture6_files/figure-revealjs/cell-9-output-1.svg" class="r-stretch"></section>
+<section id="algorithm-spectral-partitioning" class="slide level2 smaller scrollable">
+<h2>Algorithm: spectral partitioning</h2>
+<ol type="1">
+<li>Compute (approximately) the Fiedler vector <span class="math inline">\(f\)</span> of <span class="math inline">\(L_{rw}\)</span>.</li>
+<li>Sort the vertices by <span class="math inline">\(f\)</span>; evaluate <span class="math inline">\(\Phi(S_t)\)</span> for the <span class="math inline">\(n-1\)</span> prefix sets.</li>
+<li>Return the best prefix (or the best of the two sides’ prefixes).</li>
+</ol>
+<div class="box">
+<p><strong>Guarantee, with a two-sided certificate.</strong> Output <span class="math inline">\(S\)</span> satisfies <span class="math inline">\(\Phi(S)\le\sqrt{2\lambda}\le2\sqrt{\Phi(G)}\)</span>, and <em>every</em> cut has <span class="math inline">\(\Phi\ge\lambda/2\)</span>. So the algorithm both finds a cut and <strong>proves</strong> how far from optimal it can be: ratio <span class="math inline">\(\le\sqrt{8/\lambda}\)</span> relative to the lower bound <span class="math inline">\(\lambda/2\)</span>.</p>
+</div>
+<p>Each iteration of power method or Lanczos costs <span class="math inline">\(O(m)\)</span>. <strong>How many iterations?</strong> Next two slides.</p>
+<aside class="notes">
+<p>~3 min. Using the sweep on an <em>approximate</em> Fiedler vector works as well: all we need is a vector with Rayleigh quotient at most (1+eps) lambda, and the proof goes through with sqrt(2(1+eps) lambda).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="demo-the-sweep-cut-on-a-graph-with-a-bottleneck" class="slide level2">
+<h2>Demo: the sweep cut on a graph with a bottleneck</h2>
+
+<img data-src="lecture6_files/figure-revealjs/cell-10-output-1.svg" class="r-stretch"><p>The best sweep cut lies <strong>between</strong> <span class="math inline">\(\lambda/2\)</span> and <span class="math inline">\(\sqrt{2\lambda}\)</span>, as the theorem promises (here it recovers the planted bisection).</p>
+</section>
+<section id="demo-how-fast-can-we-compute-the-fiedler-vector" class="slide level2 smaller">
+<h2>Demo: how fast can we compute the Fiedler vector?</h2>
+
+<img data-src="lecture6_files/figure-revealjs/cell-11-output-1.svg" class="r-stretch"><p><span class="math inline">\(\varepsilon=0.1\)</span>, average of 5 random starts. We measure the <strong>Rayleigh quotient</strong>, not eigenvector error: <span class="math inline">\(\lambda\)</span> is repeated on both graphs (multiplicity 2 on the cycle, <span class="math inline">\(d\)</span> on the cube), and Cheeger only needs a vector with a small quotient.</p>
+<div class="box">
+<p><strong>Takeaway.</strong> Standard methods have running time depending on <span class="math inline">\(\lambda\)</span>: power <span class="math inline">\(\approx1/\lambda\)</span>, Krylov (Lanczos; conjugate gradient is its linear-system sibling) <span class="math inline">\(\approx1/\sqrt\lambda\)</span>. Cycle: <span class="math inline">\(n^2\)</span> vs.&nbsp;<span class="math inline">\(n\)</span>. Cube: <span class="math inline">\(\log n\)</span> vs.&nbsp;<span class="math inline">\(\sqrt{\log n}\)</span>. <strong>The graphs with the sparsest cuts are exactly the slowest to cut.</strong> Acceleration helps but does not remove the dependence. (Next: electrical flows and solvers.)</p>
+</div>
+<aside class="notes">
+<p>~4 min. Power on the lazy walk converges in ~ (2/lambda) log(n/eps) steps to the gap; Lanczos/Chebyshev gets the square root. On the cycle that is n^2 vs n: a 1000-vertex cycle already needs ~10^5 power iterations. This motivates the Laplacian-solver lecture: near-linear time independent of lambda. Conjugate gradient solves Lx = b with sqrt(kappa) = sqrt(lambda_max/lambda_2) iterations, the same dependence on the gap. If time permits, run CG on Lx=b live.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="beyond-other-relaxations" class="title-slide slide level1 center" data-background-color="#1c1b19">
+<h1>§5 · Beyond: other relaxations</h1>
+
+</section>
+<section id="leightonrao-relax-to-all-metrics" class="slide level2 smaller">
+<h2>Leighton–Rao: relax to all metrics</h2>
+<p>Keep the triangle inequality, drop <span class="math inline">\(\ell_1\)</span>-ness: <span class="math display">\[\min\ d(G)\quad\text{s.t.}\quad d(K_G)=1,\quad d\ \text{a metric on }V.\]</span> A <strong>linear program</strong> (the triangle inequalities are the constraints). It is a relaxation because <span class="math inline">\(\mathrm{CUT}_V\subseteq\{\text{metrics}\}\)</span>.</p>
+<div class="fragment">
+<p><strong>Dual</strong> <span class="math inline">\(=\)</span> <em>maximum concurrent multicommodity flow</em>: route <span class="math inline">\(\alpha\,d_id_j/\mathrm{vol}(V)\)</span> units between every pair <span class="math inline">\(i,j\)</span> with edge congestion <span class="math inline">\(\le w_{ij}\)</span>, maximize <span class="math inline">\(\alpha\)</span>. This is exactly the <strong>canonical-path</strong> congestion from Lecture 5 (there with one fixed routing, here optimized).</p>
+</div>
+<div class="fragment">
+<div class="box">
+<p><strong>Rounding by embedding.</strong> Bourgain (1985): every <span class="math inline">\(n\)</span>-point metric embeds into <span class="math inline">\(\ell_1\)</span> with distortion <span class="math inline">\(O(\log n)\)</span>. Then use Lemma 1 / the cut cone: <strong><span class="math inline">\(O(\log n)\)</span>-approximation</strong> (Linial–London–Rabinovich, Aumann–Rabani).</p>
+</div>
+<p>Second instance of the template: <strong>relax <span class="math inline">\(\to\)</span> solve <span class="math inline">\(\to\)</span> embed into <span class="math inline">\(\ell_1\)</span> <span class="math inline">\(\to\)</span> sweep.</strong></p>
+</div>
+</section>
+<section id="the-landscape" class="slide level2 smaller">
+<h2>The landscape</h2>
+<table class="caption-top">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Relaxation</th>
+<th>Feasible set</th>
+<th>Solved by</th>
+<th>Rounding</th>
+<th>Guarantee</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Spectral</td>
+<td><span class="math inline">\(\ell_2^2\)</span>-embeddable (no triangle ineq.)</td>
+<td>eigenvector</td>
+<td>square, sweep (L3, L2, L1)</td>
+<td><span class="math inline">\(\Phi(S)\le\sqrt{2\lambda}\le2\sqrt{\Phi^*}\)</span></td>
+</tr>
+<tr class="even">
+<td>Leighton–Rao</td>
+<td>all metrics</td>
+<td>LP</td>
+<td>Bourgain <span class="math inline">\(\to\ell_1\)</span>, sweep</td>
+<td><span class="math inline">\(O(\log n)\)</span></td>
+</tr>
+<tr class="odd">
+<td>ARV</td>
+<td><span class="math inline">\(\ell_2^2\)</span> <strong>and</strong> triangle inequality</td>
+<td>SDP</td>
+<td>structure theorem + sweep</td>
+<td><span class="math inline">\(O(\sqrt{\log n})\)</span></td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<ul>
+<li>Spectral is <strong>dimension-free</strong> (no <span class="math inline">\(\log n\)</span>) but loses a <strong>square root in the value</strong>: great when <span class="math inline">\(\Phi^*\)</span> is a constant, poor when <span class="math inline">\(\Phi^*\)</span> is tiny.</li>
+<li>LR and ARV lose only in the <em>dimension</em>, at the price of an LP/SDP.</li>
+<li>ARV sits in the intersection of the two sets on slide 18: next weeks’ SDP lecture.</li>
+</ul>
+</div>
+</section>
+<section id="preview-higher-order-cheeger" class="slide level2 smaller">
+<h2>Preview: higher-order Cheeger</h2>
+<p>What if the graph has <strong><span class="math inline">\(k\)</span> clusters</strong> rather than one bottleneck? Then <span class="math inline">\(\lambda_2,\dots,\lambda_k\)</span> are all small, and one eigenvector is not enough.</p>
+<ul>
+<li><strong>Relaxation:</strong> <span class="math inline">\(k\)</span> orthogonal test functions, i.e.&nbsp;a map <span class="math inline">\(V\to\mathbb R^k\)</span> (“spectral embedding”).</li>
+<li><strong>Rounding:</strong> partition the <em>embedded point cloud</em> in <span class="math inline">\(\mathbb R^k\)</span>: an embedding into <span class="math inline">\(\ell_1\)</span> or <span class="math inline">\(\ell_2\)</span> with controlled distortion, plus a clustering step.</li>
+<li><strong>Result</strong> (Lee–Oveis Gharan–Trevisan; Louis–Raghavendra–Tetali–Vempala): <span class="math inline">\(\;\dfrac{\lambda_k}2\le\rho_k(G)\le O(\mathrm{poly}(k))\sqrt{\lambda_k}\)</span>, where <span class="math inline">\(\rho_k\)</span> is the best <span class="math inline">\(k\)</span>-way conductance.</li>
+</ul>
+<p>Same template, now with <span class="math inline">\(k\)</span>-dimensional embeddings. <strong>Next lecture.</strong></p>
+</section>
+<section id="takeaways" class="slide level2">
+<h2>Takeaways</h2>
+<ul>
+<li><span class="math inline">\(\Phi(G)\)</span> is NP-hard. <strong><span class="math inline">\(\lambda\)</span> is its relaxation</strong>: replace <span class="math inline">\(\ell_1\)</span> by <span class="math inline">\(\ell_2^2\)</span> and <span class="math inline">\(\{0,1\}^V\)</span> by <span class="math inline">\(\mathbb R^V\)</span>.</li>
+<li><strong>Easy side:</strong> cut vectors are feasible, so <span class="math inline">\(\lambda\le\bar\phi\le2\Phi\)</span>.</li>
+<li><strong>Hard side:</strong> shift by the median (L3), <strong>square</strong> to pass from <span class="math inline">\(\ell_2^2\)</span> to <span class="math inline">\(\ell_1\)</span> (L2), <strong>sweep</strong> (L1). Loss: a square root.</li>
+<li>The <span class="math inline">\(\sqrt{\ }\)</span> is <strong>tight</strong>: cycle vs.&nbsp;hypercube.</li>
+<li>Standard eigenvector methods run in time depending on <span class="math inline">\(\lambda\)</span> (power <span class="math inline">\(1/\lambda\)</span>, Krylov <span class="math inline">\(1/\sqrt\lambda\)</span>): bottlenecks are exactly what makes them slow.</li>
+<li>Other relaxations (LR, ARV) differ only in the feasible set and the embedding used to round.</li>
+</ul>
+<p><strong>Reading.</strong> Trevisan’s posts on <a href="https://lucatrevisan.wordpress.com/2013/03/20/the-cheeger-inequality-in-manifolds/">Cheeger in manifolds</a> and its <a href="https://lucatrevisan.wordpress.com/2013/03/21/proof-of-the-cheeger-inequality-in-manifolds/">proof</a>; Erasmo Tani’s note on the continuous Cheeger inequality.</p>
+</section></section>
+<section>
+<section id="optional-cheegers-original-manifolds" class="title-slide slide level1 center" data-background-color="#1c1b19">
+<h1>Optional: Cheeger’s original (manifolds)</h1>
+
+</section>
+<section id="cheegers-setting-1970" class="slide level2 smaller">
+<h2>Cheeger’s setting (1970)</h2>
+<p><span class="math inline">\(\mathcal M\)</span> compact Riemannian manifold without boundary, measure <span class="math inline">\(\mu\)</span>, Laplacian <span class="math inline">\(L=-\operatorname{div}\nabla\)</span> (the same operator whose heat flow we studied). Cheeger constant: <span class="math display">\[h(\mathcal M)=\inf_{0&lt;\mu(S)\le\frac12\mu(\mathcal M)}\frac{\mu_{n-1}(\partial S)}{\mu(S)}.\]</span></p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>Graph</th>
+<th>Manifold</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>vertices <span class="math inline">\(V\)</span>, weights <span class="math inline">\(d_i\)</span></td>
+<td>points <span class="math inline">\(\mathcal M\)</span>, measure <span class="math inline">\(\mu\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathrm{vol}(S)\)</span></td>
+<td><span class="math inline">\(\mu(S)\)</span></td>
+</tr>
+<tr class="odd">
+<td>cut <span class="math inline">\(w(S,\bar S)\)</span></td>
+<td>boundary area <span class="math inline">\(\mu_{n-1}(\partial S)\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(L=\nabla^*\nabla\)</span></td>
+<td><span class="math inline">\(L=-\operatorname{div}\nabla\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\sum_Ew(\Delta f)^2=f^\top Lf\)</span></td>
+<td><span class="math inline">\(\int\lVert\nabla f\rVert^2d\mu\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\Phi(G)\)</span></td>
+<td><span class="math inline">\(h(\mathcal M)\)</span></td>
+</tr>
+</tbody>
+</table>
+<div class="box">
+<p><strong>Theorem (Cheeger).</strong> <span class="math inline">\(\;\lambda_1\ge h^2/4\)</span>, with <span class="math inline">\(\lambda_1\)</span> the first nonzero eigenvalue. (This is the graph inequality <span class="math inline">\(\Phi\le\sqrt{2\lambda}\)</span>.)</p>
+</div>
+</section>
+<section id="same-three-lemmas-calculus-replaces-sums" class="slide level2 smaller">
+<h2>Same three lemmas, calculus replaces sums</h2>
+<p>With <span class="math inline">\(R_1(f)=\dfrac{\int\lVert\nabla f\rVert d\mu}{\int|f|d\mu}\)</span> and <span class="math inline">\(R_2(f)=\dfrac{\int\lVert\nabla f\rVert^2d\mu}{\int f^2d\mu}\)</span>:</p>
+<ul>
+<li><strong>Lemma 1.</strong> The <strong>coarea formula</strong> <span class="math inline">\(\int\lVert\nabla f\rVert d\mu=\int_0^\infty\mu_{n-1}(\{f=t\})dt\)</span> replaces the layer-cake identity: some superlevel set has <span class="math inline">\(\mu_{n-1}(\partial S_t)/\mu(S_t)\le R_1(f)\)</span>.</li>
+<li><strong>Lemma 2.</strong> The <strong>chain rule</strong> <span class="math inline">\(\nabla f^2=2f\nabla f\)</span> and Cauchy–Schwarz give <span class="math inline">\(R_1(f^2)\le2\sqrt{R_2(f)}\)</span>. The constant is <span class="math inline">\(2\)</span> rather than <span class="math inline">\(\sqrt2\)</span>: nothing is lost in an edge-wise <span class="math inline">\((a+b)^2\le2(a^2+b^2)\)</span>.</li>
+<li><strong>Lemma 3.</strong> Shift by the median; the gradients of disjointly supported functions are orthogonal pointwise, so now <span class="math inline">\(N(a-b)=N(a)+N(b)\)</span> <strong>exactly</strong>.</li>
+</ul>
+<p>Result: <span class="math inline">\(h\le2\sqrt{\lambda_1}\)</span>, i.e.&nbsp;<span class="math inline">\(\lambda_1\ge h^2/4\)</span>.</p>
+<div class="fragment">
+<p><strong>Remark (Buser).</strong> The reverse inequality, <span class="math inline">\(\lambda_1\le C(h+h^2)\)</span>, needs a lower bound on Ricci curvature, whereas for graphs the easy side is free. (Discussed in the lecture notes.)</p>
+</div>
+</section></section>
+<section>
+<section id="appendix-definitions-for-the-board" class="title-slide slide level1 center" data-background-color="#1c1b19">
+<h1>Appendix: definitions for the board</h1>
+
+</section>
+<section id="graph-conductance-relaxation" class="slide level2 defs">
+<h2>Graph, conductance, relaxation</h2>
+<p><strong>Graph.</strong> <span class="math inline">\(G=(V,E,w)\)</span>, <span class="math inline">\(d_i=\sum_jw_{ij}\)</span>, <span class="math inline">\(\mathrm{vol}(S)=\sum_{i\in S}d_i\)</span>, <span class="math inline">\(\pi=d/\mathrm{vol}(V)\)</span>, <span class="math inline">\(w(S,\bar S)=\sum_{i\in S,j\notin S}w_{ij}\)</span>.</p>
+<p><strong>Conductance.</strong> <span class="math inline">\(\Phi(S)=\dfrac{w(S,\bar S)}{\min\{\mathrm{vol}S,\mathrm{vol}\bar S\}}\)</span>; <span class="math inline">\(\;\bar\phi(S)=\dfrac{w(S,\bar S)\,\mathrm{vol}(V)}{\mathrm{vol}(S)\mathrm{vol}(\bar S)}\)</span>; <span class="math inline">\(\;\Phi\le\bar\phi\le2\Phi\)</span>.</p>
+<p><strong>Variances / spreads.</strong> <span class="math inline">\(\mathrm{Var}_1(f)=\min_c\sum_id_i|f_i-c|\)</span>; <span class="math inline">\(\;\mathrm{Var}_2(f)=\sum_id_i(f_i-\bar f)^2=\mathrm{Spr}_2(f)\)</span>; <span class="math inline">\(\;\mathrm{Spr}_p(f)=\frac1{\mathrm{vol}(V)}\sum_{i&lt;j}d_id_j|f_i-f_j|^p\)</span>.</p>
+<p><strong>Gap.</strong> <span class="math inline">\(\lambda=\lambda_2(L_{rw})=\min_f\dfrac{\sum_Ew(\Delta f)^2}{\mathrm{Var}_2(f)}\)</span>. <strong>Cheeger:</strong> <span class="math inline">\(\;\tfrac12\lambda\le\Phi(G)\le\sqrt{2\lambda}\)</span>.</p>
+</section>
+<section id="metrics-and-lemmas" class="slide level2 defs">
+<h2>Metrics and lemmas</h2>
+<p><strong>Metric view.</strong> <span class="math inline">\(d(G)=\sum_Ew_{ij}d_{ij}\)</span>; <span class="math inline">\(\;d(K_G)=\sum_{i&lt;j}\frac{d_id_j}{\mathrm{vol}V}d_{ij}\)</span>; <span class="math inline">\(\;\delta^S(G)=w(S,\bar S)\)</span>, <span class="math inline">\(\delta^S(K_G)=\frac{\mathrm{vol}S\,\mathrm{vol}\bar S}{\mathrm{vol}V}\)</span>. <span class="math inline">\(\;\mathrm{CUT}_V=\ell_1\)</span>-embeddable metrics.</p>
+<p><strong>Rayleigh-type quotients (uncentered).</strong> <span class="math inline">\(R_1(x)=\frac{\sum_Ew|x_i-x_j|}{\sum_id_i|x_i|}\)</span>, <span class="math inline">\(\;R_2(x)=\frac{\sum_Ew(x_i-x_j)^2}{\sum_id_ix_i^2}\)</span>.</p>
+<p><strong>Lemma 1 (sweep).</strong> <span class="math inline">\(x\ge0\Rightarrow\exists t:\ w(S_t,\bar S_t)/\mathrm{vol}(S_t)\le R_1(x)\)</span>. <strong>Lemma 2.</strong> <span class="math inline">\(x\ge0\Rightarrow R_1(x^2)\le\sqrt{2R_2(x)}\)</span>. <strong>Lemma 3.</strong> <span class="math inline">\(f\perp_d\mathbf1\Rightarrow\exists f'\ge0\)</span>, <span class="math inline">\(\pi(f'&gt;0)\le\frac12\)</span>, <span class="math inline">\(R_2(f')\le R_2(f)\)</span>.</p>
+<p><strong>Mediant inequality.</strong> <span class="math inline">\(\dfrac{\sum a_u}{\sum b_u}\ge\min_u\dfrac{a_u}{b_u}\)</span> for <span class="math inline">\(b_u&gt;0\)</span>.</p>
+<p><strong>Layer cake.</strong> <span class="math inline">\(|x_i-x_j|=\int|\mathbf1[x_i&gt;t]-\mathbf1[x_j&gt;t]|\,dt\)</span>; for <span class="math inline">\(x\ge0\)</span>, <span class="math inline">\(\sum_id_ix_i=\int_0^\infty\mathrm{vol}(S_t)dt\)</span>.</p>
+
+
+</section></section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="../../site_libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="../../site_libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="../../site_libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="../../site_libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="../../site_libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="../../site_libs/revealjs/plugin/search/search.js"></script>
+  <script src="../../site_libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="../../site_libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'none',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1100,
+
+        height: 720,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 6.0e-2,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp("https:\/\/lorecchia\.github\.io\/cmsc35410");
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>
