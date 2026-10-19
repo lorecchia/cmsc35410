@@ -1,0 +1,46 @@
+---
+title: "Exercise: Which Eigenvector? The Hypercube"
+subtitle: "Recommended exercise for Lecture 6"
+description: "The Fiedler eigenspace of the cube is d-dimensional, and most vectors in it give bad sweep cuts."
+---
+
+On the cycle, both sides of Cheeger's inequality are visible, but the Fiedler vector is easy to use. On the hypercube, the lower side of Cheeger is tight, $\Phi=\lambda/2$, yet the *eigenvector you choose matters*: the second eigenvalue has multiplicity $d$, and the quality of the sweep cut depends on which vector of the eigenspace the algorithm returns.
+
+**Setup.** $Q_d$ has vertex set $\{0,1\}^d$, with $z\sim z'$ iff they differ in exactly one coordinate. It is $d$-regular with $n=2^d$ vertices. For $S\subseteq[d]$ let $\chi_S(z)=(-1)^{\sum_{i\in S}z_i}$. Write $\chi_i=\chi_{\{i\}}$. All graph quantities are for unit weights, and $\lambda=\lambda_2(L_{rw})$.
+
+---
+
+**(a) The spectrum.** Show that $\chi_S$ is an eigenvector of $L_{rw}(Q_d)$ with eigenvalue $2|S|/d$, and that these $2^d$ functions are a basis. Conclude $\lambda=2/d$, with a $d$-dimensional eigenspace spanned by $\chi_1,\dots,\chi_d$.
+
+**(b) The good eigenvector.** Show that the sweep sets of $\chi_i$ consist of a single set $\{z_i=0\}$ (up to complement), and that it has $\Phi=1/d$. Use the easy side of Cheeger to conclude $\Phi(Q_d)=1/d$.
+
+**(c) The bad eigenvector.** Let $f=\sum_{i=1}^d\chi_i$, which is also a Fiedler vector. Show that $f(z)=d-2|z|$, where $|z|$ is the Hamming weight, so the threshold sets of $f$ are the Hamming balls $B_r=\{z:|z|\le r\}$ (and their complements). Show that for $r<d/2$,
+$$
+\Phi(B_r)=\frac{\binom dr\,(d-r)}{d\sum_{j\le r}\binom dj}.
+$$
+
+**(d) Every sweep cut of $f$ is bad.** Show that there is a constant $c>0$ such that $\Phi(B_r)\ge c/\sqrt d$ for every $0\le r<d/2$. (Hence every sweep cut of $f$ has conductance $\Omega(\sqrt{\Phi(Q_d)})$, although $\lambda=2/d$ and $\Phi(Q_d)=1/d$.) Which constant does the exact asymptotics give? Compare with Cheeger's guarantee $\Phi(S)\le\sqrt{2\lambda}=2/\sqrt d$.
+
+**(e) Numerics.** For $d=8,10,12,14$, compute the best sweep cut conductance of
+
+1. $f=\chi_1$ (use threshold sets only);
+2. $f=\sum_i\chi_i$ (threshold sets only, i.e. Hamming balls);
+3. $f=\sum_ig_i\chi_i$ for $10$ random Gaussian vectors $g$.
+
+Plot the three against $d$, together with $1/d$ and $1/\sqrt d$. What do you observe for the Gaussian vectors?
+
+**(f) Discussion.** Compare with the tree $\square$ path example ([Exercise](cheeger-tight-example.qmd)). In which sense is the loss here caused by *degeneracy*, and there by *near-degeneracy*? Can an algorithm that only sees $\lambda_2$ and one eigenvector, computed by the power method from a random start, avoid this loss on the cube? What does the power method converge to?
+
+---
+
+**Hint for (a).** $L_{rw}=I-\frac1dA$ and $A\chi_S(z)=\sum_i\chi_S(z\oplus e_i)=\chi_S(z)\sum_i(\pm1)$, where the sign is $-1$ iff $i\in S$. For the basis, the $\chi_S$ are orthogonal characters of $\mathbb Z_2^d$.
+
+**Hint for (b).** For the lower bound on $\Phi(Q_d)$, use $\Phi\ge\lambda/2$.
+
+**Hint for (c).** $\chi_i(z)=1-2z_i$. The set $B_r$ has all vertices of weight $\le r$, so its boundary consists of the edges between weight $r$ and weight $r+1$: $\binom dr(d-r)$ of them. Also $\mathrm{vol}(B_r)=d|B_r|$, and for $r<d/2$ this is at most half of $\mathrm{vol}(V)$.
+
+**Hint for (d).** Two regimes. If $d-2r\ge\sqrt d$: for $j\le r$, $\binom d{j-1}/\binom dj=j/(d-j+1)\le q:=r/(d-r+1)<1$, so $\sum_{j\le r}\binom dj\le\binom dr/(1-q)$, which gives $\Phi(B_r)\ge\frac{(d-r)(d-2r+1)}{d(d-r+1)}\ge\frac{d-2r+1}{2d}\ge\frac1{2\sqrt d}$. If $d-2r<\sqrt d$: use $\binom dr\ge c_0 2^d/\sqrt d$ in this range (Stirling) and $\sum_{j\le r}\binom dj\le2^{d-1}$. The exact asymptotic uses $\binom d{d/2}\sim 2^d\sqrt{2/(\pi d)}$.
+
+**Hint for (e).** For the Gaussian vectors, sort the $2^d$ values $f(z)$ and compute the cut of each prefix by counting, for every edge $\{z,z\oplus e_b\}$, the prefix sizes it crosses (a difference array of length $2^d$ does this in $O(d2^d)$).
+
+**Hint for (f).** The power method started from a random vector converges to a random *direction* in the eigenspace (the projection of the start onto it), so for large $d$ it behaves like a Gaussian vector $g$ in (e).

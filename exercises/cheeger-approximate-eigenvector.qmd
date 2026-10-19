@@ -1,0 +1,52 @@
+---
+title: "Exercise: Cheeger with an Approximate Eigenvector"
+subtitle: "Recommended exercise for Lecture 6"
+description: "The sweep works on any vector with a small Rayleigh quotient, so a few power iterations suffice."
+---
+
+Lecture 6 proves that the sweep cuts of the *exact* Fiedler vector satisfy $\Phi(S)\le\sqrt{2\lambda}$. Nobody computes the exact Fiedler vector. In this exercise you will show that the proof only uses the **Rayleigh quotient** of the vector, so an approximate eigenvector suffices, and you will see how many power iterations that takes.
+
+**Notation.** $G=(V,E,w)$ is connected, with $d_i$, $\pi=d/\mathrm{vol}(V)$, $\langle x,y\rangle_d=\sum_id_ix_iy_i$. For $x\in\mathbb R^V$ let
+$$
+\mathcal E(x)=\sum_{ij\in E}w_{ij}(x_i-x_j)^2,\qquad R(x)=\frac{\mathcal E(x)}{\|x\|_d^2}\quad\text{for }x\perp_d\mathbf 1 .
+$$
+The eigenvalues of $L_{rw}$ are $0=\lambda_1<\lambda_2=\lambda\le\dots\le\lambda_n\le2$, with eigenvectors $u_1=\mathbf 1,u_2,\dots,u_n$ orthonormal for $\langle\cdot,\cdot\rangle_d$. The **lazy walk** is $M=\frac12(I+D^{-1}A)$.
+
+---
+
+**(a) The sweep needs only a small quotient.** Let $x\perp_d\mathbf 1$, $x\ne0$. Show that some threshold set $S_t=\{x>t\}$ (or $\{-x>t\}$) satisfies
+$$
+\Phi(S_t)\le\sqrt{2R(x)} .
+$$
+Which of the three lemmas of Lecture 6 did you use, and where did you use the eigenvector property of $f$, if at all?
+
+**(b) Any nonconstant vector.** Let $x\in\mathbb R^V$ be nonconstant, $\bar x=\langle x,\mathbf 1\rangle_d/\mathrm{vol}(V)$, and $\mathrm{Var}_\pi(x)=\frac1{\mathrm{vol}(V)}\|x-\bar x\mathbf 1\|_d^2$. Deduce that some threshold set of $x$ has
+$$
+\Phi(S_t)\le\sqrt{\frac{2\,\mathcal E(x)}{\mathrm{vol}(V)\,\mathrm{Var}_\pi(x)}}.
+$$
+
+**(c) The power method.** Let $x_0=\sum_{i\ge2}a_iu_i\perp_d\mathbf 1$, with $a_2^2\ge\delta\sum_ia_i^2$, and let $y=M^tx_0$. Show that for every $\varepsilon\in(0,1)$,
+$$
+R(y)\le(1+\varepsilon)\lambda+\frac{2}{\delta}\,e^{-\varepsilon\lambda t}.
+$$
+Deduce that $t\ge\dfrac1{\varepsilon\lambda}\ln\dfrac2{\delta\,\varepsilon\lambda}$ gives $R(y)\le(1+2\varepsilon)\lambda$, and hence a sweep cut with $\Phi(S)\le\sqrt{2(1+2\varepsilon)\lambda}$. For a Gaussian random start, what is a typical value of $\delta$?
+
+**(d) Numerics: a planted bisection.** Generate a graph on $n=120$ vertices with two blocks of $60$, with edge probability $0.35$ inside blocks and $0.012$ between (seed $3$). Run the lazy power method from a random start (projecting out $\mathbf 1$ at each step) and record, for $t=0,1,2,5,10,20,50$: $R(x_t)/\lambda$, the best sweep conductance of $x_t$ (threshold sets only), and $\sqrt{2R(x_t)}$. Compare with the planted cut.
+
+**(e) Numerics: the cycle.** Repeat for $C_{100}$ and $t=0,10,100,300,1000,3000$. How many iterations are needed, compared with $1/\lambda$? Why is the contrast with (d) consistent with the demo of Lecture 6, where the iteration count grows like $1/\lambda$?
+
+**(f) Faster: Krylov.** The slides show that Lanczos needs about $1/\sqrt\lambda$ iterations. Implement Lanczos with full reorthogonalization (as in the Lecture 6 demo) and find how many iterations you need on $C_{100}$, $C_{200}$, $C_{400}$ to reach $R\le1.1\lambda$, averaged over a few random starts. Compare with the power method. Does the sweep of the resulting vector return the half-cycle?
+
+---
+
+**Hint for (a).** Run the proof of Cheeger for $f:=x$. Lemma 3 (median shift, positive part) requires only $f\perp_d\mathbf 1$, and gives $f'\ge0$ with $R_2(f')\le R_2(f)$ and support of $\pi$-mass $\le\frac12$. Lemmas 2 and 1 never mention eigenvectors.
+
+**Hint for (b).** Apply (a) to $x-\bar x\mathbf 1$: it is $\perp_d\mathbf 1$, has the same threshold sets (shifted thresholds) and the same $\mathcal E$.
+
+**Hint for (c).** $M$ is self-adjoint for $\langle\cdot,\cdot\rangle_d$ with $Mu_i=\mu_iu_i$, $\mu_i=1-\lambda_i/2\in[0,1]$. Then $\mathcal E(y)=\sum_i\lambda_i\mu_i^{2t}a_i^2$ and $\|y\|_d^2=\sum_i\mu_i^{2t}a_i^2$. Let $B=\{i:\lambda_i>(1+\varepsilon)\lambda\}$ and $G$ its complement. For $i\in B$, $\mu_i^{2t}/\mu_2^{2t}\le(1-\varepsilon\lambda/2)^{2t}\le e^{-\varepsilon\lambda t}$. Bound $R(y)\le(1+\varepsilon)\lambda+2\sum_B/\sum_G$ and $\sum_G\ge\mu_2^{2t}a_2^2$.
+
+**Hint for (d).** Use the code of the Lecture 6 demo for `sweep_profile`, and restrict to threshold sets by skipping ties.
+
+**Hint for (e).** $\lambda(C_n)=1-\cos(2\pi/n)\approx2\pi^2/n^2$, so $1/\lambda\approx 500$ for $n=100$.
+
+**Hint for (f).** Work with $S=D^{-1/2}AD^{-1/2}$ and deflate its top eigenvector $\sqrt{d/\mathrm{vol}(V)}$. After each Lanczos step, take the largest eigenvalue $\theta$ of the tridiagonal matrix (`scipy.linalg.eigh_tridiagonal`); then $1-\theta$ is the Rayleigh quotient of the current Ritz vector. Stop when $1-\theta\le1.1\lambda$.

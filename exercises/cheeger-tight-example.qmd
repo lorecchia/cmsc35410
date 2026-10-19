@@ -74,4 +74,4 @@ by Cauchy–Schwarz along each path. A tree edge with $s$ vertices on one side l
 
 **Hint for (f).** Because $g$ is strictly decreasing, $\{F>t\}=V(T_h)\times\{y\le j\}$. The cut consists of the $n$ edges between rows $j$ and $j+1$, and $\mathrm{vol}(S)=5jn$, $\mathrm{vol}(V)=5nk$. For the final inequality, divide $2/(5k)$ by $\sqrt{2/(5(n-1))}$ and use $k\le\pi\sqrt{hn/2}+2$.
 
-**Hint for (g).** Pairing sweep sets by sorting $F$ is fine, but to match the definition use only *threshold* sets: skip a position if $F$ is (numerically) tied with the previous one.
+**Hint for (g).** Sort the vertices by $F$ and look at prefixes, but to match the definition use only *threshold* sets: skip a prefix boundary if $F$ is (numerically) tied across it. Here $F$ takes only $k$ distinct values.

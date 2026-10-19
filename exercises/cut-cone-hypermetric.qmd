@@ -1,0 +1,39 @@
+---
+title: "Exercise: The Cut Cone and Hypermetric Inequalities"
+subtitle: "Recommended exercise for Lecture 6"
+description: "Decompose metrics into cuts, and prove that a simple graph metric is not l1-embeddable."
+---
+
+Lecture 6 showed that a metric is $\ell_1$-embeddable iff it lies in the cut cone $\mathrm{CUT}_V=\{\sum_S\alpha_S\delta^S:\alpha_S\ge0\}$, and that $\ell_1$ metrics can be rounded for free. Which metrics are in the cone? Here you will decompose some, and then prove, with a one-line inequality, that others are not.
+
+**Notation.** $\delta^S_{ij}=\mathbf 1[S\text{ separates }i,j]$. For a graph $G$, $d_G$ denotes its shortest-path metric. A metric is *$\ell_1$* if it is $\ell_1$-embeddable, equivalently if it is in $\mathrm{CUT}_V$.
+
+---
+
+**(a) Points on a line.** Decompose the line metric $d_{ij}=|x_i-x_j|$ for $x=(0,\ 0.7,\ 1.6,\ 1.8,\ 3.2)$ into cut metrics. How many cuts are needed in general for $n$ points on a line?
+
+**(b) Points in the plane, and a cycle.** Let $p_1,\dots,p_n\in\mathbb R^2$ and $d_{ij}=\|p_i-p_j\|_1$. Show that $d$ is a sum of at most $2(n-1)$ cut metrics. Show that $d_{C_4}$ (the shortest-path metric of the 4-cycle) is a sum of two cut metrics, by embedding $C_4$ into $\{0,1\}^2$ with the Hamming ($\ell_1$) metric.
+
+**(c) The hypermetric inequalities.** Let $b\in\mathbb Z^V$ with $\sum_ib_i=1$. Show that every cut metric satisfies
+$$
+\sum_{i<j}b_ib_j\,\delta^S_{ij}\ \le\ 0,
+$$
+and deduce that **every $\ell_1$ metric** satisfies $\sum_{i<j}b_ib_jd_{ij}\le0$. Show that for $b=(1,1,-1)$ on three points this is the triangle inequality $d_{12}\le d_{13}+d_{23}$.
+
+**(d) A metric that is not $\ell_1$.** Let $G=K_{2,3}$, with parts $\{a_1,a_2\}$ and $\{b_1,b_2,b_3\}$. Apply (c) with $b=(-1,-1)$ on the $a$'s and $b=(+1,+1,+1)$ on the $b$'s (the *pentagonal inequality*) to show that $d_G$ is **not** $\ell_1$-embeddable. Do the same for $K_{3,3}$ with a suitable $b$. Compare with part (b) of the [Leighton–Rao exercise](leighton-rao-lp.qmd), where the same conclusion came from an LP computation.
+
+**(e) Computation.** For a metric $d$ on $n$ points, deciding if $d\in\mathrm{CUT}_V$ is a linear feasibility problem in the $2^{n-1}-1$ unknowns $\alpha_S\ge0$, with $\binom n2$ equality constraints $\sum_S\alpha_S\delta^S_{ij}=d_{ij}$. Implement it (for $n\le 10$) and test the shortest-path metrics of $C_5$, $C_6$, $K_4$, the Petersen graph, $K_{2,3}$, $K_{3,3}$. Do the answers agree with (b) and (d)?
+
+**(f) Why this matters for rounding.** Suppose the LP of Leighton–Rao returns a metric $d^*$. What does the remark after Lemma 1 give if $d^*\in\mathrm{CUT}_V$? What goes wrong if $d^*\notin\mathrm{CUT}_V$, and where does Bourgain's theorem enter?
+
+---
+
+**Hint for (a).** Sort the points; the $t$-th cut is the prefix $\{1,\dots,t\}$ with weight $x_{t+1}-x_t$.
+
+**Hint for (b).** Apply (a) to each coordinate separately, using $\|p-q\|_1=\sum_{c=1}^2|p^{(c)}-q^{(c)}|$. For $C_4$ put the vertices at $00,01,11,10$ in cyclic order.
+
+**Hint for (c).** For a fixed cut $S$, write $b(S)=\sum_{i\in S}b_i$, so $b(\bar S)=1-b(S)$. Then $\sum_{i<j}b_ib_j\delta^S_{ij}=\sum_{i\in S,j\notin S}b_ib_j=b(S)\,b(\bar S)=b(S)(1-b(S))$. When is $x(1-x)\le0$ for an integer $x$?
+
+**Hint for (d).** $d_G=1$ on edges, $2$ on non-adjacent pairs. For $K_{3,3}$, try $b=+1$ on the three vertices of one side, $-1$ on two vertices of the other side, $0$ on the last.
+
+**Hint for (e).** Build a matrix $M$ with a row per pair and a column per cut, and call `scipy.optimize.linprog` with zero objective and equality constraints $M\alpha=d$.

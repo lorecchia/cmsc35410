@@ -1,0 +1,41 @@
+---
+title: "Exercise: Three Clusters and the Spectral Embedding"
+subtitle: "Preview exercise for Lecture 7 (higher-order Cheeger)"
+description: "When there are k clusters, one eigenvector is not enough: λ₂,…,λ_k are all small."
+---
+
+Cheeger's inequality is about one bottleneck. Real graphs often have $k$ clusters. Here you will study the simplest example, a ring of three cliques, and see how the spectrum signals $k=3$, why a single sweep cut is not the right tool, and how the *spectral embedding* into $\mathbb R^2$ reveals the clusters.
+
+**The graph.** $G_m$ consists of three disjoint cliques $C_0,C_1,C_2$ on $m$ vertices each. Join them in a ring by three bridge edges: vertex $0$ of $C_i$ to vertex $1$ of $C_{i+1}$ (indices mod $3$). All weights are $1$. So $n=3m$, and each clique has $\mathrm{vol}(C_i)=m(m-1)+2$.
+
+For $k\ge2$, the **$k$-way conductance** is
+$$
+\rho_k(G)=\min_{S_1,\dots,S_k\ \text{disjoint, nonempty}}\ \max_i\Phi(S_i).
+$$
+Higher-order Cheeger (Lee–Oveis Gharan–Trevisan; Louis–Raghavendra–Tetali–Vempala) states that $\ \dfrac{\lambda_k}{2}\le\rho_k(G)\le O(k^2)\sqrt{\lambda_k}$, where $\lambda_k=\lambda_k(L_{rw})$.
+
+---
+
+**(a) The 3-way conductance.** Show that $\rho_3(G_m)\le\dfrac{2}{m(m-1)+2}$. Compute this for $m=8,12$.
+
+**(b) The spectrum.** Using a test function that is constant on each clique, show that $\lambda_2,\lambda_3\le\dfrac{3}{m(m-1)+2}$. (Take $y=(y_0,y_1,y_2)$ with $\sum_iy_i=0$; use $\sum_i y_iy_{i+1}=-\frac12\sum_iy_i^2$.) Explain, using the rotation symmetry $C_i\to C_{i+1}$, why one expects $\lambda_2=\lambda_3$. Compute the first five eigenvalues of $L_{rw}$ numerically for $m=8,12$.
+
+**(c) One eigenvector, one cut.** Take a random vector $f$ in the span of the second and third eigenfunctions of $L_{rw}$ (use $f=D^{-1/2}v$, with $v$ an eigenvector of the normalized adjacency). Compute its best sweep cut. What cut is it? Is it also a good *3-way* partition? What is $\Phi(G_m)$?
+
+**(d) The spectral embedding.** Map each vertex $i$ to $F(i)=(f_2(i),f_3(i))\in\mathbb R^2$, where $f_2,f_3$ are the eigenfunctions of (b). Plot the $3m$ points. Report the distance between the centers of the three clique clusters and the maximum distance of a point to its cluster center, for $m=8,12$. How would you round this embedding to a 3-way partition, and what is the conductance of the result?
+
+**(e) The eigengap.** Compute $\lambda_4$. Use the lower bound $\rho_4\ge\lambda_4/2$ to show that *no* 4-way partition of $G_m$ has all parts of conductance below $\approx0.5$. Compare with $\rho_3$. This is the "eigengap heuristic" for choosing $k$: we pick $k$ such that $\lambda_k$ is small and $\lambda_{k+1}$ is not.
+
+**(f) Discussion.** (1) For $k=2$ the sweep rounding gives a *set*; for $k=3$ the embedding is $2$-dimensional and one must cluster a point cloud. Where does the "loss" in higher-order Cheeger, the factor poly$(k)$, come from? (2) What would happen if you tried to find three clusters by repeating the two-way sweep on $G_m$ (cut off the best set, recurse on the rest)? Compare with the planted partition in (a).
+
+---
+
+**Hint for (a).** Take $S_i=C_i$. Two bridge edges leave each clique.
+
+**Hint for (b).** For $y$ extended to a vector constant on cliques, the only non-zero terms of $\sum_Ew(x_i-x_j)^2$ are the three bridges, giving $\sum_i(y_i-y_{i+1})^2=3\sum_iy_i^2$, while $\|x\|_d^2=\mathrm{vol}(C_0)\sum_iy_i^2$. For the symmetry: the rotation $\sigma$ commutes with $L_{rw}$, so $L_{rw}$ preserves the eigenspaces of $\sigma$ (eigenvalues $1,\omega,\bar\omega$). The $\omega$ and $\bar\omega$ eigenspaces are complex conjugate, and have the same spectrum.
+
+**Hint for (c).** Use `np.linalg.eigh(np.eye(n) - D^{-1/2} A D^{-1/2})`. For the sweep, use threshold sets.
+
+**Hint for (d).** To round: pick the three clusters by angle, or run $k$-means with $k=3$ on $F(V)$.
+
+**Hint for (e).** In the notation of the statement, $\lambda_4$ is the fourth smallest eigenvalue of $L_{rw}$ counting $\lambda_1=0$.

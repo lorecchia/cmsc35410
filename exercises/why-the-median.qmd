@@ -1,0 +1,40 @@
+---
+title: "Exercise: Why the Median? A Counterexample to the Naive Rounding"
+subtitle: "Recommended exercise for Lecture 6"
+description: "Lemma 3 shifts the eigenvector by the median. Here is what goes wrong without it."
+---
+
+In the proof of Cheeger's inequality, **Lemma 3** replaces the Fiedler vector $f\perp_d\mathbf 1$ by a nonnegative vector $f'$ that is supported on a set of $\pi$-measure at most $\frac12$. This looks like a technicality. You will show that it is not: the "obvious" shortcut of taking the positive part of $f$ fails, by an arbitrarily large factor.
+
+**Notation.** As in the lecture, $R_2(x)=\dfrac{\sum_Ew_{ij}(x_i-x_j)^2}{\sum_id_ix_i^2}$ and $R_1(x)=\dfrac{\sum_Ew_{ij}|x_i-x_j|}{\sum_id_i|x_i|}$ (both uncentered), $S_t=\{x>t\}$, and for a set $S$, $\Phi(S)=\dfrac{w(S,\bar S)}{\min\{\mathrm{vol}(S),\mathrm{vol}(\bar S)\}}$.
+
+**The graph.** $G_{a,b}$ consists of a clique $K_a$ and a clique $K_b$, $a\gg b$, joined by a single edge. Take $b=10$ and $a=900$. Let $A$ be the vertex set of $K_a$ and $B$ that of $K_b$.
+
+---
+
+**(a) Basic quantities.** Compute $\mathrm{vol}(A)$, $\mathrm{vol}(B)$, and $\Phi(B)$. Compute $\lambda$ numerically. Conclude with the easy side of Cheeger that every cut of $G$ has $\Phi\ge\lambda/2\approx0.005$.
+
+**(b) A vector with mean zero.** Let $x=\mathbf 1_A-c\,\mathbf 1_B$ with $c=\mathrm{vol}(A)/\mathrm{vol}(B)$, so that $x\perp_d\mathbf 1$. Compute $R_2(x)$ (exactly, in terms of $\mathrm{vol}(A)$ and $\mathrm{vol}(B)$) and compare with $\lambda$. This $x$ is a good stand-in for the Fiedler vector.
+
+**(c) The naive rounding fails.** Let $x_+=\max\{x,0\}=\mathbf 1_A$. Compute $R_2(x_+)$ and $R_1(x_+^2)$, and the set $S$ returned by the sweep of $x_+^2$. Show that
+
+1. $R_2(x_+)\ll\lambda$, so the conclusion "$\Phi(S_t)\le\sqrt{2R_2(x_+)}$ for some $t$" would be **false**: give the numerical values of $\sqrt{2R_2(x_+)}$ and $\lambda/2$.
+2. Which step of the chain Lemma 2, then Lemma 1, still holds for $x_+$, and which hypothesis of the final identification $w(S_t,\bar S_t)/\mathrm{vol}(S_t)=\Phi(S_t)$ breaks?
+
+**(d) The median fixes it.** Compute the $\pi$-median $m$ of $x$, the vector $\bar x=x-m\mathbf 1$, its positive and negative parts $p,q$, and $R_2(p)$, $R_2(q)$. Verify $R_2(\bar x)\ge\min\{R_2(p),R_2(q)\}$ and $\min\{R_2(p),R_2(q)\}\le R_2(x)$. Which set does the sweep of $q^2$ return, and what is its conductance?
+
+**(e) Mean versus median.** The mean of $x$ is already $0$ in $\langle\cdot,\cdot\rangle_d$, so $x$ itself is "centered". Explain why centering at the mean does not give the support condition $\pi(\{f'>0\})\le\frac12$, but centering at the median does. Construct a vector $y$ on the **path** $P_3$ (three vertices) with $y\perp_d\mathbf 1$ for which $\pi(\{y>0\})>\frac12$.
+
+**(f) What exactly is the median used for?** In Lemma 3, writing $\bar f=p-q$ with $p,q\ge0$, the inequality $N(p-q)\ge N(p)+N(q)$ and the identity $D(p-q)=D(p)+D(q)$ hold for *any* shift, as long as $p,q$ have disjoint supports. State precisely which conclusion of Lemma 3 needs the median, and which needs the identity $\sum_id_if_i=0$.
+
+---
+
+**Hint for (a).** $\mathrm{vol}(A)=a(a-1)+1$, $\mathrm{vol}(B)=b(b-1)+1$. Compute $\lambda$ with `np.linalg.eigvalsh` on $I-D^{-1/2}AD^{-1/2}$.
+
+**Hint for (b).** $N(x)=\sum_Ew(x_i-x_j)^2$ is just the bridge: $(1+c)^2$. And $\|x\|_d^2=\mathrm{vol}(A)+c^2\mathrm{vol}(B)$.
+
+**Hint for (c).** $x_+$ is constant on $A$ and $0$ on $B$: only the bridge contributes to the numerator. $S=A$ has $w(S,\bar S)/\mathrm{vol}(S)=1/\mathrm{vol}(A)$, but $\Phi(S)$ uses $\min\{\mathrm{vol}(A),\mathrm{vol}(B)\}=\mathrm{vol}(B)$.
+
+**Hint for (d).** Since $\pi(A)>\frac12$ and $x=1$ on $A$, the median is $m=1$. Then $\bar x=0$ on $A$ and $-(1+c)$ on $B$.
+
+**Hint for (e).** On $P_3=\{1,2,3\}$ the degrees are $d=(1,2,1)$. Try $y=(-a,1,b)$ with $b>0$ and solve $\langle y,\mathbf 1\rangle_d=0$ for $a$.

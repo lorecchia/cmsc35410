@@ -1,0 +1,47 @@
+---
+title: "Exercise: Certifying Expansion with the Easy Side of Cheeger"
+subtitle: "Recommended exercise for Lecture 6"
+description: "A spectral gap certifies that every cut is large. How tight is this, and how do we check it?"
+---
+
+The easy side of Cheeger, $\lambda\le\bar\phi(G)\le2\Phi(G)$, says that a large gap **proves** that the graph has no sparse cut. This exercise looks at how good that certificate is, and at what it takes to verify it numerically.
+
+**Notation.** $G=(V,E,w)$ connected, $L=D-A$, $L_{rw}=D^{-1}L$, $\lambda=\lambda_2(L_{rw})$, $\mathrm{vol}=\mathrm{vol}(V)$.
+
+---
+
+**(a) The certificate.** Show that for **every** $S\subset V$,
+$$
+w(S,\bar S)\ \ge\ \lambda\,\frac{\mathrm{vol}(S)\,\mathrm{vol}(\bar S)}{\mathrm{vol}},\qquad\text{hence}\qquad \Phi(S)\ge\frac\lambda2 .
+$$
+For a $\delta$-regular graph with $n$ vertices, write this as a bound on the number of edges leaving a set $S$ with $|S|\le n/2$.
+
+**(b) How tight is it?** Compute, by brute force over all $2^{n-1}-1$ cuts, $\Phi(G)$ and the ratio $\Phi(G)/(\lambda/2)$ for:
+
+the Petersen graph, the 4-cube $Q_4$, $K_{4,4}$, the cycle $C_{16}$, and two random $3$-regular graphs on $16$ and $20$ vertices (use `networkx.random_regular_graph` with seeds $1$ and $2$).
+
+Which graphs have $\Phi=\lambda/2$ exactly? What do they have in common? How does the ratio behave for the cycle $C_n$ as $n$ grows?
+
+**(c) When is the certificate tight?** Suppose $\Phi(S)=\lambda/2$ for some $S$ with $\mathrm{vol}(S)=\mathrm{vol}/2$. Show that then $x=\mathbf 1_S-\mathbf 1_{\bar S}$ is an eigenvector of $L_{rw}$ with eigenvalue $\lambda$. Check this on $Q_d$.
+
+**(d) The certificate is a *lower* bound on $\lambda$.** The power method returns vectors $x$ with Rayleigh quotient $R(x)\ge\lambda$ (for $x\perp_d\mathbf 1$). Why does this *not* certify expansion? To certify $\lambda\ge\ell$ we need a matrix inequality. Show that $\lambda\ge\ell$ if and only if the symmetric matrix
+$$
+K_\ell=L-\ell\Big(D-\frac{dd^\top}{\mathrm{vol}}\Big)
+$$
+is positive semidefinite. Show also that $K_\ell\mathbf 1=0$, and that $\lambda>\ell$ if and only if $K_\ell+\frac1n\mathbf 1\mathbf 1^\top$ is positive *definite*. Hence a Cholesky factorization of $K_\ell+\frac1n\mathbf 1\mathbf 1^\top$ is a *proof* that $\Phi(G)\ge\ell/2$.
+
+**(e) Numerics.** For a random $3$-regular graph on $n=200$ vertices (seed $5$): compute $\lambda$; run Cholesky on $K_\ell+\frac1n\mathbf 1\mathbf 1^\top$ for $\ell=f\lambda$, $f\in\{0.9,0.99,0.999,1.001,1.01,1.1\}$; compute the Rayleigh quotient of a random mean-zero vector. Summarize: which side does each of the two computations give information about?
+
+**(f) The interval.** Combining everything, for the graph of (e): by (d) there is a proven lower bound $\Phi(G)\ge\ell/2$, and by the sweep (Lecture 6, upper side) a cut with $\Phi(S)\le\sqrt{2\lambda}$. Report the interval $[\ell/2,\ \Phi(S)]$ obtained with $\ell=0.999\lambda$ and the actual sweep cut of the Fiedler vector, and its width as a ratio.
+
+---
+
+**Hint for (a).** Apply the Poincaré inequality $\lambda\,\mathrm{Var}_\pi(x)\le\mathcal E(x,x)$ to $x=\mathbf 1_S$, as in the proof of the easy side. For $\delta$-regular graphs, $\mathrm{vol}(S)=\delta|S|$ and $\mathrm{vol}(\bar S)\ge\mathrm{vol}/2$.
+
+**Hint for (b).** For $n\le20$, enumerate the subsets with a vectorized loop over bit masks (chunks of $2^{16}$ at a time); only the first $n-1$ vertices need to vary.
+
+**Hint for (c).** Equality in $\lambda\le\bar\phi(S)$ requires equality in the Poincaré inequality for $x=\mathbf 1_S$, i.e. $x-\bar x\mathbf 1$ must be a minimizer of the Rayleigh quotient, hence an eigenvector for $\lambda$.
+
+**Hint for (d).** $x^\top K_\ell x=\mathcal E(x,x)-\ell\,\|x-\bar x\mathbf 1\|_d^2$, where $\bar x=\langle x,\mathbf 1\rangle_d/\mathrm{vol}$. Also $K_\ell\mathbf 1=L\mathbf 1-\ell(d-d)=0$.
+
+**Hint for (f).** Use the threshold-set sweep of the Fiedler vector of $L_{rw}$, with $f=D^{-1/2}v_2$.

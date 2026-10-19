@@ -1,0 +1,41 @@
+---
+title: "Exercise: The Leighton–Rao Integrality Gap on Expanders"
+subtitle: "Challenge exercise for Lecture 6"
+description: "On bounded-degree expanders the LP relaxation is off by a logarithmic factor, so the O(log n) rounding is tight."
+---
+
+The Leighton–Rao relaxation $\mathrm{LR}(G)$ (see the [LP exercise](leighton-rao-lp.qmd)) can be rounded to a cut within $O(\log n)$. Is the $\log n$ real, or an artifact of the analysis? You will show that it is real: on a bounded-degree expander, $\bar\phi(G)=\Theta(1)$ but $\mathrm{LR}(G)=O(1/\log n)$.
+
+**Setup.** $G$ is a connected $\delta$-regular graph with unit weights on $n$ vertices, $\delta\ge3$ fixed. Recall $\mathrm{LR}(G)=\min_{d\text{ metric}}d(G)/d(K_G)$, with $d(G)=\sum_Ew_{ij}d_{ij}$ and $d(K_G)=\sum_{i<j}\frac{d_id_j}{\mathrm{vol}(V)}d_{ij}$. Let $\mathrm{dist}$ be the shortest-path metric of $G$, and $\bar\Delta=\binom n2^{-1}\sum_{i<j}\mathrm{dist}(i,j)$ its average distance.
+
+---
+
+**(a) The shortest-path metric.** Show that
+$$
+\frac{\mathrm{dist}(G)}{\mathrm{dist}(K_G)}=\frac{n}{(n-1)\,\bar\Delta},\qquad\text{hence}\qquad\mathrm{LR}(G)\le\frac n{(n-1)\bar\Delta}.
+$$
+
+**(b) Graphs are big, so distances are long.** Show that every ball of radius $r$ in $G$ has at most $\delta^{r+1}$ vertices. Deduce that
+$$
+\bar\Delta\ \ge\ \frac34\Big(\log_\delta\frac n4-1\Big).
+$$
+(So $\mathrm{LR}(G)=O(1/\log_\delta n)$.)
+
+**(c) Expanders are well connected.** Suppose $\lambda_2(L_{rw}(G))\ge c>0$ (a "$c$-expander"; random $\delta$-regular graphs have $\lambda\to1-2\sqrt{\delta-1}/\delta$ with high probability). Use the easy side of Cheeger to show that $\bar\phi(G)\ge c$. Conclude that for a $c$-expander,
+$$
+\frac{\bar\phi(G)}{\mathrm{LR}(G)}\ \ge\ \frac{c\,(n-1)\,\bar\Delta}{n}\ =\ \Omega\big(c\log_\delta n\big).
+$$
+
+**(d) Numerics.** For random $\delta$-regular graphs ($\delta=3$ and $\delta=6$; $n=64,256,1024,2048,4096$; use `networkx.random_regular_graph(d, n, seed=7)`), compute $\lambda$, $\bar\Delta$ (BFS from every vertex, or `scipy.sparse.csgraph.shortest_path`), and the lower bound $\lambda\big/\frac{n}{(n-1)\bar\Delta}$ on the ratio $\bar\phi/\mathrm{LR}$. For which $n$ does the lower bound exceed $1$?
+
+**(e) What does this say about the two relaxations?** On this family, the *spectral* relaxation is accurate (what is $\lambda/\bar\phi$ here?), while the LR relaxation is off by $\Omega(\log n)$. On the cycle $C_n$, it is the other way around: LR is exact ($\mathrm{LR}=\bar\phi$) but $\lambda$ is off. Fill in the table for the two families, using the values you know, and explain how this motivates a relaxation that keeps *both* constraints.
+
+---
+
+**Hint for (a).** Every vertex has degree $\delta$, so $\mathrm{vol}(V)=n\delta$ and $\frac{d_id_j}{\mathrm{vol}(V)}=\frac\delta n$. Also $\mathrm{dist}(G)=|E|=n\delta/2$ (each edge has length $1$).
+
+**Hint for (b).** Count vertices at distance exactly $i$ from $v$: at most $\delta(\delta-1)^{i-1}\le\delta^i$. For the average distance, let $r_0=\lfloor\log_\delta(n/4)\rfloor-1$, so that $|B(v,r_0)|\le\delta^{r_0+1}\le n/4$. At least $\frac34n$ vertices are at distance $\ge r_0+1$ from $v$.
+
+**Hint for (c).** $\lambda\le\bar\phi\le2\Phi$ from Lecture 6.
+
+**Hint for (d).** $\lambda_2(L_{rw})=1-\mu_2$, where $\mu_2$ is the second-largest eigenvalue of $A/\delta$. For $n=4096$ use `scipy.sparse.linalg.eigsh` with `which="LA"`, `k=2`.
