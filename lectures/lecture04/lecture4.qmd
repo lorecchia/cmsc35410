@@ -1,0 +1,227 @@
+---
+title: "Mixing Times and Entropy"
+subtitle: "Gap ⇒ mixing time · where log(1/π_min) comes from · entropy production · log-Sobolev preview"
+author: "CMSC 35410 · Lecture 4"
+format:
+  revealjs:
+    theme: [default, theme.scss]
+    slide-number: c/t
+    hash: true
+    center: false
+    transition: none
+    width: 1100
+    height: 720
+    margin: 0.06
+    scrollable: true
+    html-math-method: mathjax
+    fig-format: svg
+    fig-align: center
+jupyter: python3
+execute:
+  echo: false
+  warning: false
+---
+
+```{python}
+import numpy as np, math, matplotlib.pyplot as plt
+from scipy.linalg import eigh
+plt.rcParams.update({"font.size": 13, "axes.spines.top": False, "axes.spines.right": False,
+                     "figure.facecolor": "#fbfaf7", "axes.facecolor": "#fbfaf7"})
+BLUE, ORANGE, GREY, GREEN = "#2563eb", "#ea580c", "#8a857b", "#15803d"
+
+def lap(n, edges):
+    A = np.zeros((n, n))
+    for i, j in edges: A[i, j] = A[j, i] = 1
+    D = np.diag(A.sum(1)); return D - A, D
+def cycle(n): return lap(n, [(i, (i + 1) % n) for i in range(n)])
+def tree(h):
+    n = 2**(h+1) - 1; return lap(n, [(i, (i-1)//2) for i in range(1, n)])
+```
+
+# §0 Where we are {background-color="#1c1b19"}
+
+## Recap: Lecture 3 {.smaller}
+
+$h = \mu/\pi$ is the density; $h_t = H_th_0$.
+
+::: box
+**Three distances.** $\mathrm{TV}=\tfrac12\mathbb E_\pi|h-1|$, $\;\chi^2=\operatorname{Var}_\pi(h)$, $\;D=\operatorname{Ent}_\pi(h)$, with
+$$\|\mu-\pi\|_{TV}\le\tfrac12\sqrt{\chi^2},\qquad\|\mu-\pi\|_{TV}\le\sqrt{D/2},\qquad D\le\log(1+\chi^2).$$
+Mixing time: $d(t)=\max_x\|\delta_xH_t-\pi\|_{TV}$, $\;t_{\rm mix}(\varepsilon)=\min\{t:d(t)\le\varepsilon\}$.
+:::
+
+. . .
+
+::: box
+**$\chi^2$ decay.** $\frac{d}{dt}\operatorname{Var}_\pi(h_t)=-2\mathcal E(h_t,h_t)$ and Poincaré give $\operatorname{Var}_\pi(H_th)\le e^{-2\lambda t}\operatorname{Var}_\pi(h)$. The gap is the optimal $\chi^2$ rate.
+:::
+
+. . .
+
+::: warn
+From a point mass: TV $\le1$, $D\approx\log n$, $\chi^2\approx n$. **Remember $1$ vs. $\log n$ vs. $n$**: it is the story of today.
+:::
+
+## Today
+
+1. **The gap pins down the mixing time**: upper and lower bounds, and where the $\log(1/\pi_{\min})$ comes from.
+2. **Entropy along the flow**: the same dissipation computation, with $\operatorname{Ent}_\pi$ in place of $\operatorname{Var}_\pi$. The modified log-Sobolev inequality.
+3. **Preview:** log-Sobolev trades $\log n$ for $\log\log n$.
+
+# §1 · Consequences for ℓ₁ and entropy {background-color="#1c1b19"}
+
+## The gap pins down the mixing time
+
+::: box
+**Theorem.** For the continuous-time walk, $\pi_{\min} = \min_x\pi_x$:
+$$
+\frac1\lambda\log\frac1{2\varepsilon}\ \le\ t_{\rm mix}(\varepsilon)\ \le\ \frac1\lambda\Big(\tfrac12\log\frac1{\pi_{\min}} + \log\frac1{2\varepsilon}\Big).
+$$
+:::
+
+. . .
+
+**Upper.** Lemma (1) + Lecture 3 ($\chi^2$ decay): $\;\|\delta_xH_t-\pi\|_{TV}\le\tfrac12\sqrt{\chi^2(\delta_xH_t\Vert\pi)}\le\tfrac12e^{-\lambda t}\pi_x^{-1/2}$.
+
+. . .
+
+**Lower.** Scale $f = \varphi_2$ so $\|f\|_\infty = 1 = |f(x)|$. Then $\mathbb E_\pi f = 0$, $(H_tf)(x) = e^{-\lambda t}f(x)$, and
+$$
+e^{-\lambda t} = |\mathbb E_{\delta_xH_t}f - \mathbb E_\pi f|\le\|\delta_xH_t-\pi\|_1\|f\|_\infty = 2\|\delta_xH_t-\pi\|_{TV}. \qquad\square
+$$
+
+::: notes
+Lazy discrete version: (2/λ − 1) log(1/2ε) ≤ t_mix(ε) ≤ (2/λ)(½ log(1/π_min) + log(1/2ε)); lower bound uses log(1/(1−x)) ≤ x/(1−x). Cf. LPW Thms 12.4–12.5 (check numbering).
+:::
+
+## Where the $\log(1/\pi_{\min})$ comes from
+
+```{python}
+#| fig-width: 11
+#| fig-height: 4.4
+from scipy.linalg import expm
+def curves(L, D, x, ts):
+    pi = np.diag(D) / D.trace(); Lrw = np.linalg.solve(D, L)
+    out = []
+    for t in ts:
+        r = expm(-t * Lrw)[x]
+        tv = 0.5 * np.abs(r - pi).sum(); chi = ((r - pi)**2 / pi).sum()
+        kl = (r * np.log(np.maximum(r, 1e-300) / pi)).sum()
+        out.append((tv, 0.5*np.sqrt(chi), np.sqrt(kl/2)))
+    lam = np.sort(eigh(L, D, eigvals_only=True))[1]
+    return np.array(out), lam, pi[x]
+
+fig, axs = plt.subplots(1, 2, figsize=(11, 4.4))
+for ax, (name, (L, D), x) in zip(axs, [("cycle $C_{60}$", cycle(60), 0), ("binary tree, $n=127$ (start at a leaf)", tree(6), 126)]):
+    lam = np.sort(eigh(L, D, eigvals_only=True))[1]
+    ts = np.linspace(0, 4/lam, 60)
+    c, lam, px = curves(L, D, x, ts)
+    ax.semilogy(ts*lam, c[:, 0], color=BLUE, lw=2.5, label="TV (truth)")
+    ax.semilogy(ts*lam, c[:, 1], color=ORANGE, lw=2, label=r"$\frac{1}{2}\sqrt{\chi^2}$")
+    ax.semilogy(ts*lam, c[:, 2], color=GREEN, lw=2, label=r"$\sqrt{D/2}$ (Pinsker)")
+    ax.semilogy(ts*lam, 0.5*np.exp(-lam*ts)/np.sqrt(px), "--", color=ORANGE, lw=1.2, label=r"$\frac{1}{2} e^{-\lambda t}\pi_x^{-1/2}$")
+    ax.semilogy(ts*lam, 0.5*np.exp(-lam*ts), ":", color=GREY, lw=1.5, label=r"$\frac{1}{2} e^{-\lambda t}$ (lower bd)")
+    ax.axhline(0.25, color=GREY, lw=0.6)
+    ax.set(xlabel=r"$\lambda t$", title=name, ylim=(1e-3, 10))
+axs[0].legend(frameon=False, fontsize=10.5, loc="upper right")
+fig.tight_layout(); plt.show()
+```
+
+$\chi^2$ starts at $\approx n$ and must spend time $\approx\frac{\log n}{2\lambda}$ just getting below $1$. TV starts at $\le1$.
+
+::: notes
+x-axis in units of t_rel. TV (blue) stays sandwiched between the lower bound (grey dotted) and the χ²-bound (orange dashed). The orange solid χ² curve only drops below 1/4 well after TV. Entropy (green) starts at log n, much lower than n.
+:::
+
+## Entropy along the flow
+
+Same computation as Proof 2, with $\operatorname{Ent}_\pi$ in place of $\operatorname{Var}_\pi$:
+
+$$
+\frac d{dt}\operatorname{Ent}_\pi(h_t) = \mathbb E_\pi\big[(1+\log h_t)\,\partial_th_t\big] = -\langle\log h_t, L_{rw}h_t\rangle_\pi
+$$
+
+$$
+= -\mathcal E(h_t,\log h_t)\ \le\ 0 .
+$$
+
+$\mathcal E(h,\log h)$: **entropy production** (discrete Fisher information).
+
+. . .
+
+From the gap alone (Lecture 3, Lemma 3): $\;D(\mu_t\Vert\pi)\le\log\big(1 + e^{-2\lambda t}\chi^2(\mu_0\Vert\pi)\big)$ — rate $2\lambda$ eventually, but the same $\log n$ burn-in.
+
+. . .
+
+To close the loop we need a new functional inequality, the **modified log-Sobolev inequality**:
+
+$$
+\rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)\quad\Longrightarrow\quad D(\mu_t\Vert\pi)\le e^{-\rho_0t}D(\mu_0\Vert\pi).
+$$
+
+## Preview: log-Sobolev trades $\log n$ for $\log\log n$ {.smaller}
+
+With Pinsker:
+
+$$
+t_{\rm mix}(\varepsilon)\le\frac1{\rho_0}\Big(\log\log\frac1{\pi_{\min}} + \log\frac1{2\varepsilon^2}\Big)
+\qquad\text{vs.}\qquad
+\frac1\lambda\Big(\tfrac12\log\frac1{\pi_{\min}} + \log\frac1{2\varepsilon}\Big).
+$$
+
+. . .
+
+The price is the constant: entropy can't decay faster than twice the gap,
+
+$$
+\rho_0\ \le\ 2\lambda .
+$$
+
+*Proof.* Linearize at equilibrium, $h = 1+\epsilon g$, $\mathbb E_\pi g = 0$:
+$$
+\operatorname{Ent}_\pi(h) = \tfrac{\epsilon^2}2\operatorname{Var}_\pi g + O(\epsilon^3),\qquad \mathcal E(h,\log h) = \epsilon^2\mathcal E(g,g) + O(\epsilon^3).
+$$
+MLSI forces $\rho_0\le 2\,\mathcal E(g,g)/\operatorname{Var}_\pi g$ for every $g$; take $g = \varphi_2$. $\square$
+
+::: box
+Entropy wins when $\rho_0$ is comparable to the gap. When is it? How do we bound it? → later lecture.
+:::
+
+::: notes
+Say aloud: next time we meet the classical log-Sobolev inequality α Ent(f²) ≤ E(f,f) (Gross), which is how ρ₀ is bounded in practice (it tensorizes; ρ₀ ≥ 4α via (a−b)(log a − log b) ≥ 4(√a−√b)²), and which coincides with this one for diffusions (chain rule: E(h, log h) = 4E(√h,√h) exactly).
+If asked for a lower bound in terms of λ: Diaconis–Saloff-Coste give α ≥ (1−2π_*)λ / log(1/π_* − 1), so ρ₀ ≳ 4λ/log(1/π_min) — plugging it in is worse than the gap bound by log log, so the gap alone never certifies that entropy helps. K_n: λ ≍ 1, α ≍ 1/log n, ρ₀ ≍ 1 (Bobkov–Tetali). (Constants from memory — check.)
+:::
+
+## Takeaways
+
+- Gap $\Rightarrow$ mixing time: $\;t_{\rm rel}\log\frac1{2\varepsilon}\le t_{\rm mix}(\varepsilon)\le t_{\rm rel}\big(\frac12\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon}\big)$. The $\log\frac1{\pi_{\min}}$ is the $\chi^2$ burn-in from a point mass.
+- Entropy: $\frac d{dt}\operatorname{Ent}_\pi(h_t)=-\mathcal E(h_t,\log h_t)$. With MLSI, $D$ decays at rate $\rho_0\le2\lambda$ and the burn-in drops to $\log\log\frac1{\pi_{\min}}$.
+- Next: how to bound the gap itself, from both sides, with **test functions** and **canonical paths** (Lecture 5).
+
+# Appendix: definitions for the board {background-color="#1c1b19"}
+
+## Operators and the walk {.defs}
+
+**Graph.** $G = (V,E,w)$ undirected, connected; $d_i = \sum_jw_{ij}$; $\mathrm{vol}(S) = \sum_{i\in S}d_i$; $\pi_i = d_i/\mathrm{vol}(V)$, $\Pi = \operatorname{diag}(\pi)$.
+
+**Gradient / divergence.** $(\nabla f)(i\to j) = f_j - f_i$; $\operatorname{div}_m = -\nabla_m^*$ w.r.t. $\langle\cdot,\cdot\rangle_w$ on edges and $\langle\cdot,\cdot\rangle_m$ on vertices. $\nabla^*\nabla = L = D-A$; $\nabla_d^*\nabla = L_{rw} = D^{-1}L = I-P$; $\mathcal L = D^{-1/2}LD^{-1/2}$.
+
+**Dirichlet form.** $\mathcal E(f,g) = \langle f,L_{rw}g\rangle_\pi = \frac1{\mathrm{vol}(V)}\sum_{\{i,j\}\in E}w_{ij}(f_i-f_j)(g_i-g_j)$.
+
+**Walk.** $P = D^{-1}A$; measures $\mu^\top P$, functions $Pf$. Random-walk Laplacian $L_{rw} = I - P$. Continuous time $H_t = e^{-tL_{rw}}$, generator $\mathcal A = P - I = -L_{rw}$. Lazy: $P_{\rm lazy} = \frac12(I+P)$.
+
+**Reversibility.** $\Pi P = P^\top\Pi$; densities $h = \mu/\pi$ evolve as $h_t = H_th_0$.
+
+**Gap / Poincaré.** $\lambda = \lambda_2(L_{rw}) = \min_f\mathcal E(f,f)/\operatorname{Var}_\pi(f)$; $t_{\rm rel} = 1/\lambda$.
+
+## Convergence {.defs}
+
+**Distances.** $\|\mu-\pi\|_{TV} = \frac12\mathbb E_\pi|h-1|$; $\chi^2(\mu\Vert\pi) = \operatorname{Var}_\pi(h)$; $D(\mu\Vert\pi) = \operatorname{Ent}_\pi(h)$. $\;2\,\mathrm{TV}\le\sqrt{\chi^2}$; $\mathrm{TV}\le\sqrt{D/2}$; $D\le\log(1+\chi^2)$.
+
+**Mixing time.** $d(t) = \max_x\|\delta_xH_t-\pi\|_{TV}$; $t_{\rm mix}(\varepsilon) = \min\{t: d(t)\le\varepsilon\}$.
+
+**χ² decay.** $\operatorname{Var}_\pi(H_th)\le e^{-2\lambda t}\operatorname{Var}_\pi(h)$; $\frac d{dt}\operatorname{Var}_\pi(h_t) = -2\mathcal E(h_t,h_t)$.
+
+**Mixing from the gap.** $\frac1\lambda\log\frac1{2\varepsilon}\le t_{\rm mix}(\varepsilon)\le\frac1\lambda\big(\frac12\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon}\big)$.
+
+**Entropy.** $\frac d{dt}\operatorname{Ent}_\pi(h_t) = -\mathcal E(h_t,\log h_t)$. MLSI $\rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)$ $\Rightarrow$ $D(\mu_t\Vert\pi)\le e^{-\rho_0t}D(\mu_0\Vert\pi)$; $\;\rho_0\le2\lambda$.

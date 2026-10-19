@@ -1,0 +1,77 @@
+---
+title: "Exercise: A Tight Example for the Hard Side of Cheeger"
+subtitle: "Recommended exercise for Lecture 6"
+description: "Product of a tree and a path: the Fiedler sweep cut loses a square root."
+---
+
+Cheeger's inequality, $\tfrac12\lambda \le \Phi(G) \le \sqrt{2\lambda}$, comes with an algorithm: sort the vertices by the Fiedler vector $f$ and return the best threshold set $S_t=\{f>t\}$. This set satisfies $\Phi(S_t)\le\sqrt{2\lambda}\le 2\sqrt{\Phi(G)}$. In this exercise you will build graphs where **the algorithm really does lose the square root**: every sweep cut of the Fiedler vector has conductance $\Omega(\sqrt{\Phi(G)})$ (up to a $\sqrt{\log n}$ factor, which you can remove numerically), although a cut of conductance $O(1/n)$ exists.
+
+**Conventions.** Self-loops are allowed. A loop at $i$ adds its weight to $d_i$ (so it counts in $\mathrm{vol}$) but is never cut and does not change $L = D - A$. If $G$ is $d$-regular (loops included), then $L_{rw} = L/d$, so $\lambda = \lambda_2(L)/d$. For $f\in\mathbb R^V$, a *sweep set* of $f$ is a threshold set $S_t=\{i : f_i>t\}$ with $\emptyset\ne S_t\ne V$.
+
+---
+
+**(a) Why not the cycle?** The cycle satisfies $\Phi(C_n)=\Theta(\sqrt{\lambda})$, so the upper side of Cheeger is tight *as an inequality*. Show nevertheless that on $C_n$ ($n$ even) the sweep cut of **any** vector in the Fiedler eigenspace is an optimal cut. What goes wrong with the cycle as an example for the *algorithm*?
+
+**(b) Products.** For graphs $G, H$, the Cartesian product $G\square H$ has vertex set $V(G)\times V(H)$, with $(x,y)\sim(x',y)$ for $x\sim x'$ in $G$, and $(x,y)\sim(x,y')$ for $y\sim y'$ in $H$ (weights and loops inherited). Show that
+$$
+L_{G\square H} = L_G\otimes I + I\otimes L_H,
+$$
+and that if $L_G u=\mu u$, $L_H v=\nu v$, then $u\otimes v$ is an eigenvector of $L_{G\square H}$ with eigenvalue $\mu+\nu$. Why does this give *all* eigenvalues?
+
+**(c) The two factors.** Let $T_h$ be the complete binary tree of depth $h$ on $n=2^{h+1}-1$ vertices, with loops added so that every vertex has degree $3$ (a leaf gets two loops, the root one). Let $P_k$ be the path on $k$ vertices $1,\dots,k$, with one loop at each endpoint so every vertex has degree $2$. Write $\lambda_T=\lambda_2(L_{T_h})$ and $\lambda_P=\lambda_2(L_{P_k})$.
+
+1. Show $\lambda_T\le \dfrac{2}{n-1}$ (**test function**: $+1$ on one subtree of the root, $-1$ on the other, $0$ at the root).
+2. Show $\lambda_T\ge \dfrac{2}{h\,n}$ (**canonical paths**: route each pair along the unique tree path).
+3. Show $\lambda_P = 2-2\cos(\pi/k)\le \pi^2/k^2$, with eigenvector $g_y=\cos\!\big(\pi (y-\tfrac12)/k\big)$, which is strictly decreasing in $y$.
+
+**(d) The cheap cut.** Let $G=T_h\square P_k$. Show that $G$ is $5$-regular, and that
+$$
+\Phi(G)\ \le\ \frac{2}{5(n-1)}.
+$$
+(Cut the edge from the root to its left child in every copy of the tree.)
+
+**(e) The Fiedler vector points the wrong way.** Suppose $k>\pi\sqrt{hn/2}$. Show that $\lambda_P<\lambda_T$, and conclude that
+$$
+\lambda=\lambda_2(L_{rw}(G))=\frac{\lambda_P}{5},
+$$
+that this eigenvalue is **simple**, and that the Fiedler vector is $F(x,y)=g_y$, which does not depend on the tree coordinate $x$.
+
+**(f) The sweep loses a square root.** Show that every sweep set of $F$ has the form $S=V(T_h)\times\{1,\dots,j\}$, with $1\le j\le k-1$, and that
+$$
+\Phi(S)=\frac{1}{5\min\{j,\,k-j\}}\ \ge\ \frac{2}{5k}.
+$$
+Take $k=\lceil \pi\sqrt{hn/2}\,\rceil+1$ and conclude that, for large $h$, every sweep cut of the Fiedler vector satisfies
+$$
+\Phi(S)\ \ge\ \frac{c}{\sqrt h}\,\sqrt{\Phi(G)},\qquad c\approx 0.28 .
+$$
+So the Cheeger rounding cannot be improved by more than a $\sqrt{\log n}$ factor, *for this algorithm*.
+
+**(g) Numerical check, and removing the log.** Build $G$ explicitly (e.g. with `numpy.kron` using (b)), for $h=3,4,5,6$ and $k=\lceil 1.1\,\pi\sqrt n\,\rceil$. For each case:
+
+- compute $\lambda_2(L_{rw}(G))$ and verify it equals $\lambda_P/5$;
+- compute the Fiedler vector, sweep over its threshold sets, and report the best $\Phi(S)$;
+- compare with the cut of (d), and with $\lambda/2$ and $\sqrt{2\lambda}$.
+
+Plot $\Phi(S_{\text{best}})\big/\Phi(\text{cut of (d)})$ against $n$. Numerically $n\lambda_T\to1$. How does this explain why you needed $k\approx\pi\sqrt{hn/2}$ in (e), while $k\approx\pi\sqrt n$ is enough in practice, and what does it say about $\Phi(S)/\sqrt{\Phi(G)}$ with that choice?
+
+**(h) Discussion.** The eigenvalue $\lambda$ says *how much* of a bottleneck there is, but not *where* it is. In $G$ there are two bottlenecks at different scales: a cheap one along the tree ($\Phi\approx\lambda$, the tree is "large") and an expensive one along the path ($\Phi\approx\sqrt\lambda$, the path is "long"). Their eigenvalues almost coincide, and the eigenvector picks the wrong one. Explain how the same phenomenon appears on the hypercube $Q_d$, where $\lambda_2$ has multiplicity $d$, and a random vector in the eigenspace has sweep cuts of conductance $\approx 1/\sqrt d$ while $\Phi(Q_d)=1/d$. (No proof required.)
+
+---
+
+**Hint for (a).** The Fiedler eigenspace of $C_n$ is spanned by $\cos(2\pi i/n)$ and $\sin(2\pi i/n)$. A combination is $r\cos(2\pi i/n+\theta)$. What are its threshold sets? What is $\Phi$ of an arc with $\ell$ vertices?
+
+**Hint for (b).** Both $D$ and $A$ of the product are sums of Kronecker terms, and $(A\otimes B)(u\otimes v)=Au\otimes Bv$. Products of eigenbases form a basis of $\mathbb R^{V(G)\times V(H)}$.
+
+**Hint for (c).** For the lower bound, recall from Lecture 5 the canonical-path inequality: for $f\perp\mathbf 1$ and paths $\gamma_{ij}$,
+$$
+n\|f\|^2=\sum_{i<j}(f_i-f_j)^2\le\Big(\max_e\sum_{ij:\,e\in\gamma_{ij}}|\gamma_{ij}|\Big)\,f^\top Lf,
+$$
+by Cauchy–Schwarz along each path. A tree edge with $s$ vertices on one side lies on $s(n-s)\le (n^2-1)/4$ paths, each of length at most $2h$. For the path, check directly that $L_{P_k}g=(2-2\cos\frac\pi k)\,g$, using the boundary loops at the endpoints. Use $2-2\cos x\le x^2$.
+
+**Hint for (d).** Each vertex of $G$ has degree $3+2=5$. The set $S$ = (left subtree of the root) $\times\{1..k\}$ has $k(n-1)/2$ vertices and $k$ cut edges.
+
+**Hint for (e).** By (b), the eigenvalues of $L_G$ are $\mu_i+\nu_j$. The smallest nonzero ones are $\lambda_T$ (from $(x,y)\mapsto f_T(x)$), $\lambda_P$ (from $g_y$), and $2-2\cos(2\pi/k)$ (the next path mode). Compare them.
+
+**Hint for (f).** Because $g$ is strictly decreasing, $\{F>t\}=V(T_h)\times\{y\le j\}$. The cut consists of the $n$ edges between rows $j$ and $j+1$, and $\mathrm{vol}(S)=5jn$, $\mathrm{vol}(V)=5nk$. For the final inequality, divide $2/(5k)$ by $\sqrt{2/(5(n-1))}$ and use $k\le\pi\sqrt{hn/2}+2$.
+
+**Hint for (g).** Pairing sweep sets by sorting $F$ is fine, but to match the definition use only *threshold* sets: skip a position if $F$ is (numerically) tied with the previous one.

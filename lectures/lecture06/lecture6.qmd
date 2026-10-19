@@ -1,0 +1,781 @@
+---
+title: "Conductance and Cheeger's Inequality"
+subtitle: "Relaxation · ℓ₁ and ℓ₂² metrics · rounding by embedding"
+author: "CMSC 35410 · Lecture 6"
+format:
+  revealjs:
+    theme: [default, theme.scss]
+    slide-number: c/t
+    hash: true
+    center: false
+    transition: none
+    width: 1100
+    height: 720
+    margin: 0.06
+    scrollable: true
+    html-math-method: mathjax
+    fig-format: svg
+    fig-align: center
+jupyter: python3
+execute:
+  echo: false
+  warning: false
+---
+
+```{python}
+import numpy as np, math, matplotlib.pyplot as plt
+import scipy.sparse as sp
+from scipy.linalg import eigh, eigh_tridiagonal
+from matplotlib.patches import FancyBboxPatch, FancyArrowPatch, Ellipse
+plt.rcParams.update({"font.size": 13, "axes.spines.top": False, "axes.spines.right": False,
+                     "figure.facecolor": "#fbfaf7", "axes.facecolor": "#fbfaf7"})
+BLUE, ORANGE, GREY, GREEN = "#2563eb", "#ea580c", "#8a857b", "#15803d"
+
+# ---------- graphs (dense adjacency; small n) ----------
+def adj(n, edges):
+    A = np.zeros((n, n))
+    for i, j in edges: A[i, j] = A[j, i] = 1
+    return A
+def cycle_adj(n): return adj(n, [(i, (i + 1) % n) for i in range(n)])
+def complete_adj(n): return np.ones((n, n)) - np.eye(n)
+def tree_adj(h):
+    n = 2**(h+1) - 1; return adj(n, [(i, (i-1)//2) for i in range(1, n)])
+def barbell_adj(m):
+    E = [(i, j) for i in range(m) for j in range(i+1, m)] + \
+        [(m+i, m+j) for i in range(m) for j in range(i+1, m)] + [(m-1, m)]
+    return adj(2*m, E)
+
+def phi_exact(A):
+    """Brute-force edge conductance (n <= ~16). Returns (Phi, mask of minimizing S)."""
+    n = len(A); d = A.sum(1); M = np.arange(1, 2**(n-1))
+    X = ((M[:, None] >> np.arange(n)) & 1).astype(float)
+    cut = np.einsum('mi,ij,mj->m', X, A, 1 - X); vol = X @ d
+    ph = cut / np.minimum(vol, d.sum() - vol); k = ph.argmin()
+    return ph[k], X[k].astype(bool)
+
+def rw_fiedler(A):
+    """lambda_2 and Fiedler vector of L_rw = I - D^{-1}A (eigenvector f = D^{-1/2} v)."""
+    d = A.sum(1); S = A / np.sqrt(np.outer(d, d))
+    w, V = eigh(np.eye(len(A)) - S); return w[1], V[:, 1] / np.sqrt(d)
+
+def sweep_profile(A, f):
+    """Phi(S_t) for the prefix sets S_t of the ordering by f, t = 1..n-1."""
+    order = np.argsort(f); d = A.sum(1)[order]; B = A[np.ix_(order, order)]
+    inner = np.cumsum(np.cumsum(B, 0), 1).diagonal()
+    vol = np.cumsum(d); cut = vol - inner
+    t = np.arange(1, len(A)); den = np.minimum(vol[:-1], vol[-1] - vol[:-1])
+    return order, cut[:-1] / den
+
+def circle_pos(n, r=1.0, c=(0, 0), off=0.0):
+    t = 2*np.pi*np.arange(n)/n + off
+    return np.c_[c[0] + r*np.cos(t), c[1] + r*np.sin(t)]
+def draw(ax, A, pos, S=None, node=70):
+    n = len(A)
+    for i in range(n):
+        for j in range(i+1, n):
+            if A[i, j]:
+                cut = S is not None and (S[i] != S[j])
+                ax.plot(*zip(pos[i], pos[j]), color=ORANGE if cut else GREY,
+                        lw=2.6 if cut else 0.9, zorder=1)
+    col = [BLUE if (S is not None and S[i]) else "#c9c5bb" for i in range(n)]
+    ax.scatter(pos[:, 0], pos[:, 1], s=node, c=col, zorder=2, edgecolor="#1c1b19", linewidth=0.6)
+    ax.set_aspect("equal"); ax.axis("off")
+
+def box(ax, xy, w, h, text, fc="#eef2fb", ec=BLUE, fs=12):
+    ax.add_patch(FancyBboxPatch(xy, w, h, boxstyle="round,pad=0.02,rounding_size=0.04", fc=fc, ec=ec, lw=1.6))
+    ax.text(xy[0] + w/2, xy[1] + h/2, text, ha="center", va="center", fontsize=fs)
+def arrow(ax, p, q, label=None, fs=11):
+    ax.add_patch(FancyArrowPatch(p, q, arrowstyle="-|>", mutation_scale=16, lw=1.6, color="#3a3833"))
+    if label: ax.text((p[0]+q[0])/2, (p[1]+q[1])/2 + 0.07, label, ha="center", va="bottom", fontsize=fs, color=ORANGE)
+```
+
+# §0 Where we are {background-color="#1c1b19"}
+
+## Recap: Lectures 2–5 {.smaller}
+
+$G = (V,E,w)$ undirected, connected; $d_i = \sum_j w_{ij}$, $\mathrm{vol}(S) = \sum_{i\in S} d_i$, $\pi = d/\mathrm{vol}(V)$. Random-walk Laplacian $L_{rw} = I - D^{-1}A$, spectral gap $\lambda := \lambda_2(L_{rw})$.
+
+::: box
+**Poincaré.** $\;\lambda\,\mathrm{Var}_\pi(f)\le\mathcal E(f,f)$, i.e. $\;\lambda = \min_{f\ \text{nonconstant}} \dfrac{\sum_{ij\in E}w_{ij}(f_i-f_j)^2}{\sum_i d_i (f_i-\bar f)^2}$.
+:::
+
+. . .
+
+::: box
+**Two certificates for the gap (Lecture 5).** *Upper bound on $\lambda$:* exhibit a **test function** $f$. *Lower bound on $\lambda$:* route flow along **canonical paths**, $\lambda_2(L)\ge 2n/\kappa$.
+:::
+
+. . .
+
+::: warn
+**Open question from Lecture 5.** The binary tree has a *bottleneck at the root* and small $\lambda$. Is a small gap *always* caused by a bottleneck? When do test functions and paths meet?
+:::
+
+::: notes
+~3 min. Quick recap only. The point is to restate the open question that today answers: the gap is small iff there is a sparse cut (up to a square).
+:::
+
+## Today
+
+**Plan.** Conductance is a combinatorial optimization problem. Its **relaxation** is $\lambda$. Cheeger's inequality says the relaxation can be **rounded**, and the rounding is a **metric embedding** ($\ell_2^2\to\ell_1$) followed by a sweep.
+
+1. **Conductance** and a reformulation as an $\ell_1$ problem over functions.
+2. **$\lambda$ as the $\ell_2^2$ relaxation.** The easy direction. Statement of Cheeger. How tight is it?
+3. **Geometry:** cut metrics, $\ell_1$, and rounding in $\ell_1$.
+4. **Proof of Cheeger** in three lemmas. Demos: sweep cut, and what it costs to compute the eigenvector.
+5. **Beyond:** Leighton–Rao and the landscape of relaxations. (Optional: Cheeger's original manifold version.)
+
+# §1 · Conductance {background-color="#1c1b19"}
+
+## Bottlenecks, quantified {.smaller}
+
+Which of these graphs feel well connected? We want **one number** that says so.
+
+```{python}
+#| fig-width: 11
+#| fig-height: 3.5
+graphs = [("Complete $K_8$", complete_adj(8), circle_pos(8)),
+          ("Cycle $C_{12}$", cycle_adj(12), circle_pos(12)),
+          ("Barbell: two $K_5$ + 1 edge", barbell_adj(5),
+           np.r_[circle_pos(5, .8, (-1.3, 0), np.pi*0.0), circle_pos(5, .8, (1.3, 0), np.pi)]),
+          ("Binary tree, depth 3", tree_adj(3),
+           np.array([[ (i - (2**int(math.log2(i+1)) - 1) + .5) / 2**int(math.log2(i+1)) * 4 - 2,
+                       -int(math.log2(i+1)) ] for i in range(15)]))]
+fig, axes = plt.subplots(1, 4, figsize=(11, 3.5))
+for ax, (name, A, pos) in zip(axes, graphs):
+    ph, S = phi_exact(A)
+    draw(ax, A, pos, S, node=45)
+    ax.set_title(f"{name}\n$\\Phi = {ph:.3f}$", fontsize=12)
+plt.tight_layout(); plt.show()
+```
+
+*Blue* = the set $S$ achieving the minimum, *orange* = the edges it cuts. Small $\Phi$ $\Leftrightarrow$ a sparse cut separating two large pieces.
+
+## Conductance {.smaller}
+
+For $S\subset V$, the **conductance** of $S$ and of the graph:
+
+$$
+\Phi(S) = \frac{w(S,\bar S)}{\min\{\mathrm{vol}(S),\mathrm{vol}(\bar S)\}},\qquad
+\Phi(G) = \min_{\emptyset\ne S\subsetneq V}\Phi(S),\qquad w(S,\bar S)=\sum_{i\in S,\,j\notin S}w_{ij}.
+$$
+
+. . .
+
+::: box
+**Random-walk reading.** Start the stationary walk, conditioned on being in $S$ (so $i\in S$ w.p. $\propto d_i$). Then $\;\Pr[\text{leave } S\text{ in one step}] = \dfrac{w(S,\bar S)}{\mathrm{vol}(S)}$.
+
+So $\Phi(S)$ is the **escape probability** of the set (for the smaller side), and $\Phi(G)$ is the worst bottleneck. In the notation of Lecture 2: $Q(S,\bar S)/\min\{\pi(S),\pi(\bar S)\}$ with $Q = w/\mathrm{vol}(V)$.
+:::
+
+. . .
+
+$\Phi(G)$ small $\;\Rightarrow\;$ a set the walk rarely leaves $\;\Rightarrow\;$ slow mixing. **Is the converse true?**
+
+::: notes
+~3 min. Use the barbell: from the stationary distribution restricted to one clique, the escape probability is 1/21. Mixing between the two cliques takes ~21 steps at least.
+:::
+
+## Examples {.smaller}
+
+| Graph ($n$ vertices) | $\Phi(G)$ | $\lambda = \lambda_2(L_{rw})$ |
+|---|---|---|
+| Complete $K_n$ | $\lceil n/2\rceil/(n-1)\approx\tfrac12$ | $\dfrac{n}{n-1}$ |
+| Cycle $C_n$ ($n$ even) | $\dfrac{2}{n}$ | $1-\cos\dfrac{2\pi}{n}\approx\dfrac{2\pi^2}{n^2}$ |
+| Hypercube $Q_d$ ($n=2^d$) | $\dfrac1d=\dfrac1{\log_2 n}$ | $\dfrac2d$ |
+| Binary tree ($n=2^{h+1}-1$) | $\dfrac{1}{n-2}$ (cut one root edge) | $\Theta(1/n)$ (numerically $\approx 0.5/n$) |
+| Barbell (two $K_m$ + 1 edge) | $\dfrac{1}{m(m-1)+1}$ | $\approx\Phi$ |
+
+. . .
+
+::: warn
+**Look at the cycle.** $\Phi\approx 2/n$ but $\lambda\approx 2\pi^2/n^2$. The gap is about the **square** of the conductance. Hold on to this: it is the square root in Cheeger's inequality.
+:::
+
+::: notes
+~3 min. Hypercube: dimension cut has n/2 edges, volume n d/2, so Φ = 1/d (this is the minimum, by the edge-isoperimetric inequality on the cube). Eigenvalues of L_rw on Q_d are 2k/d, k = 0..d, so λ = 2/d. The tree row: removing one root edge splits off a subtree of volume n-2, one edge cut.
+:::
+
+## Conductance as an $\ell_1$ problem over functions {.smaller}
+
+Define, for $f\in\mathbb R^V$: $\;\|\nabla f\|_1 = \sum_{ij\in E}w_{ij}|f_i-f_j|$ and the **$\ell_1$ variance** $\;\mathrm{Var}_1(f) = \min_{c}\sum_i d_i|f_i-c|$ (deviation from the $\pi$-median).
+
+::: box
+**Claim.** $\;\displaystyle\Phi(G) = \min_{f\ \text{nonconstant}}\frac{\|\nabla f\|_1}{\mathrm{Var}_1(f)}$, and the minimum is attained by a cut vector $f=\mathbf 1_S$.
+:::
+
+. . .
+
+**($\le$)** For $f=\mathbf 1_S$: $\|\nabla f\|_1 = w(S,\bar S)$ and $\mathrm{Var}_1(f) = \min_{c\in[0,1]}\big(\mathrm{vol}(S)(1-c)+\mathrm{vol}(\bar S)c\big) = \min\{\mathrm{vol}(S),\mathrm{vol}(\bar S)\}$.
+
+. . .
+
+**($\ge$)** Let $S_t=\{f>t\}$. Layer-cake: $\;|f_i-f_j| = \int_{\mathbb R}\big|\mathbf 1_{S_t}(i)-\mathbf 1_{S_t}(j)\big|\,dt$, so $\|\nabla f\|_1=\int w(S_t,\bar S_t)\,dt$. With $c$ the median, $\mathrm{Var}_1(f) = \int\min\{\mathrm{vol}(S_t),\mathrm{vol}(\bar S_t)\}\,dt$. A ratio of integrals is at least the smallest ratio of integrands:
+$$\|\nabla f\|_1 = \int\Phi(S_t)\min\{\mathrm{vol}(S_t),\mathrm{vol}(\bar S_t)\}\,dt\ \ge\ \min_t\Phi(S_t)\cdot\mathrm{Var}_1(f).\ \square$$
+
+::: notes
+~4 min. Key message: this is an exact reformulation, nothing relaxed yet. The sweep sets S_t of ANY f are candidate cuts and one of them is at least as good as f. This is exactly the argument that will become Lemma 1. Why the min over t is over t with S_t nonempty and proper.
+For t below the median, vol(S_t) >= vol/2 and the min is vol(S_t-bar); for t above the median it is vol(S_t). That is why the median appears.
+:::
+
+## Symmetrized conductance $\bar\phi$, and swapping $\ell_1$ for $\ell_2^2$ {.smaller}
+
+**(a) Fix the denominator.** The median is awkward. Use the **pairwise** spread instead, the $\ell_1$ analogue of $\mathrm{Var}=\tfrac12\mathbb E(X-Y)^2$:
+$$\mathrm{Spr}_1(f) = \frac1{\mathrm{vol}(V)}\sum_{i<j}d_id_j|f_i-f_j|.$$
+On $\mathbf 1_S$ it equals $\mathrm{vol}(S)\mathrm{vol}(\bar S)/\mathrm{vol}(V)\in\big[\tfrac12,1\big]\cdot\min\{\mathrm{vol}(S),\mathrm{vol}(\bar S)\}$. The same layer-cake argument gives
+$$\bar\phi(G):=\min_f\frac{\|\nabla f\|_1}{\mathrm{Spr}_1(f)}=\min_S\bar\phi(S),\quad \bar\phi(S) = \frac{w(S,\bar S)\,\mathrm{vol}(V)}{\mathrm{vol}(S)\mathrm{vol}(\bar S)},\qquad \Phi\le\bar\phi\le 2\Phi.$$
+
+. . .
+
+**(b) Swap the norm.** Replace $|f_i-f_j|$ by $(f_i-f_j)^2$ in numerator **and** denominator. (Numerator too: the ratio must stay scale-invariant. The two agree on $\{0,1\}$-vectors.)
+
+| | $\ell_1$ | $\ell_2^2$ |
+|---|---|---|
+| numerator | $\sum_E w\,\lvert\Delta f\rvert$ | $\sum_E w\,(\Delta f)^2$ |
+| centered / pairwise denominator | $\mathrm{Var}_1$ (median) / $\mathrm{Spr}_1$ (differ by $\le2$) | $\mathrm{Var}_2$ (mean) $=\mathrm{Spr}_2$ (**identical**) |
+| minimum over $f$ | $\Phi$ / $\bar\phi$, attained at cuts | $\lambda$, attained at an eigenvector |
+| difficulty | NP-hard | linear algebra |
+
+::: notes
+~4 min. In l2^2 the identity Var_pi = (1/2) E (f_i - f_j)^2 means the centered and pairwise denominators coincide exactly; in l1 they do not (median vs mean absolute difference), and that gap is the factor 2 between Phi and phi-bar. phi-bar is the form in which "l1 -> l2^2" is a one-line change.
+:::
+
+## Computational status
+
+- Minimizing conductance (sparsest cut) is **NP-hard**.
+- Best known polynomial-time approximation: $O(\sqrt{\log n})$ (Arora–Rao–Vazirani, 2004). Earlier: $O(\log n)$ (Leighton–Rao, 1988).
+- Under the Unique Games Conjecture, **no constant factor** is possible (Chawla–Krauthgamer–Kumar–Rabani–Sivakumar).
+
+. . .
+
+::: box
+**So relax.** Find a *fractional* solution that is easy to compute and gives a *lower bound*, then **round** it to a real cut and bound the loss.
+:::
+
+# §2 · $\lambda$ as a relaxation {background-color="#1c1b19"}
+
+## The relaxation: from cut vectors to all of $\mathbb R^V$ {.smaller}
+
+On a cut vector the $\ell_1$ and $\ell_2^2$ quantities coincide, since $|a|=a^2$ for $a\in\{0,\pm1\}$:
+$$\mathbf 1_S^\top L\,\mathbf 1_S = w(S,\bar S),\qquad \mathrm{Spr}_2(\mathbf 1_S)=\frac{\mathrm{vol}(S)\mathrm{vol}(\bar S)}{\mathrm{vol}(V)}.$$
+
+. . .
+
+Hence
+$$\bar\phi(G)=\min_{x\in\{0,1\}^V\setminus\{\mathbf 0,\mathbf 1\}}\ \frac{\sum_{E}w_{ij}(x_i-x_j)^2}{\mathrm{Var}_2(x)}\qquad\longrightarrow\qquad \min_{x\in\mathbb R^V\ \text{nonconstant}}\ \frac{\sum_{E}w_{ij}(x_i-x_j)^2}{\mathrm{Var}_2(x)}=\lambda .$$
+
+::: box
+**Drop integrality and you get the spectral gap.** Same objective, larger feasible set. The new problem is an eigenvalue problem (Poincaré, Lecture 2), solved exactly by the Fiedler vector.
+:::
+
+## The easy direction {.smaller}
+
+::: box
+**Theorem (easy side).** $\;\lambda\le\bar\phi(G)\le 2\,\Phi(G)$, i.e. $\;\tfrac12\lambda\le\Phi(G)$.
+:::
+
+*Proof.* Cut vectors are feasible for the relaxation, so the relaxed minimum is smaller: $\lambda\le\bar\phi(S)$ for every $S$. Then $\bar\phi\le2\Phi$. $\square$
+
+. . .
+
+**Reading.** If $G$ has a sparse cut $S$, then $x=\mathbf 1_S$ is a **test function** with small Rayleigh quotient, so $\lambda$ is small and the walk mixes slowly: *bottlenecks cause small gaps*. (This is the Lecture 5 test-function argument, with a cut as the test function.)
+
+. . .
+
+Contrapositive: **if $\lambda$ is large, every cut is large.** The gap *certifies* expansion, in polynomial time.
+
+## Template: relaxation, then rounding
+
+```{python}
+#| fig-width: 11
+#| fig-height: 2.9
+fig, ax = plt.subplots(figsize=(11, 2.9)); ax.set_xlim(0, 11); ax.set_ylim(0, 2.9); ax.axis("off")
+box(ax, (0.1, 1.0), 2.3, 1.1, "hard problem\n$\\Phi(G)=\\min_{S}\\Phi(S)$", fc="#fdf1e8", ec=ORANGE)
+box(ax, (3.2, 1.0), 2.3, 1.1, "relaxation\n$\\lambda=\\min_{x\\in\\mathbb{R}^V}\\cdots$\nvalue $\\leq$ OPT")
+box(ax, (6.3, 1.0), 2.0, 1.1, "fractional\nsolution $x$\n(Fiedler vector)")
+box(ax, (9.1, 1.0), 1.8, 1.1, "real cut $S$\n$\\Phi(S)\\leq$ ?", fc="#fdf1e8", ec=ORANGE)
+arrow(ax, (2.45, 1.55), (3.15, 1.55), "relax")
+arrow(ax, (5.55, 1.55), (6.25, 1.55), "solve")
+arrow(ax, (8.35, 1.55), (9.05, 1.55), "round")
+ax.annotate("", xy=(10.0, 0.95), xytext=(1.25, 0.95), arrowprops=dict(arrowstyle="<->", color=GREEN, lw=1.5))
+ax.text(5.6, 0.45, "approximation guarantee = (rounded value) / (relaxed value)", ha="center", color=GREEN, fontsize=12)
+plt.show()
+```
+
+The same pattern runs through this course: **Leighton–Rao, ARV, $k$-way Cheeger, SDPs**. What changes is the relaxation and the rounding.
+
+## Cheeger's inequality {.smaller}
+
+::: box
+**Theorem (Cheeger; Alon–Milman, Dodziuk).** For every connected weighted graph,
+$$\tfrac12\,\lambda\ \le\ \Phi(G)\ \le\ \sqrt{2\lambda}.$$
+Moreover, the sweep cuts of the Fiedler vector contain a set $S$ with $\Phi(S)\le\sqrt{2\lambda}$.
+:::
+
+- Left: the easy side (relaxation). Done.
+- Right: the **rounding**. Given a vector $x\in\mathbb R^V$, produce a set $S$.
+
+. . .
+
+*Equivalently:* $\;\lambda\ \ge\ \Phi^2/2$. In the notation of the continuous version: $\lambda\ge h^2/4$.
+
+Before the proof: **is this sandwich tight? Can the square root be avoided?**
+
+## Both sides of Cheeger are tight
+
+```{python}
+#| fig-width: 11
+#| fig-height: 4.6
+ns = np.array([6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256])
+lam_c = 1 - np.cos(2*np.pi/ns); phi_c = 2/ns
+ds = np.arange(2, 15); lam_q = 2/ds; phi_q = 1/ds
+x = np.logspace(-4.3, 0, 200)
+fig, ax = plt.subplots(figsize=(11, 4.6))
+ax.fill_between(x, x/2, np.sqrt(2*x), color="#e8e4da", label="allowed region: $\\lambda/2\\leq\\Phi\\leq\\sqrt{2\\lambda}$")
+ax.plot(x, x/2, color=GREY, lw=1.2); ax.plot(x, np.sqrt(2*x), color=GREY, lw=1.2)
+ax.loglog(lam_c, phi_c, "o", color=ORANGE, ms=7, label="cycles $C_n$: $\\Phi\\approx\\sqrt{\\lambda}$ (upper side tight)")
+ax.loglog(lam_q, phi_q, "s", color=BLUE, ms=7, label="hypercubes $Q_d$: $\\Phi=\\lambda/2$ (lower side tight)")
+ax.set_xlim(5e-5, 1.2); ax.set_ylim(2e-3, 2)
+ax.set_xlabel("$\\lambda=\\lambda_2(L_{rw})$"); ax.set_ylabel("$\\Phi(G)$"); ax.legend(loc="upper left", fontsize=11, frameon=False)
+plt.tight_layout(); plt.show()
+```
+
+::: notes
+~3 min. Cycle: Phi = 2/n, lambda ~ 2pi^2/n^2, so Phi/sqrt(lambda) ~ 2/(sqrt(2) pi) = 0.45: upper side tight up to a constant. Hypercube: Phi = 1/d, lambda = 2/d: lower side tight exactly. Neither side can be improved in terms of lambda alone. So any rounding of the spectral relaxation must lose a square root *somewhere*: watch for where in Lemma 2 (slide "Lemma 2"). It is a property of the relaxation, not of the proof.
+:::
+
+# §3 · Geometry: metrics, cut metrics, $\ell_1$ {background-color="#1c1b19"}
+
+## Metrics and "volume" {.smaller}
+
+A **semimetric** is a symmetric $d:V\times V\to\mathbb R_{\ge0}$ with $d_{ii}=0$. A **metric** also satisfies the triangle inequality $d_{ij}\le d_{ik}+d_{kj}$. For a semimetric $d$ define
+$$d(G)=\sum_{ij\in E}w_{ij}d_{ij},\qquad d(K_G)=\sum_{i<j}\frac{d_id_j}{\mathrm{vol}(V)}\,d_{ij},$$
+the "total length" of $d$ on $G$ and on the complete graph $K_G$ with weights $d_id_j/\mathrm{vol}(V)$.
+
+. . .
+
+**Cut metric** of $S$: $\;\delta^{S}_{ij}=\mathbf 1[\,i,j\text{ on different sides of }S\,]$. Then
+$$\delta^S(G)=w(S,\bar S),\qquad \delta^S(K_G)=\frac{\mathrm{vol}(S)\mathrm{vol}(\bar S)}{\mathrm{vol}(V)}\qquad\Longrightarrow\qquad \bar\phi(S)=\frac{\delta^S(G)}{\delta^S(K_G)}.$$
+
+. . .
+
+::: box
+**Metric form of the objective.** $\;\bar\phi(G)=\min_S\dfrac{\delta^S(G)}{\delta^S(K_G)}$. Moreover, a function $f$ gives the *line metric* $d_{ij}=|f_i-f_j|$ with $d(G)=\|\nabla f\|_1$ and $d(K_G)=\mathrm{Spr}_1(f)$: slide 7 was already a statement about metrics.
+:::
+
+## The cut cone is $\ell_1$
+
+A metric $d$ is **$\ell_1$-embeddable** if $d_{ij}=\|v_i-v_j\|_1$ for some $v_i\in\mathbb R^k$. The **cut cone** is $\mathrm{CUT}_V=\{\sum_S\alpha_S\,\delta^S:\ \alpha_S\ge0\}$.
+
+::: box
+**Theorem.** A semimetric on $V$ is $\ell_1$-embeddable $\iff$ it lies in the cut cone.
+:::
+
+```{python}
+#| fig-width: 11
+#| fig-height: 2.4
+xs = np.array([0.0, 0.7, 1.6, 1.8, 3.2]); labs = [1, 2, 3, 4, 5]
+fig, ax = plt.subplots(figsize=(11, 2.4)); ax.set_xlim(-0.4, 3.8); ax.set_ylim(-0.9, 1.3); ax.axis("off")
+ax.plot([-0.3, 3.7], [0, 0], color=GREY, lw=1.5)
+for x_, l in zip(xs, labs):
+    ax.scatter([x_], [0], s=140, color=BLUE, zorder=3); ax.text(x_, -0.38, f"$x_{l}$", ha="center", fontsize=13)
+for t in range(4):
+    m = (xs[t] + xs[t+1]) / 2
+    ax.plot([m, m], [-0.2, 0.75], "--", color=ORANGE, lw=1.4)
+    ax.text(m, 0.85, f"$S_{t+1}=\\{{1..{t+1}\\}}$", ha="center", fontsize=11, color=ORANGE)
+    ax.text(m, -0.75 if t != 2 else -0.75, f"$\\alpha_{t+1}={xs[t+1]-xs[t]:.1f}$", ha="center", fontsize=11, color=GREEN)
+plt.show()
+```
+
+$$|x_i-x_j|=\sum_{t}\alpha_t\,\delta^{S_t}_{ij},\qquad S_t=\{1,\dots,t\},\ \ \alpha_t=x_{t+1}-x_t\quad(\text{points sorted: }x_1\le\dots\le x_n).$$
+
+## Proof: cut cone $=\ell_1$ {.smaller}
+
+**($\Leftarrow$)** A cut metric is $\ell_1$-embeddable: $\delta^S_{ij}=|\mathbf 1_S(i)-\mathbf 1_S(j)|$. A nonnegative combination is embedded by *concatenating* the coordinates, scaling the $S$-th one by $\alpha_S$: $\|\cdot\|_1$ adds over coordinates.
+
+. . .
+
+**($\Rightarrow$)** Suppose $d_{ij}=\sum_{k}|v_i^{(k)}-v_j^{(k)}|$. Both sides are additive over coordinates, so it suffices to treat one coordinate $x=v^{(k)}\in\mathbb R^V$. Order the vertices so that $x_{1}\le\dots\le x_{n}$ and put $S_t=\{1,\dots,t\}$. For $i<j$,
+$$|x_i-x_j| = x_j-x_i=\sum_{t=i}^{j-1}(x_{t+1}-x_t)=\sum_{t=1}^{n-1}(x_{t+1}-x_t)\,\delta^{S_t}_{ij},$$
+because $\delta^{S_t}_{ij}=1$ exactly when $i\le t<j$. So $|x_i-x_j|$ is a nonnegative combination of cut metrics (the same layer-cake as slide 6). Summing over coordinates, $d\in\mathrm{CUT}_V$. $\square$
+
+. . .
+
+::: box
+**Why $\ell_1$ is the right geometry for rounding.** A point set on a line *is* a family of nested cuts $S_1\subset S_2\subset\cdots$. To round an $\ell_1$ solution, look at its cuts.
+:::
+
+## Lemma 1: rounding an $\ell_1$ solution {.smaller}
+
+For $x\in\mathbb R^V_{\ge0}$ let $\;R_1(x)=\dfrac{\sum_{ij\in E}w_{ij}|x_i-x_j|}{\sum_id_i|x_i|}$ and $S_t=\{i:x_i>t\}$.
+
+::: box
+**Lemma 1 (sweep).** There is a $t\ge0$ with $S_t\ne\emptyset$ and $\;\dfrac{w(S_t,\bar S_t)}{\mathrm{vol}(S_t)}\ \le\ R_1(x)$.
+:::
+
+*Proof.* Layer-cake identities, valid because $x\ge0$:
+$$\sum_{ij\in E}w_{ij}|x_i-x_j|=\int_0^\infty w(S_t,\bar S_t)\,dt,\qquad \sum_id_ix_i=\int_0^\infty\mathrm{vol}(S_t)\,dt.$$
+Let $t^*$ minimize $w(S_t,\bar S_t)/\mathrm{vol}(S_t)$ over $t$ with $S_t\neq\emptyset$. Then
+$$\int_0^\infty w(S_t,\bar S_t)\,dt=\int_0^\infty\frac{w(S_t,\bar S_t)}{\mathrm{vol}(S_t)}\mathrm{vol}(S_t)\,dt\ \ge\ \frac{w(S_{t^*},\bar S_{t^*})}{\mathrm{vol}(S_{t^*})}\int_0^\infty\mathrm{vol}(S_t)\,dt.\ \square$$
+
+. . .
+
+**Remark.** The same "ratio of sums $\ge$ smallest ratio" argument shows that *any* $\ell_1$ metric $d$ has a cut with $\bar\phi(S)\le d(G)/d(K_G)$. **Rounding an $\ell_1$ solution is free**: no loss at all.
+
+::: notes
+~3 min. This is the engine of the lecture. Everything else is about getting from the eigenvector (an l2^2 object) to an l1 object at small cost.
+:::
+
+## $\lambda$ as an $\ell_2^2$ relaxation {.smaller}
+
+A semimetric $g$ is **$\ell_2^2$-embeddable** if $g_{ij}=\|v_i-v_j\|_2^2$ for some $v_i\in\mathbb R^k$.
+
+::: box
+**Lemma.** $\;\lambda=\min\Big\{\dfrac{g(G)}{g(K_G)}:\ g\ \ell_2^2\text{-embeddable, }g\ne0\Big\}.$ Cut metrics are $\ell_2^2$-embeddable ($\delta^S_{ij}=(\mathbf 1_S(i)-\mathbf 1_S(j))^2$), so this is a relaxation of $\bar\phi$.
+:::
+
+*Proof.* ($\le$) One-dimensional embeddings $v_i=x_i\in\mathbb R$ give $g(G)/g(K_G)=\sum_Ew(\Delta x)^2/\mathrm{Var}_2(x)$, minimized at $\lambda$. ($\ge$) For $v_i\in\mathbb R^k$, split into coordinates and use the **mediant inequality** $\dfrac{\sum_ua_u}{\sum_ub_u}\ge\min_u\dfrac{a_u}{b_u}$:
+$$\frac{g(G)}{g(K_G)}=\frac{\sum_{u=1}^k\sum_Ew_{ij}(v_i^{u}-v_j^{u})^2}{\sum_{u=1}^k\mathrm{Var}_2(v^u)}\ \ge\ \min_u\frac{\sum_Ew_{ij}(v_i^{u}-v_j^{u})^2}{\mathrm{Var}_2(v^u)}\ \ge\ \lambda.\ \square$$
+
+. . .
+
+**Remarks.** (i) Higher-dimensional embeddings add nothing: the relaxation is the same as for scalars. (ii) An $\ell_2^2$ semimetric need *not* satisfy the triangle inequality (three collinear points: $1^2+1^2<2^2$ fails). It is not a metric.
+
+## Nested relaxations of the cut cone
+
+```{python}
+#| fig-width: 11
+#| fig-height: 4.6
+fig, ax = plt.subplots(figsize=(11, 4.6)); ax.set_xlim(0, 11); ax.set_ylim(0, 4.6); ax.axis("off")
+ax.add_patch(Ellipse((3.9, 2.3), 5.6, 4.0, fc="#eef2fb", ec=BLUE, lw=1.8))
+ax.add_patch(Ellipse((7.1, 2.3), 5.6, 4.0, fc="#fdf1e8", ec=ORANGE, lw=1.8, alpha=0.9))
+ax.add_patch(Ellipse((5.5, 2.3), 1.7, 2.4, fc="#e6f2ea", ec=GREEN, lw=1.5, alpha=0.9))
+ax.add_patch(Ellipse((5.5, 2.75), 1.0, 1.0, fc="white", ec="#1c1b19", lw=1.8))
+ax.text(5.5, 2.75, "cut cone\n$=\\ell_1$", ha="center", va="center", fontsize=11)
+ax.text(2.7, 3.7, "metrics\n(Leighton–Rao)", ha="center", fontsize=12, color=BLUE)
+ax.text(8.3, 3.7, "$\\ell_2^2$-embeddable\n(spectral, $\\lambda$)", ha="center", fontsize=12, color=ORANGE)
+ax.text(5.5, 1.5, "metrics that\nare $\\ell_2^2$ (ARV)", ha="center", va="center", fontsize=9.5, color=GREEN)
+ax.text(5.5, 0.35, "rounding $=$ embedding into $\\ell_1$ with controlled loss", ha="center", fontsize=13, color="#1c1b19")
+plt.show()
+```
+
+Both relaxations **enlarge** the cut cone: optimizing over a bigger set gives a **smaller** value (a lower bound). The price is paid at rounding, when we must come back down to $\ell_1$.
+
+::: notes
+~2 min. This is where "metric embeddings as a rounding technique" is introduced. Leighton–Rao: drop l1-ness, keep the triangle inequality (LP). Spectral: drop the triangle inequality, keep l2^2 (eigenproblem). ARV: keep both (SDP). Rounding = embed the relaxed solution into l1, with the loss measured on the objective.
+:::
+
+# §4 · Proof of Cheeger's inequality {background-color="#1c1b19"}
+
+## Plan: three lemmas {.smaller}
+
+Let $R_2(x)=\dfrac{\sum_Ew_{ij}(x_i-x_j)^2}{\sum_id_ix_i^2}$ and $R_1(x)=\dfrac{\sum_Ew_{ij}|x_i-x_j|}{\sum_id_i|x_i|}$ (uncentered). Let $f$ be the Fiedler vector: $f\perp_d\mathbf 1$ and $R_2(f)=\lambda$.
+
+```{python}
+#| fig-width: 11
+#| fig-height: 2.7
+fig, ax = plt.subplots(figsize=(11, 2.7)); ax.set_xlim(0, 11); ax.set_ylim(0, 2.7); ax.axis("off")
+box(ax, (0.05, 0.9), 2.0, 1.2, "Fiedler vector $f$\n$f\\perp_d\\mathbf{1}$\n$R_2(f)=\\lambda$", fs=11)
+box(ax, (3.15, 0.9), 2.0, 1.2, "$f'\\geq0$\n$\\pi(\\mathrm{supp}f')\\leq\\frac{1}{2}$\n$R_2(f')\\leq\\lambda$", fs=11)
+box(ax, (6.25, 0.9), 1.9, 1.2, "$g=f'^{\\,2}$\n$R_1(g)\\leq\\sqrt{2\\lambda}$", fs=11)
+box(ax, (9.25, 0.9), 1.7, 1.2, "set $S_t$\n$\\Phi(S_t)\\leq\\sqrt{2\\lambda}$", fc="#e6f2ea", ec=GREEN, fs=11)
+arrow(ax, (2.1, 1.5), (3.1, 1.5), "Lemma 3", fs=10); arrow(ax, (5.2, 1.5), (6.2, 1.5), "Lemma 2", fs=10); arrow(ax, (8.2, 1.5), (9.2, 1.5), "Lemma 1", fs=10)
+ax.text(4.15, 0.35, "shift by the median,\nkeep one half", ha="center", fontsize=10.5, color="#6b6861")
+ax.text(7.2, 0.35, "square: $\\ell_2^2\\to\\ell_1$\n(the square root is lost here)", ha="center", fontsize=10.5, color="#6b6861")
+ax.text(10.1, 0.35, "sweep", ha="center", fontsize=10.5, color="#6b6861")
+plt.show()
+```
+
+Lemma 1 (slide 16) is already proved. Now Lemmas 2 and 3.
+
+## Lemma 2: $\ell_2^2\to\ell_1$ by squaring {.smaller}
+
+::: box
+**Lemma 2.** For $x\ge0$: $\;R_1(x^2)\le\sqrt{2R_2(x)}$, where $(x^2)_i=x_i^2$.
+:::
+
+*Proof.* Since $x\ge0$, $|x_i^2-x_j^2|=|x_i-x_j|(x_i+x_j)$. By Cauchy–Schwarz and $(a+b)^2\le2(a^2+b^2)$:
+$$\sum_Ew_{ij}|x_i^2-x_j^2|\le\sqrt{\sum_Ew_{ij}(x_i-x_j)^2}\ \sqrt{\sum_Ew_{ij}(x_i+x_j)^2}\le\sqrt{R_2(x)\textstyle\sum_id_ix_i^2}\ \sqrt{2\sum_id_ix_i^2}=\sqrt{2R_2(x)}\sum_id_ix_i^2 .$$
+(We used $\sum_Ew_{ij}(x_i^2+x_j^2)=\sum_id_ix_i^2$.) Divide by $\sum_id_ix_i^2=\sum_id_i|x_i^2|$. $\square$
+
+. . .
+
+::: warn
+**This is where the square root is lost.** The map $x\mapsto x^2$ turns an $\ell_2^2$ object into an $\ell_1$ one, but it is **not a distortion-bounded embedding of all pairs**. It preserves the *ratio* of the two sums only up to a square root, via Cauchy–Schwarz. On the cycle (slide 13) the eigenvector is a cosine and Cauchy–Schwarz is nearly tight: that is the example showing the loss is real.
+:::
+
+::: notes
+~4 min. Contrast with Bourgain's theorem (slide on Leighton–Rao): that gives a *true* embedding of the whole metric into l1 with O(log n) distortion on every pair. Here the loss is only on the objective, which is much weaker, and that is why the spectral rounding is dimension-free (no log n) but pays a square root in the *value*.
+:::
+
+## Lemma 3: a nonnegative vector with half the support {.smaller}
+
+::: box
+**Lemma 3.** If $f\perp_d\mathbf 1$, there is $f'\ge0$ with $\pi(\{f'>0\})\le\tfrac12$ and $R_2(f')\le R_2(f)$.
+:::
+
+*Proof.* Let $m$ be a $\pi$-median of $f$ and $\bar f=f-m\mathbf 1$, so $\pi(\bar f>0)\le\frac12$ and $\pi(\bar f<0)\le\frac12$. The numerator is unchanged. Since $\sum_id_if_i=0$, $\;\sum_id_i\bar f_i^2=\sum_id_if_i^2+m^2\mathrm{vol}(V)\ge\sum_id_if_i^2$, so $R_2(\bar f)\le R_2(f)$.
+
+. . .
+
+Write $\bar f=a-b$ with $a=\max\{\bar f,0\}$, $b=\max\{-\bar f,0\}$: **disjointly supported** and $\ge0$. Then for each edge $ij$, with $x=a_i-a_j$, $y=b_i-b_j$: $\;xy=-(a_ib_j+a_jb_i)\le0$, so
+$$(x-y)^2\ \ge\ x^2+y^2\ \Longrightarrow\ N(a-b)\ge N(a)+N(b),\qquad D(a-b)=D(a)+D(b).$$
+Hence $\;R_2(\bar f)\ge\dfrac{N(a)+N(b)}{D(a)+D(b)}\ge\min\{R_2(a),R_2(b)\}$. Take $f'$ to be the better of $a,b$. $\square$
+
+::: notes
+~4 min. Note: N is the numerator sum_E w (x_i-x_j)^2, D the denominator sum d_i x_i^2. On a graph the numerators satisfy an inequality (cross terms across the boundary of the supports have a favorable sign), not an equality; in the continuous setting it becomes an equality because gradients of disjointly supported functions are orthogonal pointwise.
+Why we need this: it guarantees vol(S_t) <= vol(V)/2 for all sweep sets of g = f'^2, so the minimum in Lemma 1 is the conductance Phi(S_t) and not the lopsided ratio w/vol(S).
+:::
+
+## Putting it together {.smaller}
+
+::: box
+**Proof of Cheeger.** Fiedler $f$ $\xrightarrow{\text{L3}}$ $f'$ $\xrightarrow{\text{L2}}$ $g=f'^2$ $\xrightarrow{\text{L1}}$ $S_t$:
+$$\Phi(S_t)=\frac{w(S_t,\bar S_t)}{\mathrm{vol}(S_t)}\ \le\ R_1(g)\ \le\ \sqrt{2R_2(f')}\ \le\ \sqrt{2\lambda}.$$
+The first equality holds because $S_t\subseteq\mathrm{supp}\,f'$ has $\pi(S_t)\le\frac12$, so $\mathrm{vol}(S_t)=\min\{\mathrm{vol}(S_t),\mathrm{vol}(\bar S_t)\}$. $\square$
+:::
+
+```{python}
+#| fig-width: 11
+#| fig-height: 3.3
+n = 40; i = np.arange(n); f = np.cos(2*np.pi*i/n + 0.5)
+m = np.median(f); a = np.maximum(f - m, 0); g = a**2
+fig, axes = plt.subplots(1, 3, figsize=(11, 3.3), sharex=True)
+for ax, y, ttl, col in zip(axes, [f, a, g], ["$f$ (eigenvector)", "$f'=\\max\\{f-m,0\\}$", "$g=f'^{\\,2}$"], [BLUE, ORANGE, GREEN]):
+    ax.bar(i, y, color=col, width=0.8); ax.axhline(0, color="#1c1b19", lw=0.8); ax.set_title(ttl, fontsize=12)
+    ax.set_xlabel("vertex $i$ on $C_{40}$")
+th = np.quantile(g[g > 0], 0.3); axes[2].axhline(th, color="#1c1b19", ls="--", lw=1.2); axes[2].text(9, th + 0.04, "threshold $t$", fontsize=10)
+plt.tight_layout(); plt.show()
+```
+
+## Algorithm: spectral partitioning {.smaller}
+
+1. Compute (approximately) the Fiedler vector $f$ of $L_{rw}$.
+2. Sort the vertices by $f$; evaluate $\Phi(S_t)$ for the $n-1$ prefix sets.
+3. Return the best prefix (or the best of the two sides' prefixes).
+
+::: box
+**Guarantee, with a two-sided certificate.** Output $S$ satisfies $\Phi(S)\le\sqrt{2\lambda}\le2\sqrt{\Phi(G)}$, and *every* cut has $\Phi\ge\lambda/2$. So the algorithm both finds a cut and **proves** how far from optimal it can be: ratio $\le\sqrt{8/\lambda}$ relative to the lower bound $\lambda/2$.
+:::
+
+Each iteration of power method or Lanczos costs $O(m)$. **How many iterations?** Next two slides.
+
+::: notes
+~3 min. Using the sweep on an *approximate* Fiedler vector works as well: all we need is a vector with Rayleigh quotient at most (1+eps) lambda, and the proof goes through with sqrt(2(1+eps) lambda).
+:::
+
+## Demo: the sweep cut on a graph with a bottleneck
+
+```{python}
+#| fig-width: 11
+#| fig-height: 4.9
+rng = np.random.default_rng(3)
+sizes = [30, 30]; n = sum(sizes); blk = np.repeat([0, 1], sizes)
+P = np.where(blk[:, None] == blk[None, :], 0.35, 0.012)
+U = np.triu(rng.random((n, n)) < P, 1); A = (U + U.T).astype(float)
+lam, f = rw_fiedler(A)
+order, prof = sweep_profile(A, f)
+t_star = prof.argmin()
+fig, axes = plt.subplots(1, 2, figsize=(11, 4.9), gridspec_kw={"width_ratios": [1, 1.2]})
+ax = axes[0]; fs = f[order]
+ax.scatter(np.arange(n), fs, c=[BLUE if k <= t_star else ORANGE for k in range(n)], s=26)
+ax.axvline(t_star + 0.5, color="#1c1b19", ls="--", lw=1); ax.set_xlabel("rank in sorted Fiedler vector"); ax.set_ylabel("$f_i$")
+ax.set_title("Fiedler vector, sorted", fontsize=12)
+ax = axes[1]
+ax.plot(np.arange(1, n), prof, "-o", color=BLUE, ms=3.5, label="$\\Phi(S_t)$ along the sweep")
+ax.axhline(lam/2, color=GREEN, ls="--", label=f"$\\lambda/2={lam/2:.3f}$ (lower bound for all cuts)")
+ax.axhline(np.sqrt(2*lam), color=ORANGE, ls="--", label=f"$\\sqrt{{2\\lambda}}={np.sqrt(2*lam):.3f}$ (Cheeger guarantee)")
+ax.scatter([t_star + 1], [prof[t_star]], color="#1c1b19", zorder=3, label=f"best sweep cut: {prof[t_star]:.3f}")
+ax.set_ylim(0, min(1.05, np.sqrt(2*lam)*1.5)); ax.set_xlabel("$t$ (size of prefix set)")
+ax.legend(fontsize=10, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=2)
+ax.set_title(f"two planted blocks, $n={n}$, $\\lambda={lam:.3f}$", fontsize=12)
+plt.tight_layout(); plt.show()
+```
+
+The best sweep cut lies **between** $\lambda/2$ and $\sqrt{2\lambda}$, as the theorem promises (here it recovers the planted bisection).
+
+## Demo: how fast can we compute the Fiedler vector? {.smaller}
+
+```{python}
+#| fig-width: 11
+#| fig-height: 4.3
+def cyc_S(n):
+    r = np.arange(n); A = sp.coo_matrix((np.ones(2*n), (np.r_[r, r], np.r_[(r+1) % n, (r-1) % n])), shape=(n, n)).tocsr()
+    return A, 1 - np.cos(2*np.pi/n)
+def cube_S(d):
+    n = 2**d; r = np.arange(n)
+    A = sp.coo_matrix((np.ones(n*d), (np.tile(r, d), np.concatenate([r ^ (1 << b) for b in range(d)]))), shape=(n, n)).tocsr()
+    return A, 2/d
+def prep(A):
+    dg = np.asarray(A.sum(1)).ravel(); s = 1/np.sqrt(dg)
+    return (sp.diags(s) @ A @ sp.diags(s)).tocsr(), np.sqrt(dg/dg.sum())
+def power_its(S, u, lam, eps, rng):
+    x = rng.standard_normal(S.shape[0]); x -= u*(u @ x); x /= np.linalg.norm(x)
+    for k in range(1, 10**7):
+        x = 0.5*(x + S @ x); x -= u*(u @ x); x /= np.linalg.norm(x)   # lazy walk, deflated against the top eigenvector
+        if 1 - x @ (S @ x) <= (1+eps)*lam: return k
+def lanczos_its(S, u, lam, eps, rng):
+    n = S.shape[0]; Q = np.zeros((min(n, 3000), n)); al = []; be = []
+    q = rng.standard_normal(n); q -= u*(u @ q); Q[0] = q/np.linalg.norm(q)
+    for k in range(1, len(Q)):
+        w = S @ Q[k-1]; w -= u*(u @ w); al.append(Q[k-1] @ w)
+        w -= Q[:k].T @ (Q[:k] @ w); w -= Q[:k].T @ (Q[:k] @ w)       # full reorthogonalization
+        th = eigh_tridiagonal(al, be, eigvals_only=True, select="i", select_range=(k-1, k-1))[0] if k > 1 else al[0]
+        if 1 - th <= (1+eps)*lam: return k
+        b = np.linalg.norm(w); be.append(b); Q[k] = w/b
+
+eps, reps = 0.1, 5
+rng = np.random.default_rng(0)
+res = {}
+for name, fam, sizes in [("cycle", cyc_S, [16, 32, 64, 128, 256, 512, 1024]), ("cube", cube_S, [4, 6, 8, 10, 12, 14, 16])]:
+    rows = []
+    for s in sizes:
+        A, lam_ = fam(s); S, u = prep(A)
+        pw = np.mean([power_its(S, u, lam_, eps, rng) for _ in range(reps)])
+        lz = np.mean([lanczos_its(S, u, lam_, eps, rng) for _ in range(reps)])
+        rows.append((A.shape[0], 1/lam_, pw, lz))
+    res[name] = np.array(rows)
+
+fig, axes = plt.subplots(1, 2, figsize=(11, 4.3))
+ax = axes[0]
+for name, mk in [("cycle", "o"), ("cube", "s")]:
+    r = res[name]
+    ax.loglog(r[:, 0], r[:, 2], mk + "-", color=ORANGE, label=f"power, {name}", ms=5)
+    ax.loglog(r[:, 0], r[:, 3], mk + "--", color=BLUE, label=f"Lanczos, {name}", ms=5)
+ax.set_xlabel("number of vertices $n$"); ax.set_ylabel("iterations to reach $(1+\\varepsilon)\\lambda$"); ax.legend(fontsize=10, frameon=False)
+ax.set_title("iterations vs. size", fontsize=12)
+ax = axes[1]
+for name, mk in [("cycle", "o"), ("cube", "s")]:
+    r = res[name]
+    ax.loglog(r[:, 1], r[:, 2], mk, color=ORANGE, ms=5); ax.loglog(r[:, 1], r[:, 3], mk, color=BLUE, ms=5)
+xx = np.logspace(0.3, 4.2, 50)
+ax.loglog(xx, 1.0*xx, color=ORANGE, lw=1, ls=":", label="slope 1: $\\propto1/\\lambda$")
+ax.loglog(xx, 1.6*np.sqrt(xx), color=BLUE, lw=1, ls=":", label="slope $\\frac{1}{2}$: $\\propto1/\\sqrt{\\lambda}$")
+ax.set_xlabel("$1/\\lambda$"); ax.legend(fontsize=10, frameon=False, loc="upper left")
+ax.set_title("iterations vs. $1/\\lambda$ (both families)", fontsize=12)
+plt.tight_layout(); plt.show()
+```
+
+$\varepsilon=0.1$, average of 5 random starts. We measure the **Rayleigh quotient**, not eigenvector error: $\lambda$ is repeated on both graphs (multiplicity 2 on the cycle, $d$ on the cube), and Cheeger only needs a vector with a small quotient.
+
+::: box
+**Takeaway.** Standard methods have running time depending on $\lambda$: power $\approx1/\lambda$, Krylov (Lanczos; conjugate gradient is its linear-system sibling) $\approx1/\sqrt\lambda$. Cycle: $n^2$ vs. $n$. Cube: $\log n$ vs. $\sqrt{\log n}$. **The graphs with the sparsest cuts are exactly the slowest to cut.** Acceleration helps but does not remove the dependence. (Next: electrical flows and solvers.)
+:::
+
+::: notes
+~4 min. Power on the lazy walk converges in ~ (2/lambda) log(n/eps) steps to the gap; Lanczos/Chebyshev gets the square root. On the cycle that is n^2 vs n: a 1000-vertex cycle already needs ~10^5 power iterations. This motivates the Laplacian-solver lecture: near-linear time independent of lambda.
+Conjugate gradient solves Lx = b with sqrt(kappa) = sqrt(lambda_max/lambda_2) iterations, the same dependence on the gap. If time permits, run CG on Lx=b live.
+:::
+
+# §5 · Beyond: other relaxations {background-color="#1c1b19"}
+
+## Leighton–Rao: relax to all metrics {.smaller}
+
+Keep the triangle inequality, drop $\ell_1$-ness:
+$$\min\ d(G)\quad\text{s.t.}\quad d(K_G)=1,\quad d\ \text{a metric on }V.$$
+A **linear program** (the triangle inequalities are the constraints). It is a relaxation because $\mathrm{CUT}_V\subseteq\{\text{metrics}\}$.
+
+. . .
+
+**Dual** $=$ *maximum concurrent multicommodity flow*: route $\alpha\,d_id_j/\mathrm{vol}(V)$ units between every pair $i,j$ with edge congestion $\le w_{ij}$, maximize $\alpha$. This is exactly the **canonical-path** congestion from Lecture 5 (there with one fixed routing, here optimized).
+
+. . .
+
+::: box
+**Rounding by embedding.** Bourgain (1985): every $n$-point metric embeds into $\ell_1$ with distortion $O(\log n)$. Then use Lemma 1 / the cut cone: **$O(\log n)$-approximation** (Linial–London–Rabinovich, Aumann–Rabani).
+:::
+
+Second instance of the template: **relax $\to$ solve $\to$ embed into $\ell_1$ $\to$ sweep.**
+
+## The landscape {.smaller}
+
+| Relaxation | Feasible set | Solved by | Rounding | Guarantee |
+|---|---|---|---|---|
+| Spectral | $\ell_2^2$-embeddable (no triangle ineq.) | eigenvector | square, sweep (L3, L2, L1) | $\Phi(S)\le\sqrt{2\lambda}\le2\sqrt{\Phi^*}$ |
+| Leighton–Rao | all metrics | LP | Bourgain $\to\ell_1$, sweep | $O(\log n)$ |
+| ARV | $\ell_2^2$ **and** triangle inequality | SDP | structure theorem + sweep | $O(\sqrt{\log n})$ |
+
+. . .
+
+- Spectral is **dimension-free** (no $\log n$) but loses a **square root in the value**: great when $\Phi^*$ is a constant, poor when $\Phi^*$ is tiny.
+- LR and ARV lose only in the *dimension*, at the price of an LP/SDP.
+- ARV sits in the intersection of the two sets on slide 18: next weeks' SDP lecture.
+
+## Preview: higher-order Cheeger {.smaller}
+
+What if the graph has **$k$ clusters** rather than one bottleneck? Then $\lambda_2,\dots,\lambda_k$ are all small, and one eigenvector is not enough.
+
+- **Relaxation:** $k$ orthogonal test functions, i.e. a map $V\to\mathbb R^k$ ("spectral embedding").
+- **Rounding:** partition the *embedded point cloud* in $\mathbb R^k$: an embedding into $\ell_1$ or $\ell_2$ with controlled distortion, plus a clustering step.
+- **Result** (Lee–Oveis Gharan–Trevisan; Louis–Raghavendra–Tetali–Vempala): $\;\dfrac{\lambda_k}2\le\rho_k(G)\le O(\mathrm{poly}(k))\sqrt{\lambda_k}$, where $\rho_k$ is the best $k$-way conductance.
+
+Same template, now with $k$-dimensional embeddings. **Next lecture.**
+
+## Takeaways
+
+- $\Phi(G)$ is NP-hard. **$\lambda$ is its relaxation**: replace $\ell_1$ by $\ell_2^2$ and $\{0,1\}^V$ by $\mathbb R^V$.
+- **Easy side:** cut vectors are feasible, so $\lambda\le\bar\phi\le2\Phi$.
+- **Hard side:** shift by the median (L3), **square** to pass from $\ell_2^2$ to $\ell_1$ (L2), **sweep** (L1). Loss: a square root.
+- The $\sqrt{\ }$ is **tight**: cycle vs. hypercube.
+- Standard eigenvector methods run in time depending on $\lambda$ (power $1/\lambda$, Krylov $1/\sqrt\lambda$): bottlenecks are exactly what makes them slow.
+- Other relaxations (LR, ARV) differ only in the feasible set and the embedding used to round.
+
+**Reading.** Trevisan's posts on [Cheeger in manifolds](https://lucatrevisan.wordpress.com/2013/03/20/the-cheeger-inequality-in-manifolds/) and its [proof](https://lucatrevisan.wordpress.com/2013/03/21/proof-of-the-cheeger-inequality-in-manifolds/); Erasmo Tani's note on the continuous Cheeger inequality.
+
+# Optional: Cheeger's original (manifolds) {background-color="#1c1b19"}
+
+## Cheeger's setting (1970) {.smaller}
+
+$\mathcal M$ compact Riemannian manifold without boundary, measure $\mu$, Laplacian $L=-\operatorname{div}\nabla$ (the same operator whose heat flow we studied). Cheeger constant:
+$$h(\mathcal M)=\inf_{0<\mu(S)\le\frac12\mu(\mathcal M)}\frac{\mu_{n-1}(\partial S)}{\mu(S)}.$$
+
+| Graph | Manifold |
+|---|---|
+| vertices $V$, weights $d_i$ | points $\mathcal M$, measure $\mu$ |
+| $\mathrm{vol}(S)$ | $\mu(S)$ |
+| cut $w(S,\bar S)$ | boundary area $\mu_{n-1}(\partial S)$ |
+| $L=\nabla^*\nabla$ | $L=-\operatorname{div}\nabla$ |
+| $\sum_Ew(\Delta f)^2=f^\top Lf$ | $\int\lVert\nabla f\rVert^2d\mu$ |
+| $\Phi(G)$ | $h(\mathcal M)$ |
+
+::: box
+**Theorem (Cheeger).** $\;\lambda_1\ge h^2/4$, with $\lambda_1$ the first nonzero eigenvalue. (This is the graph inequality $\Phi\le\sqrt{2\lambda}$.)
+:::
+
+## Same three lemmas, calculus replaces sums {.smaller}
+
+With $R_1(f)=\dfrac{\int\lVert\nabla f\rVert d\mu}{\int|f|d\mu}$ and $R_2(f)=\dfrac{\int\lVert\nabla f\rVert^2d\mu}{\int f^2d\mu}$:
+
+- **Lemma 1.** The **coarea formula** $\int\lVert\nabla f\rVert d\mu=\int_0^\infty\mu_{n-1}(\{f=t\})dt$ replaces the layer-cake identity: some superlevel set has $\mu_{n-1}(\partial S_t)/\mu(S_t)\le R_1(f)$.
+- **Lemma 2.** The **chain rule** $\nabla f^2=2f\nabla f$ and Cauchy–Schwarz give $R_1(f^2)\le2\sqrt{R_2(f)}$. The constant is $2$ rather than $\sqrt2$: nothing is lost in an edge-wise $(a+b)^2\le2(a^2+b^2)$.
+- **Lemma 3.** Shift by the median; the gradients of disjointly supported functions are orthogonal pointwise, so now $N(a-b)=N(a)+N(b)$ **exactly**.
+
+Result: $h\le2\sqrt{\lambda_1}$, i.e. $\lambda_1\ge h^2/4$.
+
+. . .
+
+**Remark (Buser).** The reverse inequality, $\lambda_1\le C(h+h^2)$, needs a lower bound on Ricci curvature, whereas for graphs the easy side is free. (Discussed in the lecture notes.)
+
+# Appendix: definitions for the board {background-color="#1c1b19"}
+
+## Graph, conductance, relaxation {.defs}
+
+**Graph.** $G=(V,E,w)$, $d_i=\sum_jw_{ij}$, $\mathrm{vol}(S)=\sum_{i\in S}d_i$, $\pi=d/\mathrm{vol}(V)$, $w(S,\bar S)=\sum_{i\in S,j\notin S}w_{ij}$.
+
+**Conductance.** $\Phi(S)=\dfrac{w(S,\bar S)}{\min\{\mathrm{vol}S,\mathrm{vol}\bar S\}}$; $\;\bar\phi(S)=\dfrac{w(S,\bar S)\,\mathrm{vol}(V)}{\mathrm{vol}(S)\mathrm{vol}(\bar S)}$; $\;\Phi\le\bar\phi\le2\Phi$.
+
+**Variances / spreads.** $\mathrm{Var}_1(f)=\min_c\sum_id_i|f_i-c|$; $\;\mathrm{Var}_2(f)=\sum_id_i(f_i-\bar f)^2=\mathrm{Spr}_2(f)$; $\;\mathrm{Spr}_p(f)=\frac1{\mathrm{vol}(V)}\sum_{i<j}d_id_j|f_i-f_j|^p$.
+
+**Gap.** $\lambda=\lambda_2(L_{rw})=\min_f\dfrac{\sum_Ew(\Delta f)^2}{\mathrm{Var}_2(f)}$. **Cheeger:** $\;\tfrac12\lambda\le\Phi(G)\le\sqrt{2\lambda}$.
+
+## Metrics and lemmas {.defs}
+
+**Metric view.** $d(G)=\sum_Ew_{ij}d_{ij}$; $\;d(K_G)=\sum_{i<j}\frac{d_id_j}{\mathrm{vol}V}d_{ij}$; $\;\delta^S(G)=w(S,\bar S)$, $\delta^S(K_G)=\frac{\mathrm{vol}S\,\mathrm{vol}\bar S}{\mathrm{vol}V}$. $\;\mathrm{CUT}_V=\ell_1$-embeddable metrics.
+
+**Rayleigh-type quotients (uncentered).** $R_1(x)=\frac{\sum_Ew|x_i-x_j|}{\sum_id_i|x_i|}$, $\;R_2(x)=\frac{\sum_Ew(x_i-x_j)^2}{\sum_id_ix_i^2}$.
+
+**Lemma 1 (sweep).** $x\ge0\Rightarrow\exists t:\ w(S_t,\bar S_t)/\mathrm{vol}(S_t)\le R_1(x)$. **Lemma 2.** $x\ge0\Rightarrow R_1(x^2)\le\sqrt{2R_2(x)}$. **Lemma 3.** $f\perp_d\mathbf1\Rightarrow\exists f'\ge0$, $\pi(f'>0)\le\frac12$, $R_2(f')\le R_2(f)$.
+
+**Mediant inequality.** $\dfrac{\sum a_u}{\sum b_u}\ge\min_u\dfrac{a_u}{b_u}$ for $b_u>0$.
+
+**Layer cake.** $|x_i-x_j|=\int|\mathbf1[x_i>t]-\mathbf1[x_j>t]|\,dt$; for $x\ge0$, $\sum_id_ix_i=\int_0^\infty\mathrm{vol}(S_t)dt$.

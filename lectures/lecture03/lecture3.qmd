@@ -1,6 +1,6 @@
 ---
 title: "Random Walks and Their Convergence"
-subtitle: "Distances to equilibrium · spectral gap · mixing times · canonical paths"
+subtitle: "Distances to equilibrium · mixing time · spectral gap · χ² decay"
 author: "CMSC 35410 · Lecture 3"
 format:
   revealjs:
@@ -21,27 +21,6 @@ execute:
   echo: false
   warning: false
 ---
-
-```{python}
-import numpy as np, math, matplotlib.pyplot as plt
-from scipy.linalg import eigh
-from matplotlib.ticker import NullFormatter
-plt.rcParams.update({"font.size": 13, "axes.spines.top": False, "axes.spines.right": False,
-                     "figure.facecolor": "#fbfaf7", "axes.facecolor": "#fbfaf7"})
-BLUE, ORANGE, GREY, GREEN = "#2563eb", "#ea580c", "#8a857b", "#15803d"
-
-def lap(n, edges):
-    A = np.zeros((n, n))
-    for i, j in edges: A[i, j] = A[j, i] = 1
-    D = np.diag(A.sum(1)); return D - A, D
-def cycle(n): return lap(n, [(i, (i + 1) % n) for i in range(n)])
-def grid(k):
-    E = [(x*k+y, (x+1)*k+y) for x in range(k-1) for y in range(k)] + \
-        [(x*k+y, x*k+y+1) for x in range(k) for y in range(k-1)]
-    return lap(k*k, E)
-def tree(h):
-    n = 2**(h+1) - 1; return lap(n, [(i, (i-1)//2) for i in range(1, n)])
-```
 
 # §0 Where we are {background-color="#1c1b19"}
 
@@ -77,8 +56,8 @@ How fast does the walk forget where it started?
 
 1. How to measure convergence: $\ell_1$, $\chi^2$, entropy. **Mixing time.**
 2. Spectral gap $\Rightarrow$ exponential decay of $\chi^2$; the heat flow as a gradient flow.
-3. Consequences for $\ell_1$ and entropy (→ log-Sobolev, later).
-4. Cycle, grid, binary tree: **upper and lower** bounds on the gap; how tight is all this?
+
+*Next two lectures:* what the gap says about mixing time and entropy (Lecture 4), and how to bound the gap from both sides (Lecture 5).
 
 # §1 · Measuring convergence {background-color="#1c1b19"}
 
@@ -103,7 +82,7 @@ $$
 $$
 
 ::: warn
-Remember $1$ vs. $\log n$ vs. $n$. It is the whole story of §3.
+Remember $1$ vs. $\log n$ vs. $n$. It is the story of Lecture 4.
 :::
 
 ## How they compare
@@ -212,7 +191,7 @@ $$
 Same template, two more times:
 
 - $\Phi(x)=(x-1)^2$: $\Phi'(x)=2(x-1)$, recovering **Proof 2** below, exactly.
-- $\Phi(x)=x\log x$: $\Phi'(x)=\log x+1$, recovering the entropy-production formula of §3.
+- $\Phi(x)=x\log x$: $\Phi'(x)=\log x+1$, recovering the entropy-production formula of Lecture 4.
 :::
 
 ::: notes
@@ -256,7 +235,7 @@ $$
 No diagonalization. Only: **(dissipation identity) + (functional inequality)**.
 
 - (Var, Poincaré) $\to$ $\chi^2$ decay at rate $2\lambda$. (Today.)
-- (Ent, log-Sobolev) $\to$ entropy decay. (§3, then later.)
+- (Ent, log-Sobolev) $\to$ entropy decay. (Lecture 4, then later.)
 - Graph $\to$ manifold: Bakry–Émery. (Later.)
 :::
 
@@ -311,391 +290,11 @@ On the dissipative-bracket aside: GENERIC splits dynamics as dx/dt = {x,E} + (x,
 - Lazy chain: $\operatorname{Var}_\pi(P_{\rm lazy}^th)\le(1-\tfrac\lambda2)^{2t}\operatorname{Var}_\pi(h)$.
 - Non-lazy: factor $\lambda_\star^{2t}$, $\;\lambda_\star = \max_{k\ge2}|1-\lambda_k|$ — equal to $1$ on bipartite graphs.
 
-# §3 · Consequences for ℓ₁ and entropy {background-color="#1c1b19"}
-
-## The gap pins down the mixing time
-
-::: box
-**Theorem.** For the continuous-time walk, $\pi_{\min} = \min_x\pi_x$:
-$$
-\frac1\lambda\log\frac1{2\varepsilon}\ \le\ t_{\rm mix}(\varepsilon)\ \le\ \frac1\lambda\Big(\tfrac12\log\frac1{\pi_{\min}} + \log\frac1{2\varepsilon}\Big).
-$$
-:::
-
-. . .
-
-**Upper.** Lemma (1) + §2: $\;\|\delta_xH_t-\pi\|_{TV}\le\tfrac12\sqrt{\chi^2(\delta_xH_t\Vert\pi)}\le\tfrac12e^{-\lambda t}\pi_x^{-1/2}$.
-
-. . .
-
-**Lower.** Scale $f = \varphi_2$ so $\|f\|_\infty = 1 = |f(x)|$. Then $\mathbb E_\pi f = 0$, $(H_tf)(x) = e^{-\lambda t}f(x)$, and
-$$
-e^{-\lambda t} = |\mathbb E_{\delta_xH_t}f - \mathbb E_\pi f|\le\|\delta_xH_t-\pi\|_1\|f\|_\infty = 2\|\delta_xH_t-\pi\|_{TV}. \qquad\square
-$$
-
-::: notes
-Lazy discrete version: (2/λ − 1) log(1/2ε) ≤ t_mix(ε) ≤ (2/λ)(½ log(1/π_min) + log(1/2ε)); lower bound uses log(1/(1−x)) ≤ x/(1−x). Cf. LPW Thms 12.4–12.5 (check numbering).
-:::
-
-## Where the $\log(1/\pi_{\min})$ comes from
-
-```{python}
-#| fig-width: 11
-#| fig-height: 4.4
-from scipy.linalg import expm
-def curves(L, D, x, ts):
-    pi = np.diag(D) / D.trace(); Lrw = np.linalg.solve(D, L)
-    out = []
-    for t in ts:
-        r = expm(-t * Lrw)[x]
-        tv = 0.5 * np.abs(r - pi).sum(); chi = ((r - pi)**2 / pi).sum()
-        kl = (r * np.log(np.maximum(r, 1e-300) / pi)).sum()
-        out.append((tv, 0.5*np.sqrt(chi), np.sqrt(kl/2)))
-    lam = np.sort(eigh(L, D, eigvals_only=True))[1]
-    return np.array(out), lam, pi[x]
-
-fig, axs = plt.subplots(1, 2, figsize=(11, 4.4))
-for ax, (name, (L, D), x) in zip(axs, [("cycle $C_{60}$", cycle(60), 0), ("binary tree, $n=127$ (start at a leaf)", tree(6), 126)]):
-    lam = np.sort(eigh(L, D, eigvals_only=True))[1]
-    ts = np.linspace(0, 4/lam, 60)
-    c, lam, px = curves(L, D, x, ts)
-    ax.semilogy(ts*lam, c[:, 0], color=BLUE, lw=2.5, label="TV (truth)")
-    ax.semilogy(ts*lam, c[:, 1], color=ORANGE, lw=2, label=r"$\frac{1}{2}\sqrt{\chi^2}$")
-    ax.semilogy(ts*lam, c[:, 2], color=GREEN, lw=2, label=r"$\sqrt{D/2}$ (Pinsker)")
-    ax.semilogy(ts*lam, 0.5*np.exp(-lam*ts)/np.sqrt(px), "--", color=ORANGE, lw=1.2, label=r"$\frac{1}{2} e^{-\lambda t}\pi_x^{-1/2}$")
-    ax.semilogy(ts*lam, 0.5*np.exp(-lam*ts), ":", color=GREY, lw=1.5, label=r"$\frac{1}{2} e^{-\lambda t}$ (lower bd)")
-    ax.axhline(0.25, color=GREY, lw=0.6)
-    ax.set(xlabel=r"$\lambda t$", title=name, ylim=(1e-3, 10))
-axs[0].legend(frameon=False, fontsize=10.5, loc="upper right")
-fig.tight_layout(); plt.show()
-```
-
-$\chi^2$ starts at $\approx n$ and must spend time $\approx\frac{\log n}{2\lambda}$ just getting below $1$. TV starts at $\le1$.
-
-::: notes
-x-axis in units of t_rel. TV (blue) stays sandwiched between the lower bound (grey dotted) and the χ²-bound (orange dashed). The orange solid χ² curve only drops below 1/4 well after TV. Entropy (green) starts at log n, much lower than n.
-:::
-
-## Entropy along the flow
-
-Same computation as Proof 2, with $\operatorname{Ent}_\pi$ in place of $\operatorname{Var}_\pi$:
-
-$$
-\frac d{dt}\operatorname{Ent}_\pi(h_t) = \mathbb E_\pi\big[(1+\log h_t)\,\partial_th_t\big] = -\langle\log h_t, L_{rw}h_t\rangle_\pi
-$$
-
-$$
-= -\mathcal E(h_t,\log h_t)\ \le\ 0 .
-$$
-
-$\mathcal E(h,\log h)$: **entropy production** (discrete Fisher information).
-
-. . .
-
-From the gap alone (Lemma 3): $\;D(\mu_t\Vert\pi)\le\log\big(1 + e^{-2\lambda t}\chi^2(\mu_0\Vert\pi)\big)$ — rate $2\lambda$ eventually, but the same $\log n$ burn-in.
-
-. . .
-
-To close the loop we need a new functional inequality, the **modified log-Sobolev inequality**:
-
-$$
-\rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)\quad\Longrightarrow\quad D(\mu_t\Vert\pi)\le e^{-\rho_0t}D(\mu_0\Vert\pi).
-$$
-
-## Preview: log-Sobolev trades $\log n$ for $\log\log n$ {.smaller}
-
-With Pinsker:
-
-$$
-t_{\rm mix}(\varepsilon)\le\frac1{\rho_0}\Big(\log\log\frac1{\pi_{\min}} + \log\frac1{2\varepsilon^2}\Big)
-\qquad\text{vs.}\qquad
-\frac1\lambda\Big(\tfrac12\log\frac1{\pi_{\min}} + \log\frac1{2\varepsilon}\Big).
-$$
-
-. . .
-
-The price is the constant: entropy can't decay faster than twice the gap,
-
-$$
-\rho_0\ \le\ 2\lambda .
-$$
-
-*Proof.* Linearize at equilibrium, $h = 1+\epsilon g$, $\mathbb E_\pi g = 0$:
-$$
-\operatorname{Ent}_\pi(h) = \tfrac{\epsilon^2}2\operatorname{Var}_\pi g + O(\epsilon^3),\qquad \mathcal E(h,\log h) = \epsilon^2\mathcal E(g,g) + O(\epsilon^3).
-$$
-MLSI forces $\rho_0\le 2\,\mathcal E(g,g)/\operatorname{Var}_\pi g$ for every $g$; take $g = \varphi_2$. $\square$
-
-::: box
-Entropy wins when $\rho_0$ is comparable to the gap. When is it? How do we bound it? → later lecture.
-:::
-
-::: notes
-Say aloud: next time we meet the classical log-Sobolev inequality α Ent(f²) ≤ E(f,f) (Gross), which is how ρ₀ is bounded in practice (it tensorizes; ρ₀ ≥ 4α via (a−b)(log a − log b) ≥ 4(√a−√b)²), and which coincides with this one for diffusions (chain rule: E(h, log h) = 4E(√h,√h) exactly).
-If asked for a lower bound in terms of λ: Diaconis–Saloff-Coste give α ≥ (1−2π_*)λ / log(1/π_* − 1), so ρ₀ ≳ 4λ/log(1/π_min) — plugging it in is worse than the gap bound by log log, so the gap alone never certifies that entropy helps. K_n: λ ≍ 1, α ≍ 1/log n, ρ₀ ≍ 1 (Bobkov–Tetali). (Constants from memory — check.)
-:::
-
-# §4 · Examples: the gap from both sides {background-color="#1c1b19"}
-
-## Toolkit {.smaller}
-
-**Upper bounds: test functions.** Any non-constant $f$: $\;\lambda\le\mathcal E(f,f)/\operatorname{Var}_\pi(f)$. Make $f$ change slowly across a bottleneck.
-
-. . .
-
-**Degree comparison.** If $d_{\min}\le d_i\le d_{\max}$:
-
-$$
-\frac{\lambda_2(L)}{d_{\max}}\le\lambda = \lambda_2(L_{rw})\le\frac{\lambda_2(L)}{d_{\min}}.
-$$
-
-(Both are $\min_f f^\top Lf\,/\min_c\|f-c\|_m^2$, with $m = d$ vs. $m = \mathbf 1$.) Our examples have $1\le d\le4$: work with $L$.
-
-. . .
-
-**Lower bounds: canonical paths** — the discrete version of the 1-D Poincaré proof:
-
-$$
-f(b)-f(a) = \int_a^bf'\quad+\quad\text{Cauchy–Schwarz}.
-$$
-
-## Canonical paths {.smaller}
-
-For each ordered pair $(a,b)$ choose a path $\gamma_{ab}$; choose edge lengths $\ell_e>0$ (default $\ell\equiv1$). **Congestion:**
-
-$$
-\kappa := \max_{e\in E}\ \frac1{w_e\ell_e}\sum_{(a,b):\,e\in\gamma_{ab}}\ell(\gamma_{ab}),\qquad\ell(\gamma) = \sum_{e\in\gamma}\ell_e .
-$$
-
-::: box
-**Theorem** (Jerrum–Sinclair; Diaconis–Stroock). $\;\sum_{a,b}(f_a-f_b)^2\le\kappa\,f^\top Lf$, hence $\;\lambda_2(L)\ge\dfrac{2n}\kappa$.
-:::
-
-. . .
-
-*Proof.* $(f_b - f_a)^2 = \big(\sum_{e\in\gamma_{ab}}\nabla_ef\big)^2\le\ell(\gamma_{ab})\sum_{e\in\gamma_{ab}}\frac{(\nabla_ef)^2}{\ell_e}$. Sum over pairs, swap sums:
-
-$$
-\sum_{a,b}(f_a-f_b)^2\le\sum_ew_e(\nabla_ef)^2\cdot\underbrace{\frac{1}{w_e\ell_e}\sum_{\gamma_{ab}\ni e}\ell(\gamma_{ab})}_{\le\kappa},\qquad\sum_{a,b}(f_a-f_b)^2 = 2n\|f-\bar f\|^2 . \ \square
-$$
-
-::: notes
-π-weighted version, directly for λ: Var_π f = ½ Σ π_a π_b (f_a − f_b)², E(f,f) = Σ_e Q(e)(∇_e f)², Q(e) = w_e/vol. Same proof: λ ≥ 1/κ_π, κ_π = max_e (1/(Q(e) ℓ_e)) · ½ Σ_{γ_ab ∋ e} π_a π_b ℓ(γ_ab).
-Interpretation: κ is the congestion of an (unsplittable) multicommodity flow routing one unit between every pair. A bottleneck forces congestion — paths certify the absence of bottlenecks, dual to the test-function certificate. Flow/cut duality → Cheeger next week, Leighton–Rao later.
-:::
-
-## Cycle $C_n$ {.smaller}
-
-**Exact** (Fourier): $L$ has eigenvalues $2-2\cos(2\pi j/n)$; since $D = 2I$, $\;L_{rw} = L/2$ and
-$$\lambda = 1-\cos\tfrac{2\pi}n = 2\sin^2\tfrac\pi n\approx\frac{2\pi^2}{n^2}\approx\frac{19.7}{n^2}.$$
-
-. . .
-
-**Canonical paths** ($n = 2m+1$, shortest paths, $\ell\equiv1$): each vertex has 2 vertices at each distance $s = 1,\dots,m$. By rotation symmetry all edges carry equal load:
-
-$$
-\kappa = \frac1n\sum_{(a,b)}|\gamma_{ab}|^2 = 2\sum_{s=1}^ms^2 = \frac{n(n^2-1)}{12}
-\qquad\Longrightarrow\qquad
-\lambda_2(L)\ge\frac{2n}{\kappa} = \frac{24}{n^2-1}.
-$$
-
-. . .
-
-Divide by $d = 2$ to compare with the exact $\lambda$:
-$$
-\frac{12}{n^2-1}\ \le\ \lambda\ \approx\ \frac{19.7}{n^2}.
-$$
-Right order; constant $12$ vs. $2\pi^2\approx19.7$.
-
-::: notes
-Σ_e load(e) = Σ_{(a,b)} |γ_ab|² because each pair contributes |γ| to each of its |γ| edges.
-Careful with normalizations: λ₂(L) = 2λ ≈ 4π²/n² ≈ 39.5/n² ≥ 24/(n²−1); for λ = λ₂(L_rw): 12/(n²−1) ≤ 2π²/n².
-:::
-
-## The $k\times k$ grid, $n = k^2$ {.smaller}
-
-**Test function** $f(x,y) = x - \frac{k+1}2$: only horizontal edges see a difference (each 1),
-
-$$
-\lambda_2(L)\le\frac{k(k-1)}{k\cdot k(k^2-1)/12} = \frac{12}{k(k+1)},\qquad\lambda\le\frac{6}{k(k+1)}\ \ (d_{\min} = 2).
-$$
-
-. . .
-
-**Canonical paths, "L-shaped":** horizontal along $a$'s row to $b$'s column, then vertical. Length $\le2(k-1)$.
-
-- horizontal edge, row $r$, between columns $c|c+1$: needs $a$ in row $r$, $a_x$ and $b_x$ on opposite sides: $\;2\,c(k-c)\,k\le k^3/2$ pairs;
-- vertical edge, column $c$, between rows $r|r+1$: needs $b$ in column $c$, $a_y,b_y$ on opposite sides: $\;2\,r(k-r)\,k\le k^3/2$ pairs.
-
-$$
-\kappa\le\frac{k^3}2\cdot2(k-1)\quad\Longrightarrow\quad\lambda_2(L)\ge\frac{2}{k(k-1)},\qquad\lambda\ge\frac1{2k(k-1)}\ \ (d_{\max} = 4).
-$$
-
-. . .
-
-So $\lambda = \Theta(1/k^2) = \Theta(1/n)$. (Exact: $\lambda_2(L) = 2-2\cos\frac\pi k\approx\frac{\pi^2}{k^2}$, via $L(G\,\square\,H) = L_G\otimes I + I\otimes L_H$ and the Neumann cosines of the path.)
-
-## Binary tree, depth $h$, $n = 2^{h+1}-1$: upper bound
-
-**Test function**: $+1$ on the left subtree, $-1$ on the right, $0$ at the root.
-
-- $\mathbb E_\pi f = 0$ by symmetry;
-- only the two root edges see a difference: $\sum w(\nabla f)^2 = 2$;
-- $\sum_id_if_i^2 = \mathrm{vol}(V) - d_{\rm root} = 2(n-1)-2$.
-
-$$
-\lambda\le\frac{2}{2n-4} = \frac1{n-2}.
-$$
-
-. . .
-
-::: box
-The root is a **bottleneck**: two edges separate two halves of size $\approx n/2$. (Cheeger next week: conductance $\approx 2/n$.)
-:::
-
-## Binary tree: lower bound, and choosing lengths {.smaller}
-
-Paths are forced. An edge at depth $j$ cuts off $s_j = 2^{h-j+1}-1$ vertices: used by $2s_j(n-s_j)\le n^2/2$ ordered pairs.
-
-. . .
-
-**Unit lengths:** $|\gamma|\le2h$, so $\kappa\le n^2h$ and $\;\lambda_2(L)\ge\dfrac{2}{nh}$ — **off by $\log_2n$**. Cauchy–Schwarz charges every edge of a long path equally, but only the top edges are congested.
-
-. . .
-
-**Weighted lengths** $\ell_e = 2^{-j/2}$ at depth $j$ (cheap where congested): $\ell(\gamma)\le2\sum_{j\ge1}2^{-j/2} = 2(\sqrt2+1)$, and with $s_j<(n+1)2^{-j}$,
-
-$$
-\frac1{\ell_e}\sum_{\gamma\ni e}\ell(\gamma)\le2^{j/2}\cdot2s_jn\cdot2(\sqrt2+1) < 2(2+\sqrt2)\,n(n+1)
-\quad\Longrightarrow\quad
-\lambda_2(L) > \frac{1}{(2+\sqrt2)(n+1)}.
-$$
-
-. . .
-
-With $d\le3$: $\;\dfrac{1}{3(2+\sqrt2)(n+1)}<\lambda\le\dfrac1{n-2}$, so $\lambda = \Theta(1/n)$.
-
-::: notes
-The choice of ℓ is the discrete analog of the weight in a weighted Poincaré / Hardy inequality.
-Numerically n·λ → ≈ 0.5 for the binary tree.
-:::
-
-## Bounds vs. truth
-
-```{python}
-#| fig-width: 11
-#| fig-height: 4.3
-fig, axs = plt.subplots(1, 3, figsize=(11, 4.3))
-ns = [11, 21, 41, 81, 161, 321]
-tru = [np.sort(np.linalg.eigvalsh(cycle(n)[0]))[1] for n in ns]
-axs[0].loglog(ns, [24/(n*n-1) for n in ns], "o--", color=ORANGE, label="paths")
-axs[0].loglog(ns, tru, "o-", color=BLUE, lw=2.5, label=r"true $\lambda_2(L)$")
-axs[0].set(title="cycle $C_n$", xlabel="$n$")
-ks = [4, 8, 12, 16, 24, 32]
-tru = [np.sort(np.linalg.eigvalsh(grid(k)[0]))[1] for k in ks]
-axs[1].loglog(ks, [2/(k*(k-1)) for k in ks], "o--", color=ORANGE, label="L-shaped paths")
-axs[1].loglog(ks, tru, "o-", color=BLUE, lw=2.5, label="true")
-axs[1].loglog(ks, [12/(k*(k+1)) for k in ks], "s--", color=GREY, label="test function")
-axs[1].set(title=r"grid $k\times k$", xlabel="$k$")
-hs = [3, 4, 5, 6, 7, 8, 9]; nt = [2**(h+1)-1 for h in hs]
-tru = [np.sort(np.linalg.eigvalsh(tree(h)[0]))[1] for h in hs]
-axs[2].loglog(nt, [2/(n*h) for n, h in zip(nt, hs)], "^:", color=ORANGE, alpha=0.6, label=r"paths, $\ell\equiv1$")
-axs[2].loglog(nt, [1/((2+2**.5)*(n+1)) for n in nt], "o--", color=ORANGE, label=r"paths, $\ell_j=2^{-j/2}$")
-axs[2].loglog(nt, tru, "o-", color=BLUE, lw=2.5, label="true")
-axs[2].loglog(nt, [2/(n-1) for n in nt], "s--", color=GREY, label="test function")
-axs[2].set(title="binary tree", xlabel="$n$")
-for a in axs:
-    a.legend(frameon=False, fontsize=9.5); a.xaxis.set_minor_formatter(NullFormatter())
-axs[0].set_ylabel(r"$\lambda_2(L)$")
-fig.tight_layout(); plt.show()
-```
-
-Parallel lines = right order. Unit-length paths on the tree drift away by $\log n$.
-
-## How tight are the convergence bounds? {.smaller}
-
-```{python}
-#| fig-width: 11
-#| fig-height: 3.9
-def tmix(L, D, eps=0.25):
-    pi = np.diag(D) / D.trace(); w, V = eigh(L, D)
-    d = lambda t: 0.5 * np.abs((V * np.exp(-t * w)) @ V.T @ D - pi).sum(1).max()
-    lo, hi = 0.0, 1.0
-    while d(hi) > eps: hi *= 2
-    for _ in range(40):
-        m = (lo + hi) / 2
-        lo, hi = (m, hi) if d(m) > eps else (lo, m)
-    lam = w[1]
-    return hi, math.log(2) / lam, (0.5 * math.log(1/pi.min()) + math.log(2)) / lam
-
-fig, axs = plt.subplots(1, 3, figsize=(11, 3.9))
-cases = [("cycle", [cycle(n) for n in (21, 41, 81, 161)], [21, 41, 81, 161]),
-         (r"grid $k\times k$", [grid(k) for k in (6, 10, 14, 20)], [36, 100, 196, 400]),
-         ("binary tree", [tree(h) for h in (4, 5, 6, 7, 8)], [31, 63, 127, 255, 511])]
-for ax, (name, gs, ns) in zip(axs, cases):
-    r = np.array([tmix(L, D) for L, D in gs])
-    ax.loglog(ns, r[:, 2], "s--", color=ORANGE, label=r"$\chi^2$ upper bound")
-    ax.loglog(ns, r[:, 0], "o-", color=BLUE, lw=2.5, label=r"true $t_{\rm mix}$")
-    ax.loglog(ns, r[:, 1], "^--", color=GREY, label=r"$t_{\rm rel}\log 2$ lower bound")
-    ax.set(title=name, xlabel="$n$"); ax.xaxis.set_minor_formatter(NullFormatter())
-axs[0].set_ylabel("continuous time"); axs[0].legend(frameon=False, fontsize=9.5)
-fig.tight_layout(); plt.show()
-```
-
-| | $t_{\rm rel}$ | $\chi^2$ upper bound | true $t_{\rm mix}$ |
-|---|---|---|---|
-| cycle | $\Theta(n^2)$ | $\Theta(n^2\log n)$ | $\Theta(n^2)$ |
-| grid | $\Theta(n)$ | $\Theta(n\log n)$ | $\Theta(n)$ |
-| binary tree | $\Theta(n)$ | $\Theta(n\log n)$ | $\Theta(n)$ |
-
-::: notes
-Lower bound tight on all three; the generic χ² upper bound loses exactly log n. Numbers: C_161: t_mix ≈ 1230, lower 910, upper 4247. Tree n=1023: 1402 vs lower 1388 (!) vs upper 9022.
-:::
-
-## The loss is not in $\chi^2$ — it is in using only $\lambda_2$
-
-Exactly, from the spectral expansion of $h_0 = \mathbf 1_x/\pi_x$:
-
-$$
-\chi^2(\delta_xH_t\Vert\pi) = \sum_{k\ge2}e^{-2\lambda_kt}\varphi_k(x)^2,\qquad\sum_k\varphi_k(x)^2 = \frac1{\pi_x}.
-$$
-
-The generic bound pretends **all $n-1$ modes** decay as slowly as $\varphi_2$.
-
-. . .
-
-Vertex-transitive graphs: $\chi^2(\delta_xH_t\Vert\pi) = \sum_{k\ge2}e^{-2\lambda_kt}$. **Cycle:** $1-\cos\theta\ge\frac{2\theta^2}{\pi^2}$ gives
-
-$$
-\chi^2(\delta_xH_t\Vert\pi)\le2\sum_{j\ge1}e^{-16tj^2/n^2} = O(1)\quad\text{at } t = \Theta(n^2).
-$$
-
-So even $\ell^2$-mixing on the cycle is $\Theta(n^2)$, not $n^2\log n$.
-
-## Preview: when even $t_{\rm rel}$ is not the answer
-
-**Hypercube** $\{0,1\}^d$, $n = 2^d$ (flip a uniform coordinate at rate 1): eigenvalues $\frac{2|S|}d$, $S\subseteq[d]$, so $t_{\rm rel} = d/2$, and exactly
-
-$$
-\chi^2(\delta_xH_t\Vert\pi) = \big(1+e^{-4t/d}\big)^d - 1
-$$
-
-which is $O(1)$ iff $t\ge\frac d4\log d - O(d)$. TV has a **cutoff** at the same time (Diaconis; LPW).
-
-. . .
-
-| | lower: $t_{\rm rel}$ | upper: $\chi^2$ + gap | upper: entropy + LSI | truth |
-|---|---|---|---|---|
-| hypercube | $\Theta(d)$ | $\Theta(d^2)$ | $\Theta(d\log d)$ | $\sim\frac d4\log d$ |
-
-LSI constant $\Theta(1/d)$ (tensorization), and $\log\log(1/\pi_{\min}) = \log(d\log2)$: **tight.** The motivating example for log-Sobolev inequalities.
-
 ## Takeaways
 
 - **Want** TV; **differentiate** $\chi^2$ and entropy: dissipation identity + functional inequality.
-- Gap = optimal $\chi^2$ rate; $\;t_{\rm rel}\log\frac1{2\varepsilon}\le t_{\rm mix}(\varepsilon)\le t_{\rm rel}\big(\frac12\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon}\big)$.
-- Bound the gap with **test functions** (above) and **canonical paths** (below).
-- Next: Cheeger — when do test functions and paths meet?
+- Gap = optimal $\chi^2$ rate: $\operatorname{Var}_\pi(H_th)\le e^{-2\lambda t}\operatorname{Var}_\pi(h)$. The heat flow is the gradient flow of the energy, and Poincaré is strong convexity.
+- Next: what does $\chi^2$ decay say about TV (the mixing time), and can entropy do better? (Lecture 4)
 
 # Appendix: definitions for the board {background-color="#1c1b19"}
 
@@ -721,8 +320,4 @@ LSI constant $\Theta(1/d)$ (tensorization), and $\log\log(1/\pi_{\min}) = \log(d
 
 **χ² decay.** $\operatorname{Var}_\pi(H_th)\le e^{-2\lambda t}\operatorname{Var}_\pi(h)$; $\frac d{dt}\operatorname{Var}_\pi(h_t) = -2\mathcal E(h_t,h_t)$.
 
-**Mixing from the gap.** $\frac1\lambda\log\frac1{2\varepsilon}\le t_{\rm mix}(\varepsilon)\le\frac1\lambda\big(\frac12\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon}\big)$.
 
-**Entropy.** $\frac d{dt}\operatorname{Ent}_\pi(h_t) = -\mathcal E(h_t,\log h_t)$. MLSI $\rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)$ $\Rightarrow$ $D(\mu_t\Vert\pi)\le e^{-\rho_0t}D(\mu_0\Vert\pi)$; $\;\rho_0\le2\lambda$.
-
-**Canonical paths.** $\kappa = \max_e\frac1{w_e\ell_e}\sum_{\gamma_{ab}\ni e}\ell(\gamma_{ab})$ $\Rightarrow$ $\lambda_2(L)\ge2n/\kappa$. Degree comparison: $\lambda_2(L)/d_{\max}\le\lambda\le\lambda_2(L)/d_{\min}$.

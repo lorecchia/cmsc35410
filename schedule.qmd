@@ -10,11 +10,13 @@ Tentative and updated as the quarter goes. Slides open in presentation mode (pre
 |------------|------------|-------------|------------|------------|------------|
 | 1 | 9/29 | Why eigenvectors? A tour of spectral methods | [Slides](lectures/lecture01/lecture1.qmd) · demos: [PageRank](lectures/lecture01/demos/pagerank.html), [Fiedler vector](lectures/lecture01/demos/fiedler.html), [Heat diffusion](lectures/lecture01/demos/heat.html) | [LA Review I](notes/la-review-part1.qmd) | [Perron–Frobenius](exercises/perron-frobenius.qmd) · [ℓ₁ contraction](exercises/l1-contraction.qmd) |
 | 2 | 10/1 | Graphs as Differential Operators. Random Walks, the Heat Kernel, Measures vs. Densities. | [Slides](lectures/lecture02/lecture2.qmd) · demo: [Split and aggregate](lectures/lecture02/demos/split-aggregate.html) | [Lecture 2 notes](notes/lecture2-notes.qmd) §1–2 | [Computing with Laplacians](exercises/laplacian-computations.qmd), Ex. 1–7 |
-| 3 | 10/6 | Random Walks and their Convergence: Mixing Times, the Spectral Gap, Canonical Paths | [Slides](lectures/lecture03/lecture3.qmd) | [Lecture 2 notes](notes/lecture2-notes.qmd) §3–6 | [Computing with Laplacians](exercises/laplacian-computations.qmd), Ex. [8](exercises/laplacian-computations.qmd#ex-two-state)–[9](exercises/laplacian-computations.qmd#ex-barbell) |
-| 4 | 10/8 | Spectral Clustering and Eigenvector Perturbation |  | [Davis–Kahan](notes/davis-kahan.qmd) |  |
-| 5 | 10/13 | Conductance and Cheeger's Inequality |  |  |  |
-| 6 | 10/15 | Higher-order and k-way Cheeger's Inequalities |  |  |  |
-| 7 | 10/20 | Electrical Flows and Fast Laplacian Solvers |  |  |  |
-| 8 | 10/22 | Semidefinite Programming and MMWUs |  |  |  |
+| 3 | 10/6 | Random Walks and their Convergence: Distances to Equilibrium, Mixing Time, the Spectral Gap and χ² Decay | [Slides](lectures/lecture03/lecture3.qmd) | [Lecture 2 notes](notes/lecture2-notes.qmd) §3–6 | [Computing with Laplacians](exercises/laplacian-computations.qmd), Ex. [8](exercises/laplacian-computations.qmd#ex-two-state)–[9](exercises/laplacian-computations.qmd#ex-barbell) |
+| 4 | 10/8 | Mixing Times and Entropy: the Gap Pins Down Mixing, Entropy Production, Log-Sobolev Preview | [Slides](lectures/lecture04/lecture4.qmd) |  |  |
+| 5 | 10/13 | Bounding the Spectral Gap: Test Functions and Canonical Paths | [Slides](lectures/lecture05/lecture5.qmd) |  |  |
+| 6 | 10/15 | Conductance and Cheeger's Inequality | [Slides](lectures/lecture06/lecture6.qmd) |  |  |
+| 7 | 10/20 | Higher-order and k-way Cheeger's Inequalities |  |  |  |
+| 8 | 10/22 | Spectral Clustering and Eigenvector Perturbation |  | [Davis–Kahan](notes/davis-kahan.qmd) |  |
+| 9 | 10/27 | Electrical Flows and Fast Laplacian Solvers |  |  |  |
+| 10 | 10/29 | Semidefinite Programming and MMWUs |  |  |  |
 |  |  |  | [LA Review II](notes/la-review-part2.qmd) |  |  |
 :::

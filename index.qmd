@@ -12,7 +12,7 @@ Spectral methods study complex systems through the **eigenvalues and eigenvector
 |-------------------|-----------------------------------------------------|
 | **Instructor**    | Lorenzo Orecchia                                    |
 | **Lectures**      | T and Th 9.30-10.50am in JCL 011                    |
-| **Office hours**  | TBD and Th 11am-12pm  315                      |
+| **Office hours**  | M 2-3pm and Th 11am-12pm in JCL 315                 |
 | **Communication** | Slack                                               |
 | **Prerequisites** | Linear algebra, probability, and algorithms at the  advanced undergraduate level. |
 
