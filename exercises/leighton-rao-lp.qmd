@@ -1,0 +1,62 @@
+---
+title: "Exercise: Leighton–Rao as a Linear Program"
+subtitle: "Recommended exercise for Lecture 6"
+description: "Relax sparsest cut to all metrics: an LP, its flow dual, and when it is exact."
+---
+
+In Lecture 6, $\lambda$ was the relaxation of sparsest cut obtained by replacing $\ell_1$ by $\ell_2^2$. Here you will build the other classical relaxation: keep the **triangle inequality**, drop $\ell_1$. It is a linear program, its dual is a multicommodity flow problem, and you can solve it on small graphs and see exactly when it is tight.
+
+**Setup.** $G=(V,E,w)$ is a connected weighted graph, $n=|V|$, with $d_i=\sum_jw_{ij}$ and $\mathrm{vol}(V)=\sum_id_i$. Put $c_{ij}=d_id_j/\mathrm{vol}(V)$. For a symmetric $d:V\times V\to\mathbb R_{\ge0}$ with $d_{ii}=0$, write
+$$
+d(G)=\sum_{ij\in E}w_{ij}\,d_{ij},\qquad d(K_G)=\sum_{i<j}c_{ij}\,d_{ij}.
+$$
+The **Leighton–Rao relaxation** is
+$$
+\mathrm{LR}(G)=\min\Big\{\,d(G)\ :\ d(K_G)=1,\ \ d_{ij}\le d_{ik}+d_{kj}\ \ \forall i,j,k,\ \ d\ge0\Big\}.
+$$
+Recall $\bar\phi(S)=\dfrac{w(S,\bar S)\,\mathrm{vol}(V)}{\mathrm{vol}(S)\mathrm{vol}(\bar S)}$ and $\bar\phi(G)=\min_S\bar\phi(S)$, with $\Phi\le\bar\phi\le2\Phi$.
+
+---
+
+**(a) It is a relaxation.** For a cut $S$, let $\delta^S_{ij}=\mathbf 1[i,j\text{ separated by }S]$. Show that $\bar\phi(S)=\delta^S(G)/\delta^S(K_G)$, that $\delta^S$ is a metric, and conclude
+$$
+\mathrm{LR}(G)\le\bar\phi(G).
+$$
+Also show that the constraint $d(K_G)=1$ can be replaced by minimizing the ratio: $\mathrm{LR}(G)=\min_{d\text{ metric}}d(G)/d(K_G)$.
+
+**(b) A graph where it is strictly smaller.** Let $G=K_{2,3}$ with unit weights.
+
+1. Compute $\bar\phi(G)$ by finding the best cut (there are only a few types of cuts, up to symmetry).
+2. Let $d$ be the **shortest-path metric** of $G$ ($d_{ij}=1$ on edges, $2$ for non-adjacent pairs). Compute $d(G)/d(K_G)$ and conclude $\mathrm{LR}(G)<\bar\phi(G)$.
+3. Using the remark after Lemma 1 (every $\ell_1$ metric $d$ has a cut with $\bar\phi(S)\le d(G)/d(K_G)$), deduce that the shortest-path metric of $K_{2,3}$ is **not** $\ell_1$-embeddable.
+
+**(c) Solve it.** Implement the LP for unit-weight graphs with `scipy.optimize.linprog` (variables $d_{ij}$, $i<j$; one equality; $3\binom n3$ triangle inequalities). For each graph below, compute $\lambda=\lambda_2(L_{rw})$, $\Phi$, $\bar\phi$ (by brute force over cuts), and $\mathrm{LR}$:
+
+$K_4$, $C_8$, $C_{10}$, $Q_3$ (the 3-cube), the complete binary tree of depth 3, the Petersen graph, the barbell (two $K_4$ joined by one edge), $K_{2,3}$, $K_{3,3}$.
+
+For which graphs is $\mathrm{LR}=\bar\phi$? Do you see a pattern? Is $\mathrm{LR}$ always larger or always smaller than $\lambda$?
+
+**(d) Trees.** Show that $\mathrm{LR}(G)=\bar\phi(G)$ whenever $G$ is a tree. Do it in two steps:
+
+1. The minimum in the definition of $\mathrm{LR}$ is attained by the shortest-path metric of some edge lengths $\ell\ge0$.
+2. The shortest-path metric of a tree is a nonnegative combination of cut metrics.
+
+**(e) The dual is a flow problem.** Consider the *maximum concurrent flow* problem: for every pair $u<v$, we want to send $\alpha\,c_{uv}$ units of flow from $u$ to $v$, along any collection of paths, such that the total flow through each edge $e\in E$ is at most its capacity $w_e$. Let $\alpha^*$ be the largest feasible $\alpha$.
+
+1. (Weak duality, directly.) Show $\alpha^*\le\bar\phi(G)$ by looking at the flow crossing a cut.
+2. (Strong duality.) Write the flow problem as an LP in the path variables $f_P\ge0$, take its dual, and show that it equals $\mathrm{LR}(G)$. Conclude $\alpha^*=\mathrm{LR}(G)$.
+3. (Lecture 5.) Explain how a *canonical path* routing with congestion $\kappa$ yields a feasible flow, hence a certificate $\bar\phi(G)\ge 1/\kappa'$ for a suitable $\kappa'$ you should define. How is this different from the certificate $\lambda_2(L)\ge2n/\kappa$ of Lecture 5?
+
+**(f) Rounding (reading).** Bourgain's theorem says that every $n$-point metric embeds into $\ell_1$ with distortion $O(\log n)$. Using Lemma 1, explain how this turns an optimal solution $d^*$ of the LP into a cut $S$ with $\bar\phi(S)\le O(\log n)\cdot\mathrm{LR}(G)\le O(\log n)\cdot\bar\phi(G)$. What changes if only the objective (not each pair) needs to be preserved, as in the proof of Cheeger?
+
+---
+
+**Hint for (a).** Check the triangle inequality for $\delta^S$ by cases on which side each of $i,j,k$ lies on. For scale-invariance, note that the constraint set is a cone and the objective is homogeneous.
+
+**Hint for (b).** For $K_{2,3}$, the vertices are $a_1,a_2$ (degree $3$) and $b_1,b_2,b_3$ (degree $2$), $\mathrm{vol}(V)=12$. Try $S=\{a_1\},\{b_1\},\{a_1,a_2\},\{a_1,b_1\}$. For the shortest-path metric, split the pairs into $a$–$a$, $b$–$b$, and $a$–$b$ types.
+
+**Hint for (c).** For the triangle inequalities, loop over ordered triples $(i,j,k)$ and add the row $d_{jk}-d_{ij}-d_{ik}\le0$. A helper `P(i,j)` returning the index of the pair $\{i,j\}$ makes this short.
+
+**Hint for (d).** For step 1: given an optimal metric $d$, set $\ell_{ij}=d_{ij}$ on edges and let $\hat d$ be the shortest-path metric of $\ell$. Compare numerators and denominators (use the triangle inequality for $d$ along paths). For step 2: removing an edge $e$ of the tree splits $V$ into $S_e$ and $\bar S_e$, and the path from $u$ to $v$ uses $e$ iff $S_e$ separates them.
+
+**Hint for (e).** For 2, the primal has one capacity constraint per edge (dual variable $\ell_e\ge0$) and one demand constraint per pair (dual variable $z_{uv}\ge0$). Show that, at the optimum, $z_{uv}$ is the shortest-path distance under the lengths $\ell$, then reuse step 1 of (d).
