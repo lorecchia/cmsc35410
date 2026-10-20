@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Improved Cheeger — interactive demo</title>
+<style>
+  :root { --blue:#2a6fdb; --orange:#e8792b; --green:#2a9d5c; --red:#c0392b; --grey:#8a8a8a; --ink:#222; }
+  html,body { margin:0; font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color:var(--ink); background:#fff; font-size:14px; }
+  .wrap { padding:10px 14px; }
+  .controls { display:flex; flex-wrap:wrap; gap:18px; align-items:center; margin-bottom:8px; }
+  .controls label { font-weight:600; margin-right:6px; }
+  select, input[type=range] { vertical-align:middle; }
+  .val { font-family: ui-monospace, Menlo, monospace; min-width:4.5em; display:inline-block; }
+  .grid { display:grid; grid-template-columns: 1fr 1fr 1.05fr; gap:10px; }
+  .panel { border:1px solid #e3e3e3; border-radius:8px; padding:6px 8px; }
+  .panel h4 { margin:2px 0 4px; font-size:13px; color:#444; font-weight:600; }
+  table { border-collapse:collapse; width:100%; font-size:13px; }
+  td { padding:2px 4px; border-bottom:1px solid #f0f0f0; }
+  td.num { text-align:right; font-family: ui-monospace, Menlo, monospace; }
+  .ok { color:var(--green); font-weight:700; }
+  .bad { color:var(--red); font-weight:700; }
+  .legend span { margin-right:12px; white-space:nowrap; }
+  .sw { display:inline-block; width:14px; height:3px; vertical-align:middle; margin-right:4px; }
+  .note { color:#666; font-size:12px; margin-top:4px; }
+  svg text { font-size:11px; fill:#444; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="controls">
+    <span><label for="fam">Graph</label>
+      <select id="fam">
+        <option value="dumbbell" selected>two expanders + weak bridges</option>
+        <option value="three">three expanders in a ring</option>
+        <option value="cycle">cycle C<sub>n</sub></option>
+        <option value="path">path P<sub>n</sub></option>
+      </select></span>
+    <span id="epsBox"><label for="eps">bridge weight ε</label><input id="eps" type="range" min="-3" max="0.5" step="0.05" value="-1.5"> <span class="val" id="epsVal"></span></span>
+    <span id="nBox" style="display:none"><label for="n">n</label><input id="n" type="range" min="20" max="160" step="10" value="80"> <span class="val" id="nVal"></span></span>
+    <span><label for="k">k</label><input id="k" type="range" min="2" max="8" step="1" value="3"> <span class="val" id="kVal"></span></span>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h4>Spectral embedding i ↦ (φ₂(i), φ₃(i)); orange = best sweep set</h4>
+      <svg id="emb" width="100%" viewBox="0 0 320 220"></svg>
+    </div>
+    <div class="panel">
+      <h4>Sorted x ≥ 0 (Lemma 3) with Lemma 3.1 thresholds</h4>
+      <svg id="steps" width="100%" viewBox="0 0 320 220"></svg>
+      <div class="legend"><span><span class="sw" style="background:var(--blue)"></span>x<sub>i</sub></span><span><span class="sw" style="background:var(--orange)"></span>y<sub>i</sub> = ψ(x<sub>i</sub>)</span><span><span class="sw" style="background:#bbb"></span>thresholds tᵢ</span></div>
+    </div>
+    <div class="panel">
+      <h4>Numbers</h4>
+      <table id="tbl"></table>
+      <div class="note">x: Fiedler vector shifted by its π-median, better half kept (Lecture 6, Lemma 3), D(x)=1. Φ<sub>sw</sub>(x): best sweep set of x. All checks use the paper's constants.</div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:10px">
+    <h4 id="chartTitle">Approximation guarantee vs. parameter (log–log)</h4>
+    <svg id="chart" width="100%" viewBox="0 0 980 150"></svg>
+    <div class="legend">
+      <span><span class="sw" style="background:var(--grey)"></span>Cheeger guarantee √(2λ)/(λ/2)</span>
+      <span><span class="sw" style="background:var(--orange)"></span>KLLOT guarantee min<sub>k</sub> 12√2·kλ/√λₖ /(λ/2)</span>
+      <span><span class="sw" style="background:var(--blue)"></span>actual Φ<sub>sw</sub>(x)/(λ/2)</span>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+// ---------- utilities ----------
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function perm(m,rnd){const p=[...Array(m).keys()];for(let i=m-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[p[i],p[j]]=[p[j],p[i]];}return p;}
+function addEdge(W,u,v,w){ if(u===v) return; W[u][v]+=w; W[v][u]+=w; }
+function zeros(n){return Array.from({length:n},()=>new Float64Array(n));}
+// expander on vertices [off, off+m): union of 2 random Hamiltonian cycles (4-regular multigraph)
+function expander(W,off,m,rnd){ for(let c=0;c<2;c++){const p=perm(m,rnd);for(let i=0;i<m;i++) addEdge(W,off+p[i],off+p[(i+1)%m],1);} }
+
+function buildGraph(fam, eps, n){
+  const rnd=mulberry32(7);
+  let W;
+  if(fam==='cycle'){ W=zeros(n); for(let i=0;i<n;i++) addEdge(W,i,(i+1)%n,1); }
+  else if(fam==='path'){ W=zeros(n); for(let i=0;i<n-1;i++) addEdge(W,i,i+1,1); }
+  else if(fam==='dumbbell'){ const m=50; W=zeros(2*m); expander(W,0,m,rnd); expander(W,m,m,rnd);
+      for(let b=0;b<3;b++) addEdge(W,Math.floor(rnd()*m),m+Math.floor(rnd()*m),eps); }
+  else { const m=40; W=zeros(3*m); for(let c=0;c<3;c++) expander(W,c*m,m,rnd);
+      for(let c=0;c<3;c++) for(let b=0;b<2;b++) addEdge(W,c*m+Math.floor(rnd()*m),((c+1)%3)*m+Math.floor(rnd()*m),eps); }
+  return W;
+}
+
+// cyclic Jacobi eigen-decomposition of symmetric matrix (returns ascending eigenvalues, eigenvectors as columns)
+function jacobi(M){
+  const n=M.length, A=M.map(r=>Float64Array.from(r)), V=zeros(n);
+  for(let i=0;i<n;i++) V[i][i]=1;
+  for(let sweep=0;sweep<60;sweep++){
+    let off=0; for(let p=0;p<n;p++) for(let q=p+1;q<n;q++) off+=A[p][q]*A[p][q];
+    if(off<1e-22) break;
+    for(let p=0;p<n;p++) for(let q=p+1;q<n;q++){
+      const apq=A[p][q]; if(Math.abs(apq)<1e-300) continue;
+      const theta=(A[q][q]-A[p][p])/(2*apq);
+      const t=Math.sign(theta||1)/(Math.abs(theta)+Math.sqrt(theta*theta+1));
+      const c=1/Math.sqrt(t*t+1), s=t*c;
+      for(let r=0;r<n;r++){ const arp=A[r][p], arq=A[r][q]; A[r][p]=c*arp-s*arq; A[r][q]=s*arp+c*arq; }
+      for(let r=0;r<n;r++){ const apr=A[p][r], aqr=A[q][r]; A[p][r]=c*apr-s*aqr; A[q][r]=s*apr+c*aqr; }
+      for(let r=0;r<n;r++){ const vrp=V[r][p], vrq=V[r][q]; V[r][p]=c*vrp-s*vrq; V[r][q]=s*vrp+c*vrq; }
+    }
+  }
+  const idx=[...Array(n).keys()].sort((a,b)=>A[a][a]-A[b][b]);
+  return { lam: idx.map(i=>A[i][i]), vec: idx.map(i=>V.map(r=>r[i])) };
+}
+
+function analyze(W, k){
+  const n=W.length, d=W.map(r=>r.reduce((a,b)=>a+b,0)), vol=d.reduce((a,b)=>a+b,0);
+  const L=zeros(n); for(let i=0;i<n;i++) for(let j=0;j<n;j++) L[i][j]=(i===j?1:0)-W[i][j]/Math.sqrt(d[i]*d[j]);
+  const {lam,vec}=jacobi(L);
+  const f2=vec[1].map((x,i)=>x/Math.sqrt(d[i])), f3=vec[2].map((x,i)=>x/Math.sqrt(d[i]));
+  const energy=g=>{let E=0;for(let i=0;i<n;i++)for(let j=i+1;j<n;j++) if(W[i][j]) E+=W[i][j]*(g[i]-g[j])**2;return E;};
+  // Lecture 6, Lemma 3: shift the Fiedler vector by its pi-median, keep the half with smaller R_2, normalize D(x)=1
+  const ordF=[...Array(n).keys()].sort((a,b)=>f2[a]-f2[b]); let cum=0, med=f2[ordF[n-1]];
+  for(const i of ordF){ cum+=d[i]/vol; if(cum>=0.5){ med=f2[i]; break; } }
+  const pa=f2.map(x=>Math.max(x-med,0)), pb=f2.map(x=>Math.max(med-x,0));
+  const Dn=g=>g.reduce((a,x,i)=>a+d[i]*x*x,0);
+  let f = (energy(pa)/Dn(pa) <= energy(pb)/Dn(pb)) ? pa : pb;
+  const nf=Math.sqrt(Dn(f)); f=f.map(x=>x/nf);
+  const Rf=energy(f);
+  // sweep over positive thresholds of f
+  const order=[...Array(n).keys()].sort((a,b)=>f[b]-f[a]);
+  const inS=new Uint8Array(n); let cut=0, vS=0, best=Infinity, bestIdx=0;
+  for(let t=0;t<n;t++){ const v=order[t]; if(f[v]<=0) break;
+    for(let u=0;u<n;u++) if(W[v][u]) cut+= inS[u]? -W[v][u] : W[v][u];
+    inS[v]=1; vS+=d[v];
+    if(t+1<n && f[order[t+1]]===f[v]) continue;
+    const phi=cut/Math.min(vS,vol-vS); if(phi<best){best=phi;bestIdx=t;} }
+  const S=new Uint8Array(n); for(let t=0;t<=bestIdx;t++) S[order[t]]=1;
+  // Lemma 3.1 greedy thresholds
+  const lk=lam[k-1], C=2*Rf/(k*lk), M=Math.max(...f);
+  const mass=(a,b)=>{let s=0;for(let i=0;i<n;i++){const x=f[i]; if(x>=a&&x<=b){const r=Math.min(x-a,b-x); s+=d[i]*r*r;}} return s;};
+  const ts=[0];
+  for(let i=0;i<2*k;i++){ const a=ts[ts.length-1];
+    if(a>=M){ ts.push(M); continue; }
+    if(mass(a,M)<C){ ts.push(M); continue; }
+    let lo=a,hi=M; for(let it=0;it<80;it++){const mid=(lo+hi)/2; if(mass(a,mid)>=C) hi=mid; else lo=mid;} ts.push(hi); }
+  const succeeded = ts[ts.length-1]>=M*(1-1e-12);
+  const g=f.map(x=>{let b=ts[0];for(const t of ts) if(Math.abs(x-t)<Math.abs(x-b)) b=t; return b;});
+  const err=f.reduce((a,x,i)=>a+d[i]*(x-g[i])**2,0);
+  return {n,d,lam,f2,f3,f,Rf,phi:best,S,ts,g,err,succeeded,lk,k};
+}
+
+function bestKLLOT(lam){ let b=Infinity; for(let k=2;k<=Math.min(12,lam.length);k++) b=Math.min(b,12*Math.SQRT2*k*lam[1]/Math.sqrt(lam[k-1])); return b; }
+
+// ---------- drawing ----------
+const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function clear(s){while(s.firstChild)s.removeChild(s.firstChild);}
+function fmt(x){ if(!isFinite(x)) return '∞'; const a=Math.abs(x); if(a!==0&&(a<1e-3||a>=1e4)) return x.toExponential(2); return x.toPrecision(3); }
+
+function drawEmbedding(res,W){
+  const s=document.getElementById('emb'); clear(s);
+  const X=res.f2, Y=res.f3, n=res.n, P=14, w=320, h=220;
+  const mnx=Math.min(...X), mxx=Math.max(...X), mny=Math.min(...Y), mxy=Math.max(...Y);
+  const sx=x=>P+(x-mnx)/(mxx-mnx||1)*(w-2*P), sy=y=>h-P-(y-mny)/(mxy-mny||1)*(h-2*P);
+  for(let i=0;i<n;i++) for(let j=i+1;j<n;j++) if(W[i][j]) el('line',{x1:sx(X[i]),y1:sy(Y[i]),x2:sx(X[j]),y2:sy(Y[j]),stroke:'#ccc','stroke-width':Math.min(1.5,0.4+W[i][j]*0.5)},s);
+  for(let i=0;i<n;i++) el('circle',{cx:sx(X[i]),cy:sy(Y[i]),r:3,fill:res.S[i]?'var(--orange)':'var(--blue)'},s);
+}
+
+function drawSteps(res){
+  const s=document.getElementById('steps'); clear(s);
+  const w=320,h=220,P=24, f=res.f, n=res.n;
+  const order=[...Array(n).keys()].sort((a,b)=>f[a]-f[b]); const M=Math.max(...f)||1;
+  const sx=i=>P+i/(n-1)*(w-P-30), sy=y=>h-P-y/M*(h-2*P);
+  el('line',{x1:P,y1:h-P,x2:w-30,y2:h-P,stroke:'#999'},s); el('line',{x1:P,y1:P,x2:P,y2:h-P,stroke:'#999'},s);
+  const uniq=[...new Set(res.ts.map(t=>+t.toPrecision(12)))];
+  uniq.forEach((t,i)=>{ el('line',{x1:P,x2:w-30,y1:sy(t),y2:sy(t),stroke:'#bbb','stroke-dasharray':'4 3'},s);
+     const tx=el('text',{x:w-27,y:sy(t)+4},s); tx.textContent='t'+i; });
+  order.forEach((v,i)=>{ el('circle',{cx:sx(i),cy:sy(res.g[v]),r:2.6,fill:'none',stroke:'var(--orange)'},s);
+                         el('circle',{cx:sx(i),cy:sy(f[v]),r:1.8,fill:'var(--blue)'},s); });
+  const lab=el('text',{x:P+4,y:P-6},s); lab.textContent= res.succeeded ? 'greedy succeeded: '+(uniq.length)+' distinct thresholds' : 'greedy FAILED (would contradict Lemma 2.3)';
+}
+
+function drawTable(res){
+  const lam2=res.lam[1], k=res.k, lk=res.lk;
+  const cheeg=Math.sqrt(2*lam2), kl=12*Math.SQRT2*k*lam2/Math.sqrt(lk);
+  const b31=4*res.Rf/lk, b32=4*k*res.Rf+4*Math.SQRT2*k*Math.sqrt(res.err*res.Rf);
+  const chk=b=>b?'<span class="ok">✓</span>':'<span class="bad">✗</span>';
+  const rows=[
+    ['λ = λ₂', fmt(lam2)], ['λ₃', fmt(res.lam[2])], ['λ<sub>k</sub> (k='+k+')', fmt(lk)],
+    ['R₂(x) ≤ λ', fmt(res.Rf)+' '+chk(res.Rf<=lam2*(1+1e-9))],
+    ['Φ<sub>sw</sub>(x)', fmt(res.phi)],
+    ['Cheeger lower λ/2', fmt(lam2/2)],
+    ['Cheeger upper √(2λ)', fmt(cheeg)+' '+chk(res.phi<=cheeg)],
+    ['KLLOT 12√2·kλ/√λ<sub>k</sub>', fmt(kl)+' '+chk(res.phi<=kl)],
+    ['shape kλ/√λ<sub>k</sub> (no const.)', fmt(k*lam2/Math.sqrt(lk))],
+    ['Lem 3.1: D(x−y) ≤ 4R₂(x)/λ<sub>k</sub>', fmt(res.err)+' ≤ '+fmt(b31)+' '+chk(res.err<=b31*(1+1e-9))],
+    ['Lem 2′ bound on Φ<sub>sw</sub>(x)', fmt(b32)+' '+chk(res.phi<=b32*(1+1e-9))],
+  ];
+  document.getElementById('tbl').innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td class="num">${r[1]}</td></tr>`).join('');
+}
+
+function drawChart(fam){
+  const s=document.getElementById('chart'); clear(s);
+  const w=980,h=150,PL=60,PR=20,PT=12,PB=34;
+  let xs, xlabel;
+  if(fam==='dumbbell'||fam==='three'){ xs=[]; for(let e=-3;e<=0.51;e+=0.25) xs.push(Math.pow(10,e)); xlabel='bridge weight ε'; }
+  else { xs=[20,30,40,60,80,100,120,140,160]; xlabel='n'; }
+  document.getElementById('chartTitle').textContent='Approximation guarantee vs. '+xlabel+' (log–log): what each inequality certifies about the sweep cut';
+  const data=xs.map(x=>{ const W= (xlabel==='n')? buildGraph(fam,0,x) : buildGraph(fam,x,0); const r=analyze(W,2);
+     const l2=r.lam[1]; return {x, ch:Math.sqrt(2*l2)/(l2/2), kl:bestKLLOT(r.lam)/(l2/2), act:r.phi/(l2/2)}; });
+  const all=data.flatMap(p=>[p.ch,p.kl,p.act]).filter(isFinite);
+  const ymin=Math.log10(Math.min(...all))-0.1, ymax=Math.log10(Math.max(...all))+0.1;
+  const lx0=Math.log10(xs[0]), lx1=Math.log10(xs[xs.length-1]);
+  const sx=x=>PL+(Math.log10(x)-lx0)/(lx1-lx0)*(w-PL-PR), sy=y=>h-PB-(Math.log10(y)-ymin)/(ymax-ymin)*(h-PT-PB);
+  el('line',{x1:PL,y1:h-PB,x2:w-PR,y2:h-PB,stroke:'#999'},s); el('line',{x1:PL,y1:PT,x2:PL,y2:h-PB,stroke:'#999'},s);
+  for(let e=Math.ceil(ymin);e<=Math.floor(ymax);e++){ el('line',{x1:PL,x2:w-PR,y1:sy(10**e),y2:sy(10**e),stroke:'#eee'},s); const t=el('text',{x:PL-6,y:sy(10**e)+4,'text-anchor':'end'},s); t.textContent='10^'+e; }
+  xs.forEach((x,i)=>{ if(i%2===0||xlabel==='n'){ const t=el('text',{x:sx(x),y:h-PB+14,'text-anchor':'middle'},s); t.textContent= xlabel==='n'? x : fmt(x);} });
+  const xl=el('text',{x:(PL+w-PR)/2,y:h-4,'text-anchor':'middle'},s); xl.textContent=xlabel;
+  const line=(key,col,dash)=>{ el('polyline',{points:data.map(p=>sx(p.x)+','+sy(p[key])).join(' '),fill:'none',stroke:col,'stroke-width':2.2,'stroke-dasharray':dash||''},s);
+     data.forEach(p=>el('circle',{cx:sx(p.x),cy:sy(p[key]),r:2.8,fill:col},s)); };
+  line('ch','var(--grey)','5 4'); line('kl','var(--orange)'); line('act','var(--blue)');
+}
+
+// ---------- wiring ----------
+const famSel=document.getElementById('fam'), epsIn=document.getElementById('eps'), nIn=document.getElementById('n'), kIn=document.getElementById('k');
+let lastFam=null;
+function update(){
+  const fam=famSel.value, eps=Math.pow(10,+epsIn.value), n=+nIn.value, k=+kIn.value;
+  const clustered=(fam==='dumbbell'||fam==='three');
+  document.getElementById('epsBox').style.display=clustered?'':'none';
+  document.getElementById('nBox').style.display=clustered?'none':'';
+  document.getElementById('epsVal').textContent=fmt(eps); document.getElementById('nVal').textContent=n; document.getElementById('kVal').textContent=k;
+  const W=buildGraph(fam,eps,n); const res=analyze(W,k);
+  drawEmbedding(res,W); drawSteps(res); drawTable(res);
+  if(fam!==lastFam){ drawChart(fam); lastFam=fam; }
+}
+[famSel,epsIn,nIn,kIn].forEach(e=>e.addEventListener('input',update));
+update();
+</script>
+</body>
+</html>

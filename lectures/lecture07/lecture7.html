@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/tabby.min.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.10.19">
+
+  <meta name="author" content="CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis">
+  <title>CMSC 35410 – Lecture 7 · Improved Cheeger’s Inequality</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/reveal.css">
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/theme/quarto-2740581606dc327e82f18f789b69d8a0.css">
+  <link rel="stylesheet" href="lecture07.css">
+  <link href="../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="../../site_libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="../../site_libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section class="quarto-title-block center">
+  <h1 class="title">Lecture 7 · Improved Cheeger’s Inequality</h1>
+  <p class="subtitle">Why spectral partitioning beats its worst case<br><span style="font-size:0.75em">Kwok, Lau, Lee, Oveis Gharan &amp; Trevisan (STOC 2013)</span></p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
+</div>
+</div>
+</div>
+
+</section>
+<section class="slide level2">
+<h2>Recap: Lecture 6</h2>
+<p><span class="math inline">\(G=(V,E,w)\)</span>, <span class="math inline">\(\ d_i=\sum_j w_{ij}\)</span><br> <span class="math inline">\(L_{rw}=I-D^{-1}A\)</span> with eigenvalues <span class="math inline">\(0=\lambda_1\le\lambda_2\le\dots\le\lambda_n\le 2\)</span>, <span class="math inline">\(\ \lambda:=\lambda_2\)</span>.</p>
+<p><span class="math display">\[\Phi(S)=\frac{w(S,\bar S)}{\min\{\mathrm{vol}(S),\mathrm{vol}(\bar S)\}},\qquad \Phi(G)=\min_S\Phi(S),\]</span></p>
+<div class="thm">
+<p><strong>Cheeger.</strong> <span class="math inline">\(\ \tfrac12\lambda \le \Phi(G) \le \sqrt{2\lambda}\)</span>, and the best <strong>sweep set</strong> <span class="math inline">\(S^\star\)</span> of the Fiedler vector <span class="math inline">\(f\)</span> has <span class="math inline">\(\Phi(S^\star)\le\sqrt{2\lambda}\)</span>.</p>
+</div>
+<div class="warn">
+<p><strong>Proof:</strong> Lemma 3 (median shift) <span class="math inline">\(\to\)</span> Lemma 2 (square, <span class="math inline">\(\ell_2^2\to\ell_1\)</span>) <span class="math inline">\(\to\)</span> Lemma 1 (sweep).</p>
+</div>
+<div class="idea">
+<p><strong>Improvement</strong>: Replace Lemma 2 by a better, <strong>adaptive</strong> <span class="math inline">\(\ell_2^2\to\ell_1\)</span> map.</p>
+</div>
+<aside class="notes">
+<p>~3 min. Only the pieces we reuse today. Today’s proof keeps Lemmas 1 and 3 and replaces Lemma 2 by a better ℓ2² → ℓ1 map, tailored to the eigenvector.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Today</h2>
+<ul>
+<li>Both sides of Cheeger are tight, but on <em>different</em> graphs (hypercube vs.&nbsp;cycle).</li>
+<li>In practice, the sweep cut is far better than the <span class="math inline">\(\sqrt{\lambda}\)</span> guarantee.</li>
+</ul>
+<div class="idea">
+<p><strong>Today.</strong> The <span class="math inline">\(\sqrt{\cdot}\)</span> loss only happens when the Fiedler vector is <em>smooth</em>, and smooth eigenvectors force <span class="math inline">\(\lambda_k\)</span> to be small. With a gap <span class="math inline">\(\lambda_k\gg\lambda\)</span>, the <strong>same</strong> algorithm does much better: <span class="math display">\[\Phi(S^\star) \;\le\; O(k)\,\frac{\lambda}{\sqrt{\lambda_k}}.\]</span></p>
+</div>
+<p><strong>Plan:</strong> statement &amp; intuition · full proof · tightness, demo, consequences</p>
+<aside class="notes">
+<p>Frame the lecture as: “Cheeger is tight, so how can it be improved?” Answer: it is tight only for a specific kind of graph; we add a second spectral parameter that detects that kind of graph.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>The worst case: the cycle</h2>
+<p>For <span class="math inline">\(C_n\)</span>: <span class="math inline">\(\ \lambda = 1-\cos(2\pi/n) \approx 2\pi^2/n^2\)</span>, <span class="math inline">\(\quad \Phi(C_n) = 2/n\)</span>.</p>
+<ul>
+<li>Upper bound <strong>tight</strong>: <span class="math inline">\(\Phi(C_n) = \Theta(\sqrt{\lambda})\)</span>. Lower bound <strong>off by <span class="math inline">\(\Theta(n)\)</span></strong>: <span class="math inline">\(\lambda/2 = \Theta(1/n^2)\)</span>. (On the hypercube it is the other way round.)</li>
+<li>So Cheeger only guarantees <span class="math inline">\(\Phi(S^\star)/\Phi(G)\le\sqrt{2\lambda}/(\lambda/2)=\sqrt{8/\lambda}=\Theta(n)\)</span> here, even though the sweep finds an optimal cut on <span class="math inline">\(C_n\)</span>.</li>
+</ul>
+<p>No improvement of Cheeger is possible <strong>as a function of <span class="math inline">\(\lambda\)</span> alone.</strong></p>
+<div class="idea">
+<p><strong>Question.</strong> Join two expanders on <span class="math inline">\(n/2\)</span> vertices by edges of total weight <span class="math inline">\(1/n\)</span>. Then <span class="math inline">\(\lambda=\Theta(1/n^2)\)</span>, as for the cycle, but also <span class="math inline">\(\Phi(G)=\Theta(1/n^2)\)</span>: the <em>lower</em> bound is tight and the sweep is near-optimal. What distinguishes the two graphs?</p>
+<p><strong>Answer (KLLOT): the rest of the spectrum.</strong> For the cycle, <span class="math inline">\(\lambda_3=\lambda_2\)</span> and <span class="math inline">\(\lambda_k = \Theta(k^2/n^2)\)</span> grows slowly.</p>
+</div>
+<aside class="notes">
+<p>The ratio √(8/λ) compares against the lower bound λ/2, the only bound on Φ(G) we can compute; it was already on the Lecture 6 algorithm slide. On the cycle it is large because λ/2 is loose, not because the sweep is bad. For the two-expander example: Φ(A) = (1/n)/vol(A) ≈ 1/(d n²) and λ ≈ 2Φ(A), while λ3 stays Θ(1) (numerically, for two 4-regular expanders with n = 100: λ ≈ 1.0e-4, Φ(A) = 5.0e-5, λ3 ≈ 0.15; the cycle C_100 has λ ≈ 2.0e-3 but Φ = 2.0e-2). Real bad examples for spectral partitioning do exist (Guattery–Miller 1998), so the analysis must use some structural parameter of the graph. The paper’s choice is λ_k.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Main theorem</h2>
+<div class="thm">
+<p><strong>Theorem (KLLOT ’13).</strong> For every graph <span class="math inline">\(G\)</span> and every <span class="math inline">\(k\ge 2\)</span>, <span class="math display">\[\Phi(G) \;\le\; \Phi(S^\star) \;\le\; 12\sqrt2\; k\,\frac{\lambda}{\sqrt{\lambda_k}}.\]</span></p>
+</div>
+<ul>
+<li><strong>Same algorithm.</strong> Nothing changes except the analysis. The sweep never looks at <span class="math inline">\(\lambda_k\)</span>, so the bound holds <strong>for the best <span class="math inline">\(k\)</span> at once</strong>: <span class="math inline">\(\ \Phi(S^\star)\le \min_k O(k)\,\lambda/\sqrt{\lambda_k}\)</span>.</li>
+<li><strong>Approximation:</strong> <span class="math inline">\(\displaystyle \frac{\Phi(S^\star)}{\Phi(G)} \le \frac{\Phi(S^\star)}{\lambda/2} = O\!\left(\frac{k}{\sqrt{\lambda_k}}\right)\)</span> vs <span class="math inline">\(\sqrt{8/\lambda}\)</span> from Cheeger.</li>
+<li>If <span class="math inline">\(\lambda_3 = \Omega(1)\)</span>, spectral partitioning is a <strong>constant-factor approximation</strong> for conductance, in nearly-linear time.</li>
+<li>This partly explains the eigengap heuristic: few “outstanding” clusters ⇒ <span class="math inline">\(\lambda_k\)</span> large for small <span class="math inline">\(k\)</span>.</li>
+</ul>
+<aside class="notes">
+<p>The constant 12√2 comes from the first proof; the paper remarks it can be sharpened to 10√2. Don’t dwell on constants.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2 scrollable">
+<h2>Sanity checks</h2>
+<ol type="1">
+<li><strong><span class="math inline">\(k=2\)</span>:</strong> <span class="math inline">\(\ k\lambda/\sqrt{\lambda_2} = 2\sqrt{\lambda}\)</span>, which is Cheeger up to constants.</li>
+<li><strong>When does it beat Cheeger?</strong> <span class="math inline">\(\ k\lambda/\sqrt{\lambda_k} \ll \sqrt{\lambda} \iff \lambda_k \gg k^2\lambda\)</span>. The spectrum has to grow <strong>faster than quadratically</strong> in <span class="math inline">\(k\)</span>.</li>
+<li><strong>The cycle sits exactly on the boundary:</strong> <span class="math inline">\(\lambda_k = \Theta(k^2/n^2) = \Theta(k^2\lambda)\)</span>, so <span class="math display">\[k\,\frac{\lambda}{\sqrt{\lambda_k}} = \Theta\!\left(k\cdot\frac{1}{n^2}\cdot\frac{n}{k}\right)=\Theta\!\left(\frac1n\right) = \Theta(\Phi(C_n)) \quad\text{for every } k.\]</span> The theorem is <strong>tight for every <span class="math inline">\(k\)</span></strong>, so the factor <span class="math inline">\(k\)</span> cannot be removed.</li>
+</ol>
+<div class="fragment">
+<div class="idea">
+<p>Contrapositive reading: if Cheeger is tight (<span class="math inline">\(\Phi \approx \sqrt{\lambda}\)</span>), then <span class="math inline">\(\lambda_k \lesssim k^2 \lambda\)</span> for <strong>all</strong> <span class="math inline">\(k\)</span>. Graphs on which Cheeger is tight have “cycle-like” spectra.</p>
+</div>
+</div>
+</section>
+<section class="slide level2">
+<h2>Context: why should <span class="math inline">\(\lambda_k\)</span> matter?</h2>
+<p><strong>Higher-order Cheeger</strong> (previewed in Lecture 6; Lee–Oveis Gharan–Trevisan ’12, Louis–Raghavendra–Tetali–Vempala ’12): <span class="math display">\[\rho_k(G) := \min_{S_1,\dots,S_k \text{ disjoint}}\ \max_\ell \Phi(S_\ell), \qquad \frac{\lambda_k}{2}\le \rho_k(G) \le O(k^2)\sqrt{\lambda_k}.\]</span></p>
+<ul>
+<li><span class="math inline">\(\lambda_k\)</span> is small <span class="math inline">\(\iff\)</span> there are <span class="math inline">\(k\)</span> <strong>disjoint</strong> sparse sets.</li>
+<li><span class="math inline">\(\lambda\)</span> small, <span class="math inline">\(\lambda_3\)</span> large <span class="math inline">\(\Rightarrow\)</span> the graph looks like <strong>two expanders joined by a sparse cut</strong>.</li>
+<li>Today we only need the <strong>easy direction</strong> (Lemma B): <span class="math inline">\(k\)</span> disjointly supported vectors with small <span class="math inline">\(R_2\)</span> force <span class="math inline">\(\lambda_k\)</span> to be small.</li>
+</ul>
+<aside class="notes">
+<p>Not assumed known; just state it for context. The only piece we use is the “disjoint supports ⇒ λ_k small” lemma, which we prove on the next slide.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section>
+<section class="title-slide slide level1 center">
+<h1>Proof Ideas</h1>
+<div class="thm">
+<p><strong>Theorem (KLLOT ’13).</strong> For every graph <span class="math inline">\(G\)</span> and every <span class="math inline">\(k\ge 2\)</span>, <span class="math display">\[\Phi(G) \;\le\; \Phi(S^\star) \;\le\; 12\sqrt2\; k\,\frac{\lambda}{\sqrt{\lambda_k}}.\]</span></p>
+</div>
+<p><strong>Notation</strong>: Let: <span class="math display">\[R_2(x)=\dfrac{\sum_Ew_{ij}(x_i-x_j)^2}{\sum_id_ix_i^2} \textrm{ and } R_1(x)=\dfrac{\sum_Ew_{ij}|x_i-x_j|}{\sum_id_i|x_i|} \text{ (\textbf{uncentered})}\]</span></p>
+<p>Write <span class="math inline">\(\;N(x)=\sum_{ij\in E}w_{ij}(x_i-x_j)^2\;\)</span> and <span class="math inline">\(\;D(x)=\sum_i d_ix_i^2\)</span>.</p>
+<p>Let <span class="math inline">\(f\)</span> be the Fiedler vector: <span class="math inline">\(f\perp_d\mathbf 1\)</span> and <span class="math inline">\(R_2(f)=\lambda\)</span>.</p>
+</section>
+<section class="slide level2 scrollable">
+<h2>A new look at Lemma 2 in Cheeger’s original proof</h2>
+<p>The original proof had 3 steps.</p>
+<ol type="1">
+<li><p><strong>Median-Shift</strong> (Lemma 3, Lecture 6): median-shift <span class="math inline">\(f\)</span>, keep the better half, rescale: <span class="math inline">\(x\ge0\)</span> with <span class="math inline">\(\pi(\mathrm{supp}\,x)\le\tfrac12\)</span>, <span class="math inline">\(R_2(x)\le\lambda\)</span>, <span class="math inline">\(D(x)=1\)</span>. Its sweep sets are sweep sets of <span class="math inline">\(\pm f\)</span>, so <span class="math inline">\(\Phi(S^\star)\le\Phi_{\rm sw}(x) := \min_{t\ge0}\Phi(\{x_i&gt;t\})\)</span>.</p></li>
+<li><p><span class="math inline">\(\mathbf{\ell_2^2 \to \ell_1}\)</span> (Lemma 2, Lecture 6): for <span class="math inline">\(x\ge0\)</span> with <span class="math inline">\(\pi(\mathrm{supp}\,x)\le\frac12\)</span>, let <span class="math inline">\(g_i = x_i^2\)</span>. Then <span class="math inline">\(R_1(g) \le \sqrt{2R_2(x)}\)</span>.</p></li>
+<li><p><strong>Sweep Rounding on Cut Cone</strong> (Lemma 1, Lecture 6): for <span class="math inline">\(g\ge0\)</span> with <span class="math inline">\(\pi(\mathrm{supp}\,g)\le\frac12\)</span>, some sweep set of <span class="math inline">\(g\)</span> has <span class="math inline">\(\Phi\le R_1(g)\)</span>.</p></li>
+</ol>
+<p>For improving Cheeger’s inequality, we focus on strengthening the <span class="math inline">\(\ell_2^2 \to \ell_1\)</span> step by choosing a more general transformation <span class="math inline">\(g_i = G(x_i)\)</span> rather than just <span class="math inline">\(x_i^2\)</span>. Moreover, our choice of final choice of <span class="math inline">\(g\)</span> will depend on the specific structure of <span class="math inline">\(x\)</span>.</p>
+<div class="idea">
+<p>Take <span class="math inline">\(g_i = G(x_i)\)</span> with <span class="math inline">\(G\)</span> increasing, <span class="math inline">\(G(0)=0\)</span>, and density <span class="math inline">\(\mu=G'\)</span>. Then <span class="math inline">\(g\)</span> has the <strong>same sweep sets</strong> as <span class="math inline">\(x\)</span>, and by the sweep-cut identities with <span class="math inline">\(S_s=\{i:x_i&gt;s\}\)</span>: <span class="math display">\[R_1(g) = \dfrac{\sum_Ew_{ij}|g_i-g_j|}{\sum_id_i|g_i|} =  \frac{\int_0^\infty \mu(s)\,w(S_s,\bar S_s)\,ds}{\int_0^\infty \mu(s)\,\mathrm{vol}(S_s)\,ds}.\]</span> Choosing <span class="math inline">\(g\)</span> means choosing <strong>how to weight the thresholds</strong>.</p>
+</div>
+<aside class="notes">
+<p>Improve the equation in the idea when improving lecture 6.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Lemma 2, revisited: what each edge pays</h2>
+<p>Let <span class="math inline">\(g_i = G(x_i)\)</span> with density <span class="math inline">\(\mu = G'\)</span>, and <span class="math inline">\(\bar\mu_{ij}\)</span> := the average of <span class="math inline">\(\mu\)</span> over <span class="math inline">\([x_j,x_i]\)</span>. <span class="math display">\[|g_i-g_j| = \int_{x_j}^{x_i}\mu(s)\,ds = \underbrace{|x_i-x_j|}_{\text{length}}\cdot\,\bar\mu_{ij}, \qquad \sum_i d_i g_i = \sum_i d_i\!\int_0^{x_i}\!\mu(s)\,ds.\]</span> Each <strong>edge</strong> is charged the density <strong>where it sits</strong>; each <strong>vertex</strong> is credited the density <strong>below it</strong>.</p>
+<p><img data-src="figures/edge-pays.svg" class="" style="width:70.0%"></p>
+<p><strong>Lemma 2</strong> takes <span class="math inline">\(\mu(s)=2s\)</span>, so <span class="math inline">\(\bar\mu_{ij} = x_i+x_j\)</span>: the edge’s <strong>height</strong>. Cauchy–Schwarz: <span class="math display">\[
+\sum_{ij\in E} w_{ij}\,|g_i-g_j|\,
+\le \sum_{ij\in E} w_{ij}\,|x_i-x_j|\,\bar\mu_{ij}\\
+\le \sqrt{N(x)}\,\sqrt{\textstyle\sum_{E} w_{ij}\,\bar\mu_{ij}^2} \le \sqrt{N(x)}\,\sqrt{2D(x)}\
+\]</span> Dividing by <span class="math inline">\(D(x)\)</span>, we have <span class="math inline">\(R_1(x^2)\le\sqrt{2R_2(x)}\)</span>.</p>
+<div class="warn">
+<p><strong>The loss.</strong> Cauchy–Schwarz is tight only if <span class="math inline">\(\bar\mu_{ij}\propto|x_i-x_j|\)</span> on every edge: a <strong>short edge sitting high up</strong> pays far more than its length.</p>
+</div>
+<aside class="notes">
+<p>~4 min. The identity |g_i − g_j| = length × average density is the whole point; “height” is just the name for the average density when μ(s) = 2s, because the average of 2s over [x_j, x_i] is x_i + x_j. The figure shows it: each edge is the segment [x_j, x_i] under the axis and pays the shaded area. The two short edges have the same length, but the one high up pays 0.114, almost 20 times the one near the bottom (0.006).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>When is Lemma 2 tight, when is it loose</h2>
+<div class="defn">
+<p><strong>Def.</strong> <span class="math inline">\(y\in\mathbb R^V\)</span> is an <strong><span class="math inline">\(h\)</span>-step vector</strong> if it takes at most <span class="math inline">\(h\)</span> distinct values <span class="math inline">\(t_1&lt;\dots&lt;t_h\)</span> (the <strong>steps</strong>).</p>
+</div>
+<p>In the Cauchy–Schwarz step of Lemma 2, lengths <span class="math inline">\(|x_i-x_j|\)</span> are paired with heights <span class="math inline">\(\bar\mu_{ij}=x_i+x_j\)</span>.</p>
+<p><img data-src="figures/cs-tightness.svg" class="" style="width:100.0%"></p>
+<div class="tip">
+<p><strong>Tight</strong> (up to constants) when lengths <span class="math inline">\(|x_i-x_j|\)</span> are roughly proportional to heights on most edges: <strong>smooth</strong> vectors, like the cosine on the cycle.</p>
+</div>
+<div class="tip">
+<p><strong>Loose</strong> when <span class="math inline">\(x\)</span> is close to an <span class="math inline">\(h\)</span>-step vector: an edge <strong>inside a step</strong> has length <span class="math inline">\(\approx0\)</span> but height <span class="math inline">\(\approx 2t_\ell\)</span>, a <strong>short edge sitting high up</strong>.</p>
+</div>
+<aside class="notes">
+<p>~3 min. Cauchy–Schwarz is an equality only when the two vectors (lengths and heights, weighted by w) are parallel. For a smooth vector like cos on the cycle they are comparable across the bulk of the edges, and Cheeger is tight there. For an exact h-step vector, edges inside a step have length 0 and pay nothing, but their heights still enter Σ w μ̄², which is what the bound 2D(x) controls; that slack is the √ loss. The figure plots both lists (each multiplied by √w and scaled to unit length) for the vector x from Lemma 3; Cauchy–Schwarz is tight exactly when the two bar profiles coincide. Their cosine is the exact efficiency of Lemma 2: R_1(x²) = cos∠ · √(2R_2(x)) · √(1 − R_2(x)/2). Cycle: cos∠ = 2/π ≈ 0.64 (lengths ∝ |sin|, heights ∝ cos). Two expanders with bridge weight ε: cos∠ ≈ 0.43√ε → 0, since the length is all on the three bridges and the height is spread over the edges inside the cluster.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Proof Idea and Roadmap</h2>
+<p><strong>Goal:</strong> <span class="math inline">\(R_1(g) \le 12\sqrt2\,k\,R_2(x)/\sqrt{\lambda_k}\)</span> for a suitable <span class="math inline">\(g=G(x)\)</span>, with <span class="math inline">\(x\ge0\)</span> and <span class="math inline">\(R_2(x)\le\lambda\)</span>.</p>
+<p><img data-src="figures/cs-tightness.svg" class="" style="width:100.0%"></p>
+<div class="tip">
+<p><strong>Tight Case</strong> (smooth vector <span class="math inline">\(x\)</span>): Show that <span class="math inline">\(\lambda_k\)</span> is small by constructing <span class="math inline">\(k\)</span> independent test vectors <span class="math inline">\(z^{(1)},\dots,z^{(k)}\)</span> with small Rayleigh quotients <span class="math inline">\(R_2(z^{(\ell)})\)</span>.</p>
+</div>
+<div class="tip">
+<p><strong>Loose Case</strong> (vector <span class="math inline">\(x\)</span> close to an <span class="math inline">\(O(k)\)</span>-step vector): improve Lemma 2 by focusing on edges <strong>between steps</strong>, which contribute significantly to the Rayleigh quotient, while edges <strong>inside steps</strong> contribute very little.</p>
+</div>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Step</th>
+<th style="text-align: left;">Statement</th>
+<th style="text-align: left;">Source</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Lemma B</strong></td>
+<td style="text-align: left;">Disjoint supports: <span class="math inline">\(\lambda_k \le 2\max_\ell R_2(z^{(\ell)})\)</span></td>
+<td style="text-align: left;">intro (Courant–Fischer)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Lemma 3.1</strong></td>
+<td style="text-align: left;"><span class="math inline">\(\exists\)</span> <span class="math inline">\((2k{+}1)\)</span>-step <span class="math inline">\(y\)</span> with <span class="math inline">\(D(x-y) \le 4R_2(x)/\lambda_k\)</span></td>
+<td style="text-align: left;">uses B</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Lemma 2′</strong></td>
+<td style="text-align: left;">for a suitable <span class="math inline">\(g\)</span>: <span class="math inline">\(\ R_1(g)\le 4kR_2(x) + 4\sqrt2\,k\sqrt{D(x-y)\,R_2(x)}\)</span></td>
+<td style="text-align: left;">replaces Lemma 2</td>
+</tr>
+</tbody>
+</table>
+<p>Recall <span class="math inline">\(R_2=N/D\)</span>; throughout, <span class="math inline">\(D(x)=1\)</span>.</p>
+<aside class="notes">
+<p>Lemma 3.1 is a structural statement about x: a spectral gap makes x nearly a step vector. Lemma 2′ (the paper’s Prop 3.2) is the new rounding step: for a near-step vector, the ℓ2² → ℓ1 map loses only linearly. Paper numbering is kept for 3.1 so students can follow along in the paper.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section class="title-slide slide level1 center">
+<h1>Full Proofs</h1>
+
+</section>
+<section class="slide level2">
+<h2>Lemma B: Breaking <span class="math inline">\(x\)</span> into <span class="math inline">\(k\)</span> disjoint parts to bound <span class="math inline">\(\lambda_k\)</span></h2>
+<div class="thm">
+<p><strong>Lemma B (KLLOT Lemma 2.3).</strong> If <span class="math inline">\(z^{(1)},\dots,z^{(k)}\neq0\)</span> have pairwise disjoint supports, then <span class="math inline">\(\ \lambda_k\le 2\max_\ell R_2(z^{(\ell)})\)</span>.</p>
+</div>
+<div class="pf">
+<p><strong>Courant–Fischer:</strong> <span class="math display">\[\lambda_k = \min_{\dim U=k}\; \max_{z\in U\setminus0}R_2(z)\]</span></p>
+<p>Disjoint supports make the <span class="math inline">\(z^{(\ell)}\)</span> independent: take <span class="math inline">\(U=\mathrm{span}\{z^{(\ell)}\}\)</span> and <span class="math display">\[z=\sum_\ell c_\ell z^{(\ell)} \textrm{ with } \vec{c} \neq 0.\]</span></p>
+<ul>
+<li><strong>Denominator</strong> (disjoint supports): <span class="math inline">\(\ \sum_i d_iz_i^2=\sum_\ell c_\ell^2\sum_i d_i\big(z^{(\ell)}_i\big)^2\)</span>.</li>
+<li><strong>Numerator:</strong> each edge meets at most two supports. <br> If <span class="math inline">\(i\in\mathrm{supp}\,z^{(\ell)}\)</span> and <span class="math inline">\(j\in\mathrm{supp}\,z^{(m)}\)</span>, <span class="math display">\[\begin{aligned}(z_i-z_j)^2&amp;=\big(c_\ell z^{(\ell)}_i-c_mz^{(m)}_j\big)^2\\
+&amp;\le 2c_\ell^2\big(z^{(\ell)}_i-z^{(\ell)}_j\big)^2+2c_m^2\big(z^{(m)}_i-z^{(m)}_j\big)^2,\end{aligned}
+\]</span> so <span class="math inline">\(\ \sum_{ij\in E}w_{ij}(z_i-z_j)^2\le2\sum_\ell c_\ell^2\sum_{ij\in E}w_{ij}\big(z^{(\ell)}_i-z^{(\ell)}_j\big)^2\)</span>.</li>
+</ul>
+<p>A ratio of sums is at most the largest ratio: <span class="math inline">\(\ R_2(z)\le2\max_\ell R_2(z^{(\ell)})\)</span>. <span class="math inline">\(\square\)</span></p>
+</div>
+<aside class="notes">
+<p>~4 min. Courant–Fischer for L_rw: L_rw is self-adjoint in L²(π), so the minimax characterization applies with the uncentered Rayleigh quotient R_2 (constants are allowed in U). The displayed inequality is (a+b)² ≤ 2a² + 2b², using z^(ℓ)_j = z^(m)<em>i = 0; edges inside one support give equality with factor 1, and edges with only one endpoint in a support are covered too. Used twice: for the bumps on the cycle (Intuition II) and for the tents in Lemma 3.1. Remark: with indicators z^(ℓ) = 1</em>{S_ℓ} of disjoint sets, R_2(1_S) = w(S,S̄)/vol(S) ≤ Φ(S), so λ_k ≤ 2ρ_k(G), the easy side of higher-order Cheeger from the previous slide.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Lemma 3.1: smooth vs step-like dichotomy</h2>
+<p>Lemma 3.1 encapsulates the dichotomy between smooth and step-like vectors. Either <span class="math inline">\(x\)</span> is close to a <span class="math inline">\((2k{+}1)\)</span>-step vector, or <span class="math inline">\(\lambda_k\)</span> is small.</p>
+<p><strong>Def.</strong> Thresholds <span class="math inline">\(0=t_0\le t_1\le\dots\le t_m\)</span>; <span class="math inline">\(\ \psi(s)\)</span> := the threshold <strong>nearest</strong> to <span class="math inline">\(s\)</span>; <span class="math inline">\(\ y_i := \psi(x_i)\)</span>. (<span class="math inline">\((m{+}1)\)</span>-step approximation.)</p>
+<div class="lem">
+<p><strong>Lemma 3.1.</strong> There is a <span class="math inline">\((2k{+}1)\)</span>-step approximation <span class="math inline">\(y\)</span> of <span class="math inline">\(x\)</span> with <span class="math display">\[D(x-y) \;\le\; \frac{4\,R_2(x)}{\lambda_k}.\]</span></p>
+</div>
+<p><img data-src="figures/step-approx-left.svg" class="" style="width:58.0%"></p>
+<p>If <span class="math inline">\(\lambda_k \gg R_2(x)\)</span>, then <span class="math inline">\(x\)</span> is essentially a step vector with at most <span class="math inline">\(2k{+}1\)</span> levels.</p>
+</section>
+<section class="slide level2">
+<h2>Proof of Lemma 3.1: greedy thresholds</h2>
+<p>Budget <span class="math inline">\(C := \dfrac{2R_2(x)}{k\lambda_k}\)</span>, <span class="math inline">\(\ M := \max_i x_i\)</span>, <span class="math inline">\(\ t_0 := 0\)</span>. For <span class="math inline">\(\ell = 1,\dots,2k\)</span>:</p>
+<ul>
+<li>let <span class="math inline">\(t_\ell \ge t_{\ell-1}\)</span> be the <strong>smallest</strong> value with <strong>piece mass</strong> <span class="math display">\[m_\ell := \sum_{i:\ t_{\ell-1}\le x_i\le t_\ell} d_i\,\big|x_i-\psi_{t_{\ell-1},t_\ell}(x_i)\big|^2 = C;\]</span></li>
+<li>if no such <span class="math inline">\(t_\ell \le M\)</span> exists, set <span class="math inline">\(t_\ell := M\)</span>.</li>
+</ul>
+<p>(<span class="math inline">\(m_\ell\)</span> is continuous and nondecreasing in <span class="math inline">\(t_\ell\)</span>, starting at <span class="math inline">\(0\)</span>.)</p>
+<div class="lem">
+<p><strong>Success</strong> (<span class="math inline">\(t_{2k}=M\)</span>): <span class="math inline">\(\ D(x-y) = \sum_\ell m_\ell \le 2k\,C = 4R_2(x)/\lambda_k\)</span>. <span class="math inline">\(\checkmark\)</span></p>
+</div>
+<div class="warn">
+<p><strong>Failure</strong> (<span class="math inline">\(t_{2k}&lt;M\)</span>): all <span class="math inline">\(2k\)</span> pieces have mass <strong>exactly</strong> <span class="math inline">\(C\)</span>. We show this contradicts Lemma B.</p>
+</div>
+</section>
+<section class="slide level2">
+<h2>Failure is impossible</h2>
+<p><strong>Tents:</strong> <span class="math inline">\(\tau^{(\ell)}_i := |x_i-y_i|\)</span> if <span class="math inline">\(x_i\in[t_{\ell-1},t_\ell]\)</span>, else <span class="math inline">\(0\)</span>. These are disjointly supported, with <span class="math inline">\(D(\tau^{(\ell)}) = C\)</span>.</p>
+<p><img data-src="figures/tents.svg" class="" style="width:48.0%"></p>
+<div class="lem">
+<p><strong>Claim.</strong> For every edge: <span class="math inline">\(\ \sum_\ell \big(\tau^{(\ell)}_i-\tau^{(\ell)}_j\big)^2 \le (x_i-x_j)^2\)</span>.</p>
+</div>
+<ul>
+<li><em>Same piece:</em> each <span class="math inline">\(\tau^{(\ell)}\)</span> is 1-Lipschitz as a function of <span class="math inline">\(x\)</span>.</li>
+<li><em>Different pieces</em> <span class="math inline">\(\ell&lt;m\)</span>: <span class="math inline">\(x_i\le t_\ell\le x_j\)</span>, so <span class="math inline">\(\big(\tau^{(\ell)}_i\big)^2+\big(\tau^{(m)}_j\big)^2 \le (t_\ell-x_i)^2+(x_j-t_\ell)^2 \le (x_j-x_i)^2\)</span>.</li>
+</ul>
+<p>Summing over edges: <span class="math display">\[\sum_{\ell=1}^{2k}R_2(\tau^{(\ell)}) = \frac{1}{C}\sum_\ell N(\tau^{(\ell)}) \le \frac{N(x)}{C} = \frac{R_2(x)}{C} = \frac{k\lambda_k}{2}.\]</span> By averaging, <strong>at least <span class="math inline">\(k\)</span></strong> of the <span class="math inline">\(2k\)</span> tents have <span class="math inline">\(R_2(\tau^{(\ell)}) &lt; \lambda_k/2\)</span>. Lemma B then gives <span class="math inline">\(\lambda_k \le 2\max_\ell R_2(\tau^{(\ell)}) &lt; \lambda_k\)</span>. Contradiction. <span class="math inline">\(\square\)</span></p>
+<aside class="notes">
+<p>Why 2k pieces rather than k: the averaging step throws away half of them. Good place to pause for questions.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Lemma 2′: rounding a near-step vector</h2>
+<div class="thm">
+<p><strong>Lemma 2′ (KLLOT Prop 3.2).</strong> For any <span class="math inline">\((2k{+}1)\)</span>-step approximation <span class="math inline">\(y\)</span> of <span class="math inline">\(x\)</span> (with <span class="math inline">\(D(x)=1\)</span>), the vector <span class="math inline">\(g\)</span> below satisfies <span class="math display">\[\Phi_{\rm sw}(x) \;\le\; R_1(g) \;\le\; 4k\,R_2(x) \;+\; 4\sqrt2\,k\,\sqrt{D(x-y)\,R_2(x)}.\]</span></p>
+</div>
+<ul>
+<li>If <span class="math inline">\(x=y\)</span> exactly: <span class="math inline">\(\Phi_{\rm sw}(x)\le 4kR_2(x)\)</span>. The loss is <strong>linear</strong>, with no square root.</li>
+<li><strong>The new map</strong> (in place of <span class="math inline">\(g=x^2\)</span>): <span class="math display">\[g_i := \int_0^{x_i} \mu(s)\,ds, \qquad \mu(s) := |s-\psi(s)|,\]</span> the distance from <span class="math inline">\(s\)</span> to the nearest threshold. <span class="math inline">\(g\)</span> is increasing in <span class="math inline">\(x\)</span>, so it has the same sweep sets and support.</li>
+</ul>
+<p><img data-src="figures/sawtooth.svg" class="" style="width:88.0%"></p>
+</section>
+<section class="slide level2">
+<h2>Claim 3.3: the denominator</h2>
+<div class="lem">
+<p><strong>Claim 3.3.</strong> <span class="math inline">\(\ g_i \ge \dfrac{x_i^2}{8k}\ \)</span> for all <span class="math inline">\(i\)</span>. Hence <span class="math inline">\(\ \sum_i d_i\,g_i \ge \dfrac{D(x)}{8k} = \dfrac1{8k}\)</span>.</p>
+</div>
+<div class="pf">
+<p>Let <span class="math inline">\(x_i\in(t_\ell,t_{\ell+1}]\)</span> with <span class="math inline">\(\ell\le 2k-1\)</span>.</p>
+<ul>
+<li>Each <strong>full</strong> step contributes <span class="math inline">\(\int_{t_m}^{t_{m+1}}\mu = \frac14(t_{m+1}-t_m)^2\)</span>.</li>
+<li>The <strong>partial</strong> step contributes <span class="math inline">\(\int_{t_\ell}^{x_i}\mu \ge \frac14 (x_i-t_\ell)^2\)</span>.</li>
+<li>Cauchy–Schwarz over at most <span class="math inline">\(2k\)</span> segments: <span class="math display">\[\begin{aligned} x_i^2 &amp;= \Big(\textstyle\sum_{m&lt;\ell}(t_{m+1}-t_m) + (x_i-t_\ell)\Big)^2\\ &amp;\le 2k\Big(\textstyle\sum_{m&lt;\ell}(t_{m+1}-t_m)^2+(x_i-t_\ell)^2\Big) \;\le\; 8k\,g_i. \;\square\end{aligned}\]</span></li>
+</ul>
+</div>
+<p>This is <strong>where the factor <span class="math inline">\(k\)</span> is paid</strong>: a sawtooth density puts less weight on large values than the density <span class="math inline">\(2s\)</span>.</p>
+</section>
+<section class="slide level2">
+<h2>Claim 3.4: the numerator</h2>
+<div class="lem">
+<p><strong>Claim 3.4.</strong> For every edge <span class="math inline">\(ij\)</span>: <span class="math display">\[|g_i-g_j| \;\le\; \tfrac12\,|x_i-x_j|\,\big(a_i + a_j + |x_i-x_j|\big).\]</span> Here <span class="math inline">\(a_i := |x_i-y_i|\)</span> is the distance from <span class="math inline">\(x_i\)</span> to its step.</p>
+</div>
+<div class="pf">
+<p>For <span class="math inline">\(s\)</span> between <span class="math inline">\(x_i\)</span> and <span class="math inline">\(x_j\)</span>: <span class="math inline">\(y_i,y_j\)</span> are thresholds, so <span class="math display">\[\begin{aligned}\mu(s) &amp;\le \min\{|s-y_i|,\,|s-y_j|\}\\ &amp;\le \tfrac12\big(|s-x_i|+a_i+|s-x_j|+a_j\big),\end{aligned}\]</span> and <span class="math inline">\(|s-x_i|+|s-x_j| = |x_i-x_j|\)</span>. Integrate over <span class="math inline">\(s\)</span> between <span class="math inline">\(x_i\)</span> and <span class="math inline">\(x_j\)</span>. <span class="math inline">\(\square\)</span></p>
+</div>
+<div class="idea">
+<p>Compare with Lemma 2, <span class="math inline">\(|x_i^2-x_j^2| = |x_i-x_j|\cdot(x_i+x_j)\)</span>: the edge’s <strong>height</strong> has been replaced by its <strong>distance to the steps</strong> plus its own length.</p>
+</div>
+</section>
+<section class="slide level2">
+<h2>Proof of Lemma 2′</h2>
+<p>Numerator, by Claim 3.4 and then Cauchy–Schwarz: <span class="math display">\[\begin{aligned}
+\sum_{ij\in E} w_{ij}\,|g_i-g_j| &amp;\le \tfrac12N(x) + \tfrac12\sum_{ij\in E} w_{ij}\,|x_i-x_j|\,(a_i+a_j)\\
+&amp;\le \tfrac12R_2(x) + \tfrac12\sqrt{N(x)}\,\sqrt{\textstyle\sum_{ij\in E} w_{ij}\,(a_i+a_j)^2}\\
+&amp;\le \tfrac12R_2(x) + \tfrac12\sqrt{R_2(x)}\,\sqrt{2D(x-y)},
+\end{aligned}\]</span> using <span class="math inline">\((a+b)^2\le 2a^2+2b^2\)</span> and <span class="math inline">\(\sum_{ij\in E} w_{ij}(a_i^2+a_j^2) = \sum_i d_ia_i^2 = D(x-y)\)</span>.</p>
+<p>Denominator <span class="math inline">\(\sum_i d_ig_i\ge 1/(8k)\)</span> (Claim 3.3). So <span class="math display">\[\begin{aligned}R_1(g) &amp;\le 8k\Big(\tfrac12R_2(x) + \tfrac{1}{\sqrt2}\sqrt{R_2(x)\,D(x-y)}\Big)\\ &amp;= 4kR_2(x) + 4\sqrt2\,k\,\sqrt{D(x-y)\,R_2(x)}. \;\square\end{aligned}\]</span></p>
+</section>
+<section class="slide level2">
+<h2>Putting it together</h2>
+<p>Lemma 3 gives <span class="math inline">\(x\)</span>; Lemma 3.1 gives <span class="math inline">\(y\)</span> with <span class="math inline">\(D(x-y) \le 4R_2(x)/\lambda_k\)</span>. Then by Lemmas 1 and 2′: <span class="math display">\[\begin{aligned}\Phi(S^\star)\le\Phi_{\rm sw}(x)\le R_1(g) &amp;\le 4kR_2(x) + 4\sqrt2\,k\cdot 2\frac{R_2(x)}{\sqrt{\lambda_k}}\\ &amp;= 4kR_2(x) + 8\sqrt2\,k\,\frac{R_2(x)}{\sqrt{\lambda_k}}.\end{aligned}\]</span> Since <span class="math inline">\(\lambda_k\le 2\)</span>, <span class="math inline">\(\ 4kR_2(x)\le 4\sqrt2\,k\,R_2(x)/\sqrt{\lambda_k}\)</span>, so <span class="math display">\[\boxed{\ \Phi(S^\star) \le 12\sqrt2\,k\,\frac{R_2(x)}{\sqrt{\lambda_k}} \le 12\sqrt2\,k\,\frac{\lambda}{\sqrt{\lambda_k}}\ } \quad\square\]</span></p>
+<div class="idea">
+<p><strong>Same template as Lecture 6:</strong> Lemma 3 → (new) Lemma 2′ → Lemma 1. The only change is the <span class="math inline">\(\ell_2^2\to\ell_1\)</span> map, designed to fit the structure of <span class="math inline">\(x\)</span>, plus one averaging argument (Lemma 3.1) that says when that structure exists.</p>
+</div>
+</section></section>
+<section>
+<section class="title-slide slide level1 center">
+<h1>Tightness, demo, consequences</h1>
+
+</section>
+<section class="slide level2">
+<h2>Tightness: the cycle, numerically</h2>
+<p><span class="math inline">\(C_n\)</span> has eigenvalues <span class="math inline">\(1-\cos(2\pi j/n)\)</span>, so <span class="math inline">\(\lambda_k = 1-\cos\!\big(2\pi\lfloor k/2\rfloor/n\big) = \Theta(k^2/n^2)\)</span>.</p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(n\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(n\cdot\Phi(C_n)\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(k=2\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(k=3\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(k=5\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(k=9\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(k=17\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">100</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">8.88</td>
+<td style="text-align: center;">13.33</td>
+<td style="text-align: center;">11.11</td>
+<td style="text-align: center;">10.02</td>
+<td style="text-align: center;">9.54</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">400</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">8.89</td>
+<td style="text-align: center;">13.33</td>
+<td style="text-align: center;">11.11</td>
+<td style="text-align: center;">10.00</td>
+<td style="text-align: center;">9.45</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">1600</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">8.89</td>
+<td style="text-align: center;">13.33</td>
+<td style="text-align: center;">11.11</td>
+<td style="text-align: center;">10.00</td>
+<td style="text-align: center;">9.44</td>
+</tr>
+</tbody>
+</table>
+<p class="small muted center">
+Columns <span class="math inline">\(k\)</span>: <span class="math inline">\(\ n\cdot k\lambda/\sqrt{\lambda_k}\)</span>. Both columns are <span class="math inline">\(\Theta(1)\)</span>, so <span class="math inline">\(\Phi(C_n) = \Theta(k\lambda/\sqrt{\lambda_k})\)</span> for every <span class="math inline">\(k\)</span>.
+</p>
+<ul>
+<li>The <strong>bound</strong> cannot be improved beyond constants, for any <span class="math inline">\(k\)</span>.</li>
+<li>But on the cycle the sweep finds an <em>optimal</em> cut. Tightness of the bound in <span class="math inline">\(\lambda,\lambda_k\)</span> is <strong>not</strong> the same as tightness of the approximation ratio (discussion Q3).</li>
+</ul>
+</section>
+<section class="slide level2">
+<h2>Demo</h2>
+<iframe class="demo-frame" src="demos/improved-cheeger-demo.html">
+</iframe>
+<p class="tiny muted">
+Standalone: <a href="demos/improved-cheeger-demo.html" target="_blank">demos/improved-cheeger-demo.html</a>. Try: two expanders, ε → 0 (Cheeger’s guarantee blows up, KLLOT’s stays flat); three expanders with k = 3 vs.&nbsp;k = 4; cycle (both guarantees grow ∝ n).
+</p>
+<aside class="notes">
+<p>Things to show live: (1) dumbbell: move ε from 1 down to 0.001; Cheeger’s guaranteed ratio grows like 1/√λ, KLLOT’s stays constant because λ3 stays ~0.15. (2) three clusters: λ3 is small too, so k=3 doesn’t help but k=4 does (look at the KLLOT row as k changes). (3) cycle: both guarantees grow linearly in n, the actual ratio too, consistent with tightness. The Lemma 3.1 panel shows the greedy thresholds and the step approximation y.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Consequences</h2>
+<ul>
+<li><strong>Constant-factor sparsest cut when <span class="math inline">\(\lambda_k=\Omega(1)\)</span>, <span class="math inline">\(k=O(1)\)</span>, in nearly-linear time.</strong> Compare: subspace enumeration (Arora–Barak–Steurer) and Lasserre (Guruswami–Sinop) get <span class="math inline">\(O(1/\lambda_k)\)</span>, but with running times <span class="math inline">\(n^{O(k)}\)</span> and <span class="math inline">\(2^{O(k)}\mathrm{poly}(n)\)</span>.</li>
+<li><strong>“Deterministic planted” instances (Cor 4.16).</strong> <span class="math inline">\(V = A\cup B\)</span> with <span class="math inline">\(\Phi(A)=\Phi(B)=\Phi_{\rm out}\)</span>, induced subgraphs of conductance <span class="math inline">\(\ge\Phi_{\rm in}\)</span>, min internal degree <span class="math inline">\(d_1\)</span>, max crossing degree <span class="math inline">\(d_2\)</span>. Then every 3-partition has a set of large conductance, so <span class="math inline">\(\lambda_3\)</span> is large, and the sweep returns <span class="math display">\[\Phi(S^\star) = O\!\Big(\frac{\Phi_{\rm out}}{\Phi_{\rm in}}\cdot\frac{d_1+d_2}{d_1}\Big).\]</span> For the 2-block SBM with parameters <span class="math inline">\(p &gt; q\)</span>, this is <span class="math inline">\(O(q/p)\)</span>.</li>
+<li><strong>Stability (Cor 4.17).</strong> Every <span class="math inline">\(c\)</span>-approximate sparse cut is <span class="math inline">\(\Theta(c\lambda/\lambda_3^{3/2})\)</span>-close to the optimum. A gap <span class="math inline">\(\lambda_3\gg\lambda\)</span> means the near-optimal cut is essentially unique.</li>
+</ul>
+</section>
+<section class="slide level2">
+<h2>Extensions in the paper</h2>
+<ul>
+<li><strong><span class="math inline">\(k\)</span>-way partitioning</strong> (with LOT ’12): for <span class="math inline">\(l&gt;k\)</span>, <span class="math inline">\(\ \rho_k(G) \le O(l\,k^6)\,\dfrac{\lambda_k}{\sqrt{\lambda_l}}\)</span>, plus sharper bounds for <span class="math inline">\(\rho_{(1-\delta)k}\)</span> and for minor-free graphs.</li>
+<li><strong>Balanced separator:</strong> recursive spectral partitioning finds <span class="math inline">\(S\)</span> with <span class="math inline">\(\mathrm{vol}(S)\in[\frac15,\frac45]\mathrm{vol}(V)\)</span> and <span class="math inline">\(\Phi(S)=O(k\varepsilon/\lambda_k)\)</span>, where <span class="math inline">\(\varepsilon\)</span> is the conductance of the best bisection (vs.&nbsp;<span class="math inline">\(O(\sqrt\varepsilon)\)</span> classically).</li>
+<li><strong>Max cut:</strong> Trevisan’s spectral algorithm improved using the <strong>top</strong> of the spectrum (<span class="math inline">\(\lambda_{n-k}\)</span> close to 2 plays the role of <span class="math inline">\(\lambda_k\)</span>).</li>
+<li><strong>Manifolds:</strong> <span class="math inline">\(\Phi(M)\le C_d\,k\,\lambda_2(M)/\sqrt{\lambda_k(M)}\)</span> for closed <span class="math inline">\(d\)</span>-dimensional Riemannian manifolds.</li>
+</ul>
+<aside class="notes">
+<p>These are all applications of the same two ingredients: the step-approximation lemma (or Thm 3.5) and a designed ℓ2² → ℓ1 map.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2 scrollable">
+<h2>Takeaways</h2>
+<ol type="1">
+<li>Cheeger’s <span class="math inline">\(\sqrt{\cdot}\)</span> loss comes from <strong>smooth</strong> eigenvectors. Smooth eigenvectors can be chopped into many low-energy pieces, which forces <strong><span class="math inline">\(\lambda_k\)</span> to be small</strong>.</li>
+<li>With a gap, the Fiedler vector is close to a <strong>step vector</strong>, and rounding a step vector loses only linearly: <span class="math display">\[\Phi(S^\star) = O(k)\,\frac{\lambda}{\sqrt{\lambda_k}}, \quad\text{tight for every $k$ (cycle).}\]</span></li>
+<li><strong>Technique:</strong> keep Lemmas 1 and 3 of Lecture 6; replace the squaring map of Lemma 2 by one <strong>designed</strong> to fit the structure of <span class="math inline">\(x\)</span>.</li>
+<li><strong>Practice:</strong> a theoretical basis for the eigengap heuristic. The plain sweep adapts to the best <span class="math inline">\(k\)</span> automatically.</li>
+</ol>
+</section>
+<section class="slide level2 scrollable">
+<h2>Discussion questions</h2>
+<ol type="1">
+<li>Verify <span class="math inline">\(R_2(f) = \bar\phi(A)\)</span> for the centered 2-step vector. Why does it lie in <span class="math inline">\([\Phi(A),2\Phi(A)]\)</span>?</li>
+<li>In Lemma 3.1, what goes wrong with only <span class="math inline">\(k\)</span> greedy pieces instead of <span class="math inline">\(2k\)</span>?</li>
+<li>The cycle shows the <strong>bound</strong> is tight. Does it show the <strong>approximation ratio</strong> <span class="math inline">\(O(k/\sqrt{\lambda_k})\)</span> is tight? What kind of example would?</li>
+<li>In Claim 3.3 we lose a factor <span class="math inline">\(k\)</span>. Could a different density <span class="math inline">\(\mu\)</span> avoid it while keeping Claim 3.4? What trade-off are we making?</li>
+<li>Demo: on three expanders in a ring, why does <span class="math inline">\(k=3\)</span> give no improvement while <span class="math inline">\(k=4\)</span> does?</li>
+</ol>
+</section>
+<section class="slide level2">
+<h2>References</h2>
+<div class="small">
+<ul>
+<li><strong>T. C. Kwok, L. C. Lau, Y. T. Lee, S. Oveis Gharan, L. Trevisan.</strong> Improved Cheeger’s inequality: analysis of spectral partitioning algorithms through higher order spectral gap. <em>STOC 2013</em>; arXiv:1301.5584.</li>
+<li>N. Alon, V. Milman. <span class="math inline">\(\lambda_1\)</span>, isoperimetric inequalities for graphs, and superconcentrators. <em>JCT-B</em> 1985. · N. Alon. Eigenvalues and expanders. <em>Combinatorica</em> 1986.</li>
+<li>S. Hoory, N. Linial, A. Wigderson. Expander graphs and their applications. <em>Bull. AMS</em> 2006.</li>
+<li>J. R. Lee, S. Oveis Gharan, L. Trevisan. Multi-way spectral partitioning and higher-order Cheeger inequalities. <em>STOC 2012</em>.</li>
+<li>A. Louis, P. Raghavendra, P. Tetali, S. Vempala. Many sparse cuts via higher eigenvalues. <em>STOC 2012</em>.</li>
+<li>S. Arora, B. Barak, D. Steurer. Subexponential algorithms for unique games and related problems. <em>FOCS 2010</em>.</li>
+<li>V. Guruswami, A. K. Sinop. Lasserre hierarchy, higher eigenvalues, and approximation schemes for graph partitioning and quadratic integer programming with PSD objectives. <em>FOCS 2011</em>.</li>
+<li>S. Guattery, G. L. Miller. On the quality of spectral separators. <em>SIAM J. Matrix Anal. Appl.</em> 1998.</li>
+<li>U. von Luxburg. A tutorial on spectral clustering. <em>Statistics and Computing</em> 2007.</li>
+</ul>
+</div>
+<!--- DISCARDED SLIDES
+
+## Intuition I: a gap makes the Fiedler vector a step function
+
+![](figures/smooth-vs-step.svg){width="100%"}
+
+If $f$ is **exactly** a 2-step vector, $f = \frac{1}{\mathrm{vol}(A)}\mathbf 1_A - \frac{1}{\mathrm{vol}(\bar A)}\mathbf 1_{\bar A}$ (so $f\perp_d\mathbf 1$):
+$$R_2(f) = \frac{w(A,\bar A)\,\mathrm{vol}(V)}{\mathrm{vol}(A)\,\mathrm{vol}(\bar A)} = \bar\phi(A) \in [\Phi(A),\, 2\Phi(A)].$$
+For step vectors there is **no square-root loss**: $R_2(f)\approx\Phi$.
+
+::: notes
+Quick computation: (a−b)^2 = (1/vol A + 1/vol Ā)^2 and the denominator is 1/vol A + 1/vol Ā. This is the symmetrized conductance φ̄ from Lecture 6. Ask students to check it (it is discussion question 1).
+:::
+
+
+## Example: why steps make Lemma 2 wasteful
+
+Let $x$ be nearly a 2-step vector: one cluster near $0$, one near $1$, jitter $\varepsilon$ inside each.
+
+| Edge inside the top cluster | $\mu(s)=2s$ (Lemma 2) | sawtooth $\mu$ (Lemma 2′, later) |
+|:--|:--:|:--:|
+| length | $\varepsilon$ | $\varepsilon$ |
+| sits at | $s\approx1$ | $s\approx1$, next to the step at $1$ |
+| average density $\bar\mu_{ij}$ | $\approx 2$ | $O(\varepsilon)$ |
+| pays $\lvert g_i-g_j\rvert$ | $\approx 2\varepsilon$ | $O(\varepsilon^2)$ |
+
+There are **many** such edges. Under $\mu=2s$ they dominate the numerator although they cross no real cut: that is the $\sqrt{\cdot}$ loss. Edges that jump between steps pay about the same under both.
+
+::: {.idea}
+**Fix:** a density that **vanishes at the steps**, $\mu(s)=|s-\psi(s)|$. Then $\bar\mu_{ij}\le\frac12(\text{distance to the steps} + \text{length})$ (Claim 3.4). **Price:** the denominator $\int_0^\infty\mu(s)\,\mathrm{vol}(S_s)\,ds$ shrinks too, but only by a factor $8k$ (Claim 3.3).
+:::
+
+::: notes
+~3 min. Work through the table on the board. Point out that the internal edges of the bottom cluster pay ≈ 0 under both densities (μ(s)=2s is also ≈ 0 near s = 0); the problem with Lemma 2 is only the clusters that sit high up. The sawtooth treats every step like the bottom one.
+:::
+
+
+
+## Intuition II: Cheeger tight ⇒ smooth ⇒ small $\lambda_k$
+
+![](figures/cycle-bumps.svg){width="100%"}
+
+**Bump.** Split $C_n$ into $k$ arcs of $n/k$ consecutive vertices. Bump $b^{(\ell)}$ is a **tent** on arc $\ell$: $1$ at its middle vertex, decreasing linearly to $0$ at its ends, and $0$ off the arc.
+
+- It changes by $2k/n$ across each of its $n/k$ edges: $\ N(b^{(\ell)}) = \tfrac nk\big(\tfrac{2k}n\big)^2 = \tfrac{4k}{n}$, $\ D(b^{(\ell)})\approx 2\cdot\tfrac nk\cdot\tfrac13$, so $R_2(b^{(\ell)}) \approx \tfrac{6k^2}{n^2} = O(k^2\lambda)$.
+- Disjoint supports ⇒ (Lemma B) $\ \lambda_k \le 2\max_\ell R_2(b^{(\ell)}) = O(k^2 \lambda)$.
+
+::: {.idea}
+**Dichotomy.** Either $f$ is close to a step vector with few steps (⇒ sweep is good), or bumps like these are cheap (⇒ $\lambda_k$ small). In the proof the bumps are built from the **values** of $x$ instead of positions: the tents $\tau^{(\ell)}$ of Lemma 3.1.
+:::
+
+::: notes
+~2 min. Bumps are cheap on the cycle because nothing forces a function to jump: the same smoothness that makes cos a poor input for the sweep (no sharp step to cut at) makes localized bumps cheap. Sanity check against the truth: λ_k ≈ π²k²/(2n²) for C_n, and the bump bound gives 12k²/n².
+:::
+
+## The second proof (§3.2), in one slide
+
+Reads the dichotomy the other way: **Cheeger nearly tight ⇒ $x$ is smooth ⇒ $\lambda_k$ is small.**
+
+::: {.thm}
+**Thm 3.5.** Let $\delta := \Phi_{\rm sw}(x)^2/R_2(x)$. Either $\ \Phi_{\rm sw}(x)\le O(k)R_2(x)$, or there are $k$ disjointly supported $z^{(1)},\dots,z^{(k)}$ (supported inside $\mathrm{supp}\,x$) with $\ R_2(z^{(\ell)})\le O(k^2)\,R_2(x)/\delta$.
+:::
+
+- Partition the values of $x$ into geometric intervals $[\alpha^{m+1},\alpha^{m}]$, each split into $12k$ equal subintervals.
+- **Energy lower bound** (Lemma 2.6): a long interval holding little mass costs a lot of energy. So if $\delta$ is large, most intervals have their mass spread **evenly** ("balanced").
+- Pick every third heavy subinterval, giving $2k$ well-separated regions. Localize $x$ on each, then average.
+
+Gives the stronger "either–or" form needed for $k$-way partitioning (next slides).
+
+
+-->
+
+
+</section></section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="../../site_libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="../../site_libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="../../site_libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="../../site_libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="../../site_libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="../../site_libs/revealjs/plugin/search/search.js"></script>
+  <script src="../../site_libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="../../site_libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': true,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'none',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1050,
+
+        height: 700,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp("https:\/\/lorecchia\.github\.io\/cmsc35410");
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>
