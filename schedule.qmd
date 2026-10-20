@@ -14,7 +14,7 @@ Tentative and updated as the quarter goes. Slides open in presentation mode (pre
 | 4 | 10/8 | Mixing Times and Entropy: the Gap Pins Down Mixing, Entropy Production, Log-Sobolev Preview | [Slides](lectures/lecture04/lecture4.qmd) |  |  |
 | 5 | 10/13 | Bounding the Spectral Gap: Test Functions and Canonical Paths | [Slides](lectures/lecture05/lecture5.qmd) |  |  |
 | 6 | 10/15 | Conductance and Cheeger's Inequality | [Slides](lectures/lecture06/lecture6.qmd) |  |  |
-| 7 | 10/20 | Higher-order and k-way Cheeger's Inequalities |  |  |  |
+| 7 | 10/20 | Higher-order and k-way Cheeger's Inequalities | [Slides](lectures/lecture07/lecture7.qmd) · demo: [Improved Cheeger](lectures/lecture07/demos/improved-cheeger-demo.html) |  |  |
 | 8 | 10/22 | Spectral Clustering and Eigenvector Perturbation |  | [Davis–Kahan](notes/davis-kahan.qmd) |  |
 | 9 | 10/27 | Electrical Flows and Fast Laplacian Solvers |  |  |  |
 | 10 | 10/29 | Semidefinite Programming and MMWUs |  |  |  |
