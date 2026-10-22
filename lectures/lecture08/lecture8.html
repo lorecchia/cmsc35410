@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/tabby.min.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.10.19">
+
+  <meta name="author" content="CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis">
+  <title>CMSC 35410 – Lecture 8 · Spectral Clustering and Eigenvector Perturbation</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/reveal.css">
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/theme/quarto-2740581606dc327e82f18f789b69d8a0.css">
+  <link rel="stylesheet" href="lecture08.css">
+  <link href="../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="../../site_libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="../../site_libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section class="quarto-title-block center">
+  <h1 class="title">Lecture 8 · Spectral Clustering and Eigenvector Perturbation</h1>
+  <p class="subtitle">Planted clusters, the Davis–Kahan sin Θ theorem, and matrix concentration</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
+</div>
+</div>
+</div>
+
+</section>
+<section class="slide level2">
+<h2>Recap: Lectures 6–7</h2>
+<p>Random walk <span class="math inline">\(P=D^{-1}A\)</span>, <span class="math inline">\(\ L_{rw}=I-P\)</span>, eigenvalues <span class="math inline">\(0=\mu_1\le\mu_2\le\dots\le\mu_n\le2\)</span>. <span class="math inline">\(P\)</span> is self-adjoint in <span class="math inline">\(\ell^2(D)\)</span>: <span class="math inline">\(\ \langle f,g\rangle_D=\sum_ud_uf(u)g(u)\)</span> (Lecture 2; Review I, §2.5).</p>
+<ul>
+<li><strong>Cheeger:</strong> <span class="math inline">\(\ \tfrac12\mu_2\le\Phi(G)\le\sqrt{2\mu_2}\)</span>.</li>
+<li><strong>Higher-order Cheeger:</strong> <span class="math inline">\(\ \tfrac12\mu_k\le\rho_k(G)\le O(k^2)\sqrt{\mu_k}\)</span>.</li>
+<li><strong>KLLOT:</strong> a gap <span class="math inline">\(\mu_k\gg\mu_2\)</span> makes the Fiedler vector nearly a step function, so the sweep cut does better.</li>
+</ul>
+<div class="idea">
+<p>All three are <strong>worst-case</strong> statements about what rounding an eigenvector can <em>certify</em> on any graph. In practice however, we are mostly interested in graphs that have an underlying cluster structure (e.g., unlike paths) that we hope to recover. Today we ask a <strong>recovery</strong> question, rather than an approximation one.</p>
+<p><strong>If the graph is a small perturbation of <span class="math inline">\(k\)</span> planted clusters, does the spectral embedding recover them?</strong></p>
+</div>
+<aside class="notes">
+<p>~2 min. Lectures 6–7 compare the cut we find with the best cut. Today the clusters are given (planted) and we ask whether we find them: a recovery question, not an approximation question.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2 scrollable">
+<h2>Spectral clustering</h2>
+<div class="defn">
+<p><strong>Algorithm</strong> (random-walk version, after Shi–Malik 2000).</p>
+<ol type="1">
+<li><p>Compute the top-<span class="math inline">\(k\)</span> eigenvectors of <span class="math inline">\(P=D^{-1}A\)</span>, orthonormal in <span class="math inline">\(\ell^2(D)\)</span>:</p>
+<div class="center">
+<p><span class="math inline">\(\hat F=[\hat f_1,\dots,\hat f_k]\in\mathbb R^{n\times k},\qquad \hat F^\top D\hat F=I_k\)</span>.</p>
+</div></li>
+<li><p><strong>Embed.</strong> Each eigenvector is a function on vertices. Map vertex <span class="math inline">\(u\)</span> to <span class="math display">\[\hat\varphi(u)=\big(\hat f_1(u),\dots,\hat f_k(u)\big)\in\mathbb R^k .\]</span></p></li>
+<li><p><strong>Cluster</strong> with <span class="math inline">\(k\)</span>-means in <span class="math inline">\(\ell^2(D)\)</span>, i.e., with vertex weights <span class="math inline">\(d_u\)</span>: <span class="math display">\[\min_{z,\,c}\ \sum_u d_u\,\big\|\hat\varphi(u)-c_{z(u)}\big\|^2 .\]</span></p></li>
+</ol>
+</div>
+<ul>
+<li>Replacing <span class="math inline">\(\hat F\)</span> by <span class="math inline">\(\hat FO\)</span>, for an orthogonal <span class="math inline">\(O\)</span>, maps every point <span class="math inline">\(\hat\varphi(u)\)</span> to <span class="math inline">\(O^\top\hat\varphi(u)\)</span>. This preserves all distances, so <span class="math inline">\(k\)</span>-means is unaffected.</li>
+<li><strong>Variants in <span class="math inline">\(\ell^2\)</span>.</strong> NJW (2001): top-<span class="math inline">\(k\)</span> eigenvectors <span class="math inline">\(\hat v_i=D^{1/2}\hat f_i\)</span> of <span class="math inline">\(N=D^{-1/2}AD^{-1/2}\)</span>, then <span class="math inline">\(k\)</span>-means on the unit vectors <span class="math inline">\(\hat x(u)/\|\hat x(u)\|\)</span>, where <span class="math inline">\(\hat x(u)=\sqrt{d_u}\,\hat\varphi(u)\)</span>. Unnormalized: eigenvectors of <span class="math inline">\(A\)</span> (natural when degrees are equal, e.g., the SBM).</li>
+</ul>
+<p><strong>Plan:</strong> the ideal case · Davis–Kahan (full proof) · rounding · deterministic perturbations · stochastic perturbations · demo.</p>
+<aside class="notes">
+<p>The rotation invariance is the reason we only need to control the subspace, not individual eigenvectors. Remind them of this when we get to Lemma 2.1(3).</p>
+<p>In practice one computes the eigenvectors v̂_i of the symmetric matrix N and sets f̂_i = D^{-1/2}v̂<em>i; these are the solutions of Shi–Malik’s generalized problem Lf = λDf. Why the weights: Σ_u d_u ‖φ̂(u) − c</em>{z(u)}‖² = Σ_i ‖f̂_i − g_i‖²_D, where g_i is the step function equal to (c_j)_i on cluster j. So weighted k-means finds the partition whose step functions best fit the eigenfunctions in ℓ²(D): the rounding of the normalized-cut relaxation (Dhillon–Guan–Kulis). Unweighted k-means on φ̂ (von Luxburg’s “Shi–Malik” algorithm) drops the weights. NJW removes the √d_u scale of x̂(u) by its noisy length instead of the known degree, which is roughly clustering directions. Attribution: Shi–Malik’s paper is two-way (threshold the second generalized eigenvector) and recursive; the k-means version is later convention.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section>
+<section class="title-slide slide level1 center">
+<h1>The ideal case</h1>
+
+</section>
+<section class="slide level2">
+<h2><span class="math inline">\(k\)</span> disconnected clusters</h2>
+<p>Let <span class="math inline">\(G_0\)</span> be the disjoint union of connected graphs <span class="math inline">\(G_1,\dots,G_k\)</span> on <span class="math inline">\(S_1,\dots,S_k\)</span>, with random walk <span class="math inline">\(P_0=D^{-1}A_0\)</span>. Then <span class="math inline">\(P_0\)</span> is <strong>block diagonal</strong>.</p>
+<ul>
+<li>Each block is the walk on <span class="math inline">\(G_j\)</span>: top eigenvalue <span class="math inline">\(1\)</span> with the constant eigenvector, second eigenvalue <span class="math inline">\(1-\mu_2(G_j)\)</span>.</li>
+<li>So eigenvalue <span class="math inline">\(1\)</span> has multiplicity <span class="math inline">\(k\)</span>, with eigenvectors orthonormal in <span class="math inline">\(\ell^2(D)\)</span>: <span class="math display">\[f_j=\frac{\mathbf 1_{S_j}}{\sqrt{\mathrm{vol}(S_j)}}\quad(\text{cluster indicators}),\qquad F=[f_1,\dots,f_k].\]</span></li>
+<li><strong>Ideal embedding:</strong> for <span class="math inline">\(u\in S_j\)</span> only <span class="math inline">\(f_j(u)\neq0\)</span>, so with <span class="math inline">\(e_j\in\mathbb R^k\)</span> the <span class="math inline">\(j\)</span>-th standard basis vector, <span class="math display">\[\varphi(u)=\big(f_1(u),\dots,f_k(u)\big)=c_j:=\frac{e_j}{\sqrt{\mathrm{vol}(S_j)}} .\]</span> <strong>Only <span class="math inline">\(k\)</span> distinct points, one per cluster, mutually orthogonal.</strong> Weighted <span class="math inline">\(k\)</span>-means has cost <span class="math inline">\(0\)</span> at the true partition.</li>
+<li>Every <span class="math inline">\(\ell^2(D)\)</span>-orthonormal basis of the eigenspace is <span class="math inline">\(FO\)</span>, with <span class="math inline">\(O\)</span> orthogonal: same picture, rotated (<span class="math inline">\(O^\top c_j\)</span>).</li>
+</ul>
+<div class="thm">
+<p><strong>Gap.</strong> <span class="math inline">\(\ \delta_0:=\lambda_k(P_0)-\lambda_{k+1}(P_0)=\min_j\mu_2(G_j)\ \ge\ \min_j\tfrac12\Phi(G_j)^2\)</span>, by Cheeger.</p>
+</div>
+<aside class="notes">
+<p>~4 min. In ℓ²(D) the ideal eigenvectors are plain cluster indicators: no √d_u anywhere. (In ℓ², the eigenvectors of N_0 are D^{1/2}f_j, and the points x(u) = √d_u c_j lie on k rays; that is the factor NJW normalizes away.) The gap is controlled by the internal conductance of the clusters, the quantity Lecture 6 taught us to bound.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2 scrollable">
+<h2>Real graphs are perturbations</h2>
+<p>Observed walk <span class="math inline">\(\ P = P_0+E\)</span>, with <span class="math inline">\(E\)</span> self-adjoint in <span class="math inline">\(\ell^2(D)\)</span>. Weyl (Review I, Cor. 2.9 and §2.5): eigen<strong>values</strong> move by at most <span class="math inline">\(\|E\|\)</span>. What about eigen<strong>vectors</strong>?</p>
+<p>Toy model: <span class="math inline">\(A=\operatorname{diag}(1+\varepsilon,\,1,\,0)\)</span>. The top two eigenvalues are <span class="math inline">\(\varepsilon\)</span> apart (like the <span class="math inline">\(k\)</span>-fold eigenvalue <span class="math inline">\(1\)</span> of <span class="math inline">\(P_0\)</span>); the third is <span class="math inline">\(1\)</span> below (like the gap <span class="math inline">\(\delta_0\)</span>). Two perturbations, both of size <span class="math inline">\(\approx\varepsilon\)</span>:</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">perturbation <span class="math inline">\(E\)</span></th>
+<th style="text-align: left;">top eigenvector</th>
+<th style="text-align: left;">top-2 eigenspace <span class="math inline">\(\operatorname{span}\{e_1,e_2\}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(a)</td>
+<td style="text-align: left;"><span class="math inline">\(\frac\varepsilon2\begin{pmatrix}-1&amp;1&amp;0\\1&amp;1&amp;0\\0&amp;0&amp;0\end{pmatrix}\)</span>, mixes <span class="math inline">\(e_1,e_2\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(e_1\to\frac{e_1+e_2}{\sqrt2}\)</span>: <strong>turns <span class="math inline">\(45^\circ\)</span></strong></td>
+<td style="text-align: left;"><strong>unchanged</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(b)</td>
+<td style="text-align: left;"><span class="math inline">\(\varepsilon\,(e_2e_3^\top+e_3e_2^\top)\)</span>, mixes <span class="math inline">\(e_2,e_3\)</span></td>
+<td style="text-align: left;">unchanged</td>
+<td style="text-align: left;"><strong>turns by <span class="math inline">\(\approx\varepsilon\)</span></strong> (<span class="math inline">\(\sin\Theta=0.0985\)</span> at <span class="math inline">\(\varepsilon=0.1\)</span>)</td>
+</tr>
+</tbody>
+</table>
+<div class="idea">
+<p><strong>Two lessons.</strong></p>
+<ol type="1">
+<li><strong>Compare subspaces, not vectors.</strong> In (a), <span class="math inline">\(\|E\|=\varepsilon/\sqrt2\to0\)</span> yet the top eigenvector turns <span class="math inline">\(45^\circ\)</span> for every <span class="math inline">\(\varepsilon\)</span>: no bound “angle <span class="math inline">\(\le C\|E\|\)</span>” can hold for a single eigenvector. The top-2 eigenspace does not move.</li>
+<li><strong>Measure <span class="math inline">\(\|E\|\)</span> against the gap to the rest of the spectrum.</strong> In (b) the top-2 eigenspace moves, but only by <span class="math inline">\(\approx\|E\|/(\lambda_2-\lambda_3)=\varepsilon/1\)</span>.</li>
+</ol>
+</div>
+<aside class="notes">
+<p>~3 min. (a) is the 2×2 example of the Davis–Kahan note, §1, embedded in ℝ³ so that the subspace lesson is not vacuous (in ℝ² the span of both eigenvectors is the whole space). In (a) the ratio ‖E‖/(λ1 − λ2) = 1/√2 is constant, which is why the vector can turn by a constant angle. Clustering: in P_0 the top eigenvalue has multiplicity k (the ε = 0 limit), so individual eigenvectors of P are not even well defined; only the top-k eigenspace is, and it is separated from the rest by δ0. Davis–Kahan is the statement that (b) is the worst that can happen: sin Θ ≤ ‖E‖/gap. Numbers checked numerically: (b) at ε = 0.1 gives sin Θ = 0.0985 for the top-2 eigenspace and a top eigenvector that stays exactly e1.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>The toy model, exactly</h2>
+<p><span class="math inline">\(A=\operatorname{diag}(1+\varepsilon,1,0)\)</span>: eigenvalues <span class="math inline">\(1+\varepsilon,\ 1,\ 0\)</span> with eigenvectors <span class="math inline">\(e_1,e_2,e_3\)</span>. Perturbed eigenpairs of <span class="math inline">\(\hat A=A+E\)</span>:</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 25%">
+<col style="width: 18%">
+<col style="width: 18%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: center;"><span class="math inline">\(\|E\|\)</span></th>
+<th style="text-align: left;"><span class="math inline">\(\lambda_1(\hat A)\)</span></th>
+<th style="text-align: left;"><span class="math inline">\(\lambda_2(\hat A)\)</span></th>
+<th style="text-align: left;"><span class="math inline">\(\lambda_3(\hat A)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(a)</td>
+<td style="text-align: center;"><span class="math inline">\(\varepsilon/\sqrt2\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(1+\varepsilon\)</span>, <span class="math inline">\(\ \frac{e_1+e_2}{\sqrt2}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(1\)</span>, <span class="math inline">\(\ \frac{e_1-e_2}{\sqrt2}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(0\)</span>, <span class="math inline">\(\ e_3\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(b)</td>
+<td style="text-align: center;"><span class="math inline">\(\varepsilon\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(1+\varepsilon\)</span>, <span class="math inline">\(\ e_1\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\frac{1+\sqrt{1+4\varepsilon^2}}2\approx1+\varepsilon^2\)</span>, <span class="math inline">\(\ \cos\theta\,e_2+\sin\theta\,e_3\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\frac{1-\sqrt{1+4\varepsilon^2}}2\approx-\varepsilon^2\)</span>, <span class="math inline">\(\ -\sin\theta\,e_2+\cos\theta\,e_3\)</span></td>
+</tr>
+</tbody>
+</table>
+<p class="small muted center">
+In (b), <span class="math inline">\(\tan2\theta=2\varepsilon\)</span>: the <span class="math inline">\(2\times2\)</span> block <span class="math inline">\(\left(\begin{smallmatrix}1&amp;\varepsilon\\\varepsilon&amp;0\end{smallmatrix}\right)\)</span> on <span class="math inline">\(\operatorname{span}\{e_2,e_3\}\)</span>.
+</p>
+<p>At <span class="math inline">\(\varepsilon=0.1\)</span>:</p>
+<table class="caption-top" style="width:100%;">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 28%">
+<col style="width: 28%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">eigenvalues of <span class="math inline">\(\hat A\)</span></th>
+<th style="text-align: center;">top eigenvector moves by</th>
+<th style="text-align: center;">top-2 eigenspace moves by (<span class="math inline">\(\sin\Theta\)</span>)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(a)</td>
+<td style="text-align: left;"><span class="math inline">\(1.1,\ 1,\ 0\)</span> (<strong>unchanged</strong>)</td>
+<td style="text-align: center;"><span class="math inline">\(\sin=0.707\)</span> (<span class="math inline">\(45^\circ\)</span>)</td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(b)</td>
+<td style="text-align: left;"><span class="math inline">\(1.1,\ 1.0099,\ -0.0099\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(0.0985\)</span></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Weyl is not the issue.</strong> In (a) the eigenvalues do not move at all, yet the top eigenvector turns <span class="math inline">\(45^\circ\)</span>. In (b) they move by <span class="math inline">\(\varepsilon^2\le\|E\|\)</span>.</li>
+<li>In (b), the kept eigenvalues <span class="math inline">\(1+\varepsilon\)</span>, <span class="math inline">\(1+\varepsilon^2\)</span> stay <span class="math inline">\(\approx1\)</span> above the discarded one: the gap survives the perturbation, and the subspace moves by <span class="math inline">\(\approx\varepsilon/1\)</span>.</li>
+</ul>
+<aside class="notes">
+<p>~2 min. Optional backup slide for the previous one. Forward pointer for after the proof: in (b), Theorem 3.1 with [a, b] = [1, 1+ε] and the discarded eigenvalue −0.0099 gives δ = 1.0099 and ‖EV‖ = ε, so the bound is 0.1/1.0099 = 0.0990 against the true 0.0985. In (a), E maps span{e1, e2} into itself, so V̂⊥ᵀEV = 0 and the Sylvester equation gives sin Θ = 0 exactly for the top-2 eigenspace. All numbers computed numerically.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section class="title-slide slide level1 center">
+<h1>The Davis–Kahan <span class="math inline">\(\sin\Theta\)</span> theorem</h1>
+
+</section>
+<section class="slide level2 scrollable">
+<h2>Distances between subspaces</h2>
+<p><span class="math inline">\(V,\hat V\in\mathbb R^{n\times k}\)</span> with orthonormal columns. Singular values of <span class="math inline">\(\hat V^\top V\)</span>: <span class="math inline">\(\cos\theta_1\ge\dots\ge\cos\theta_k\)</span>, the <strong>principal angles</strong> <span class="math inline">\(\theta_i\in[0,\pi/2]\)</span>. Set <span class="math inline">\(\sin\Theta=\operatorname{diag}(\sin\theta_i)\)</span>.</p>
+<div class="lem">
+<p><strong>Lemma 2.1.</strong> Complete <span class="math inline">\(\hat V\)</span> to an orthogonal <span class="math inline">\([\hat V\ \hat V_\perp]\)</span>.</p>
+<ol type="1">
+<li>The singular values of <span class="math inline">\(\hat V_\perp^\top V\)</span> are the <span class="math inline">\(\sin\theta_i\)</span> (padded with zeros).</li>
+<li><span class="math inline">\(\|VV^\top-\hat V\hat V^\top\|=\|\sin\Theta\|\)</span> and <span class="math inline">\(\ \|VV^\top-\hat V\hat V^\top\|_F=\sqrt2\,\|\sin\Theta\|_F\)</span>.</li>
+<li>There is an orthogonal <span class="math inline">\(O\)</span> with <span class="math inline">\(\ \|\hat VO-V\|_F\le\sqrt2\,\|\sin\Theta\|_F\)</span>.</li>
+</ol>
+</div>
+<div class="pf">
+<ol type="1">
+<li><p><span class="math inline">\(I_k=V^\top V=(\hat V^\top V)^\top(\hat V^\top V)+(\hat V_\perp^\top V)^\top(\hat V_\perp^\top V)\)</span>, so the squared singular values of <span class="math inline">\(\hat V_\perp^\top V\)</span> are <span class="math inline">\(1-\cos^2\theta_i\)</span>.</p></li>
+<li><p>Exercise.</p></li>
+<li><p>Write <span class="math inline">\(\hat V^\top V=U(\cos\Theta)W^\top\)</span> (SVD) and take <span class="math inline">\(O=UW^\top\)</span>. Then <span class="math display">\[\|\hat VO-V\|_F^2=2k-2\operatorname{tr}(O^\top\hat V^\top V)=2\textstyle\sum_i(1-\cos\theta_i)\le2\sum_i\sin^2\theta_i.\ \blacksquare\]</span></p></li>
+</ol>
+</div>
+<div class="notes\">
+<p>~5 min. (2) is only used to justify calling sin Θ a distance between subspaces; it can be skipped in class (the note has an alternative proof via a 2×2 block computation). (3) is the statement spectral clustering uses: the computed embedding equals the ideal one up to a rotation, plus a small Frobenius error. O is the solution of the orthogonal Procrustes problem. 2) Let <span class="math inline">\(\Pi=VV^\top\)</span>, <span class="math inline">\(\hat\Pi=\hat V\hat V^\top\)</span>. <strong>Frobenius:</strong> <span class="math inline">\(\|\Pi-\hat\Pi\|_F^2=\operatorname{tr}\Pi+\operatorname{tr}\hat\Pi-2\operatorname{tr}(\Pi\hat\Pi)=2k-2\|\hat V^\top V\|_F^2=2\sum_i\sin^2\theta_i\)</span>. <strong>Operator:</strong> write <span class="math inline">\(x=x_1+x_2\)</span> with <span class="math inline">\(x_1=\hat\Pi x\)</span>, <span class="math inline">\(x_2=(I-\hat\Pi)x\)</span>. Then <span class="math inline">\((\Pi-\hat\Pi)x=\Pi x_2-(I-\Pi)x_1\)</span>, a sum of two orthogonal vectors, and by (1) (applied both ways) <span class="math inline">\(\|\Pi(I-\hat\Pi)\|=\|(I-\Pi)\hat\Pi\|=\sin\theta_1\)</span>. So <span class="math inline">\(\|(\Pi-\hat\Pi)x\|^2\le\sin^2\theta_1\,(\|x_2\|^2+\|x_1\|^2)\)</span>, with equality for the best <span class="math inline">\(x=x_2\)</span>.</p>
+</div>
+</section>
+<section class="slide level2">
+<h2>The theorem</h2>
+<div class="thm">
+<p><strong>Theorem 3.1 (Davis–Kahan 1970).</strong> <span class="math inline">\(A\)</span> and <span class="math inline">\(\hat A=A+E\)</span> symmetric.</p>
+<ul>
+<li><span class="math inline">\(AV=V\Lambda_1\)</span>, with <span class="math inline">\(V\)</span> orthonormal <span class="math inline">\(n\times k\)</span> and the eigenvalues of <span class="math inline">\(\Lambda_1\)</span> in <span class="math inline">\([a,b]\)</span>.</li>
+<li><span class="math inline">\(\hat A\hat V_\perp=\hat V_\perp\hat\Lambda_2\)</span>, with <span class="math inline">\(\hat V_\perp\)</span> orthonormal <span class="math inline">\(n\times(n-k)\)</span> and the eigenvalues of <span class="math inline">\(\hat\Lambda_2\)</span> <strong>outside</strong> <span class="math inline">\((a-\delta,\,b+\delta)\)</span>.</li>
+</ul>
+<p>Let <span class="math inline">\(\hat V\)</span> span the orthogonal complement of <span class="math inline">\(\hat V_\perp\)</span>. Then <span class="math display">\[\|\sin\Theta(V,\hat V)\|\le\frac{\|EV\|}{\delta}\le\frac{\|E\|}{\delta},\qquad \|\sin\Theta(V,\hat V)\|_F\le\frac{\|EV\|_F}{\delta}.\]</span></p>
+</div>
+<ul>
+<li>The <strong>unperturbed</strong> eigenvalues we keep sit in <span class="math inline">\([a,b]\)</span>. The <strong>perturbed</strong> eigenvalues we discard stay <span class="math inline">\(\delta\)</span> away.</li>
+<li>Only <span class="math inline">\(EV\)</span> matters: how much <span class="math inline">\(E\)</span> moves the subspace we care about.</li>
+</ul>
+<aside class="notes">
+<p>~2 min. The asymmetry (gap between unperturbed kept and perturbed discarded eigenvalues) is what makes the proof two lines. We remove it with Weyl in the corollary.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>The key lemma: Sylvester equations</h2>
+<div class="lem">
+<p><strong>Lemma 3.2.</strong> <span class="math inline">\(\Lambda\in\mathbb R^{k\times k}\)</span> and <span class="math inline">\(M\in\mathbb R^{m\times m}\)</span> symmetric, <span class="math inline">\(\mathrm{spec}(\Lambda)\subseteq[a,b]\)</span>, <span class="math inline">\(\mathrm{spec}(M)\cap(a-\delta,b+\delta)=\emptyset\)</span>. Then for all <span class="math inline">\(X\in\mathbb R^{m\times k}\)</span>, in operator <strong>and</strong> Frobenius norm, <span class="math display">\[\|MX-X\Lambda\|\ \ge\ \delta\,\|X\|.\]</span></p>
+</div>
+<div class="pf">
+<p><strong>Center.</strong> Let <span class="math inline">\(c=\frac{a+b}2\)</span> and <span class="math inline">\(r=\frac{b-a}2\)</span>. Then <span class="math inline">\(\|\Lambda-cI\|\le r\)</span>, and every eigenvalue of <span class="math inline">\(M-cI\)</span> has absolute value <span class="math inline">\(\ge r+\delta\)</span>, so <span class="math inline">\(\|(M-cI)^{-1}\|\le\frac1{r+\delta}\)</span>.</p>
+<p><strong>Solve.</strong> With <span class="math inline">\(Y=MX-X\Lambda=(M-cI)X-X(\Lambda-cI)\)</span>, <span class="math display">\[X=(M-cI)^{-1}\big(Y+X(\Lambda-cI)\big)\ \Rightarrow\ \|X\|\le\frac{\|Y\|+r\|X\|}{r+\delta}\ \Rightarrow\ \delta\|X\|\le\|Y\|.\ \blacksquare\]</span></p>
+</div>
+<ul>
+<li>Uses only <span class="math inline">\(\|PQ\|\le\|P\|_{\rm op}\|Q\|\)</span>, valid for both norms.</li>
+<li>Frobenius, diagonal case: <span class="math inline">\((MX-X\Lambda)_{ij}=(m_i-\lambda_j)X_{ij}\)</span> and <span class="math inline">\(|m_i-\lambda_j|\ge\delta\)</span>. Centering is what makes the <strong>operator</strong> norm work.</li>
+</ul>
+<aside class="notes">
+<p>~5 min. Ask: why not just say “M − λ is invertible for each λ in [a,b]”? That gives the Frobenius bound column by column after diagonalizing Λ, but in operator norm the columns interact. The centering trick handles both at once. The hypothesis matters: if we only know that the two spectra are δ-separated (interlaced, not one inside an interval and the other outside), the Frobenius bound still holds but in operator norm the best constant becomes π/2 (Bhatia–Davis–McIntosh); see Bhatia Ch. VII.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Proof of Davis–Kahan</h2>
+<p>Let <span class="math inline">\(X=\hat V_\perp^\top V\in\mathbb R^{(n-k)\times k}\)</span>. By Lemma 2.1(1), <span class="math inline">\(\|X\|=\|\sin\Theta\|\)</span> and <span class="math inline">\(\|X\|_F=\|\sin\Theta\|_F\)</span>.</p>
+<p>Start from <span class="math inline">\(AV=V\Lambda_1\)</span>: <span class="math display">\[\hat AV-V\Lambda_1=(A+E)V-V\Lambda_1=EV.\]</span> Multiply on the left by <span class="math inline">\(\hat V_\perp^\top\)</span>, and use <span class="math inline">\(\hat V_\perp^\top\hat A=\hat\Lambda_2\hat V_\perp^\top\)</span> (symmetry of <span class="math inline">\(\hat A\)</span>): <span class="math display">\[\boxed{\ \hat\Lambda_2X-X\Lambda_1=\hat V_\perp^\top EV\ }\qquad\text{(Sylvester equation)}\]</span> Lemma 3.2 with <span class="math inline">\(M=\hat\Lambda_2\)</span>, <span class="math inline">\(\Lambda=\Lambda_1\)</span>: <span class="math display">\[\delta\,\|\sin\Theta\|=\delta\|X\|\le\|\hat V_\perp^\top EV\|\le\|EV\|.\qquad\blacksquare\]</span></p>
+<div class="idea">
+<p>The eigengap enters <strong>only</strong> through Lemma 3.2: the map <span class="math inline">\(X\mapsto\hat\Lambda_2X-X\Lambda_1\)</span> is invertible with inverse of norm <span class="math inline">\(\le1/\delta\)</span>.</p>
+</div>
+<aside class="notes">
+<p>~4 min. Point out where symmetry is used: V̂⊥ᵀ Â = Λ̂₂ V̂⊥ᵀ needs the left eigenvectors to equal the right ones. For non-normal matrices the inverse of the Sylvester operator can be huge even with a big gap (non-reversible chains; see the non-reversible note).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Gap on the ideal matrix only</h2>
+<p>In applications <span class="math inline">\(A\)</span> is the ideal (population) matrix. We control <strong>its</strong> gap, not that of <span class="math inline">\(\hat A\)</span>.</p>
+<div class="thm">
+<p><strong>Corollary 3.3.</strong> <span class="math inline">\(V\)</span>, <span class="math inline">\(\hat V\)</span> span the top-<span class="math inline">\(k\)</span> eigenspaces of <span class="math inline">\(A\)</span> and <span class="math inline">\(\hat A=A+E\)</span>, and <span class="math inline">\(\delta_0=\lambda_k(A)-\lambda_{k+1}(A)&gt;0\)</span>. Then <span class="math display">\[\|\sin\Theta\|\le\frac{2\|E\|}{\delta_0},\qquad\|\sin\Theta\|_F\le\frac{2\sqrt k\,\|E\|}{\delta_0}.\]</span></p>
+</div>
+<div class="pf">
+<p>If <span class="math inline">\(\|E\|\le\delta_0/2\)</span>: take <span class="math inline">\([a,b]=[\lambda_k(A),\lambda_1(A)]\)</span>. By Weyl, every discarded eigenvalue satisfies <span class="math inline">\(\lambda_j(\hat A)\le\lambda_{k+1}(A)+\|E\|=a-(\delta_0-\|E\|)\)</span>, so <span class="math inline">\(\delta=\delta_0-\|E\|\ge\delta_0/2\)</span> works. If <span class="math inline">\(\|E\|&gt;\delta_0/2\)</span>, the bound exceeds <span class="math inline">\(1\)</span> and is trivial. Frobenius: <span class="math inline">\(\|\sin\Theta\|_F\le\sqrt k\|\sin\Theta\|\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+</div>
+<ul>
+<li>Yu–Wang–Samworth (2015): <span class="math inline">\(\ \|\sin\Theta\|_F\le 2\min(\sqrt k\|E\|,\|E\|_F)/\delta_0\)</span>, for any block of the spectrum.</li>
+<li>With Lemma 2.1(3): <span class="math inline">\(\ \|\hat VO-V\|_F\le 2\sqrt{2k}\,\|E\|/\delta_0\)</span>.</li>
+</ul>
+<aside class="notes">
+<p>~3 min. The factor 2 is the price of not knowing the perturbed spectrum.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Davis–Kahan is sharp</h2>
+<p><span class="math inline">\(A=\operatorname{diag}(\delta,0)\)</span>, <span class="math inline">\(\ E=\varepsilon\begin{pmatrix}0&amp;1\\1&amp;0\end{pmatrix}\)</span>. The top eigenvector of <span class="math inline">\(\hat A\)</span> is at angle <span class="math inline">\(\theta\)</span> from <span class="math inline">\(e_1\)</span>, with <span class="math inline">\(\tan2\theta=2\varepsilon/\delta\)</span>: <span class="math display">\[\sin\theta=\frac{\varepsilon}{\delta}-O\big((\varepsilon/\delta)^3\big).\]</span></p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(\varepsilon/\delta\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(\sin\theta\)</span></th>
+<th style="text-align: center;">DK bound <span class="math inline">\(\|E\|/\delta_{\rm pert}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">0.01</td>
+<td style="text-align: center;">0.0100</td>
+<td style="text-align: center;">0.0100</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">0.1</td>
+<td style="text-align: center;">0.0985</td>
+<td style="text-align: center;">0.0990</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">0.3</td>
+<td style="text-align: center;">0.267</td>
+<td style="text-align: center;">0.277</td>
+</tr>
+</tbody>
+</table>
+<p class="small muted center">
+<span class="math inline">\(\delta_{\rm pert}=\delta-\lambda_2(\hat A)\)</span>: the gap in Theorem 3.1. Computed in <code>scripts/verify_bounds.py</code>.
+</p>
+<p><strong>Variants</strong> (same Sylvester proof): <span class="math inline">\(\tan\Theta\)</span> and <span class="math inline">\(\sin2\Theta\)</span> theorems (Davis–Kahan); singular subspaces of rectangular matrices (Wedin), via the dilation <span class="math inline">\(\left(\begin{smallmatrix}0&amp;M\\M^\top&amp;0\end{smallmatrix}\right)\)</span>.</p>
+<aside class="notes">
+<p>~2 min. The perturbation is entirely “off-diagonal” (it maps the kept subspace into the discarded one), which is the worst case.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Davis–Kahan in <span class="math inline">\(\ell^2(D)\)</span></h2>
+<p>The proof used only <strong>self-adjointness</strong> and <strong>orthonormality</strong>, so it holds in any inner product. For ours:</p>
+<div class="idea">
+<p><span class="math inline">\(U:f\mapsto D^{1/2}f\)</span> is an isometry <span class="math inline">\(\ell^2(D)\to\ell^2\)</span>, and <span class="math inline">\(\ UPU^{-1}=D^{1/2}PD^{-1/2}=N\)</span> is symmetric. Translate:</p>
+</div>
+<table class="caption-top">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><span class="math inline">\(\ell^2\)</span> (symmetric <span class="math inline">\(N\)</span>)</th>
+<th style="text-align: left;"><span class="math inline">\(\ell^2(D)\)</span> (walk <span class="math inline">\(P\)</span>)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(V^\top V=I\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(F^\top DF=I\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">angles: singular values of <span class="math inline">\(\hat V^\top V\)</span></td>
+<td style="text-align: left;">singular values of <span class="math inline">\(\hat F^\top DF\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\|E\|\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\|E\|_D=\max_f\dfrac{|\langle f,Ef\rangle_D|}{\|f\|_D^2}\)</span> (<span class="math inline">\(E\)</span> self-adjoint)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(\|\hat VO-V\|_F^2\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\|\hat FO-F\|_{D,F}^2=\sum_ud_u\,\|O^\top\hat\varphi(u)-\varphi(u)\|^2\)</span></td>
+</tr>
+</tbody>
+</table>
+<div class="thm">
+<p><strong>Corollary 3.3 in <span class="math inline">\(\ell^2(D)\)</span>.</strong> <span class="math inline">\(F,\hat F\)</span>: top-<span class="math inline">\(k\)</span> eigenvectors of <span class="math inline">\(P_0\)</span> and <span class="math inline">\(P=P_0+E\)</span>, orthonormal in <span class="math inline">\(\ell^2(D)\)</span>; <span class="math inline">\(\delta_0=\lambda_k(P_0)-\lambda_{k+1}(P_0)\)</span>. Then <span class="math display">\[\|\sin\Theta\|\le\frac{2\|E\|_D}{\delta_0},\qquad \exists\,O:\ \ \|\hat FO-F\|_{D,F}\le\frac{2\sqrt{2k}\,\|E\|_D}{\delta_0}.\]</span></p>
+</div>
+<aside class="notes">
+<p>~3 min. Two ways to see it: (1) apply the ℓ² statements to N = UPU^{-1}, V = UF, V̂ = UF̂ (U is an isometry, so all angles and norms match); (2) rerun the proof with ᵀ replaced by the ℓ²(D) adjoint: X = F̂_⊥ᵀ D F, and the Sylvester equation is unchanged. From now on, the planted-cluster part lives entirely in ℓ²(D); the SBM part stays in ℓ² with A.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section class="title-slide slide level1 center">
+<h1>From subspaces to labels</h1>
+
+</section>
+<section class="slide level2">
+<h2>Rounding: few points can be far</h2>
+<div class="lem">
+<p><strong>Lemma (counting bad vertices).</strong> The ideal embedding is <span class="math inline">\(\varphi(u)=c_j\)</span> on <span class="math inline">\(S_j\)</span>; let <span class="math inline">\(\Delta_j=\min_{l\neq j}\|c_j-c_l\|\)</span>. Write <span class="math inline">\(\hat\varphi_O(u)=O^\top\hat\varphi(u)\)</span> for the embedding given by <span class="math inline">\(\hat FO\)</span>. Call <span class="math inline">\(u\in S_j\)</span> <strong>bad</strong> if <span class="math inline">\(\|\hat\varphi_O(u)-c_j\|\ge\Delta_j/2\)</span>. Then</p>
+<ul>
+<li>every good <span class="math inline">\(u\)</span> is strictly closer to its own center than to any other center, and</li>
+<li><span class="math inline">\(\displaystyle\sum_j\frac{\Delta_j^2}{4}\,\mathrm{vol}(\text{bad}\cap S_j)\ \le\ \sum_ud_u\|\hat\varphi_O(u)-\varphi(u)\|^2=\|\hat FO-F\|_{D,F}^2\)</span>.</li>
+</ul>
+</div>
+<div class="pf">
+<p>Triangle inequality, and Markov’s inequality on the <span class="math inline">\(d_u\)</span>-weighted squared errors. <span class="math inline">\(\blacksquare\)</span></p>
+</div>
+<ul>
+<li><strong>Planted clusters:</strong> <span class="math inline">\(c_j=e_j/\sqrt{\mathrm{vol}(S_j)}\)</span>, so <span class="math inline">\(\Delta_j^2=\frac1{\mathrm{vol}(S_j)}+\min_{l\ne j}\frac1{\mathrm{vol}(S_l)}\ge\frac1{\mathrm{vol}(S_j)}\)</span> and <span class="math display">\[\sum_j\frac{\mathrm{vol}(\text{bad}\cap S_j)}{\mathrm{vol}(S_j)}\ \le\ 4\,\|\hat FO-F\|_{D,F}^2\ \le\ 8\,\|\sin\Theta\|_F^2 .\]</span></li>
+<li><strong><span class="math inline">\(\ell^2\)</span> version</strong> (weights <span class="math inline">\(1\)</span>, used for the SBM): ideal points <span class="math inline">\(x(u)\)</span> taking <span class="math inline">\(k\)</span> values with separation <span class="math inline">\(\Delta\)</span>, and <span class="math inline">\(\hat x_O(u)=O^\top\hat x(u)\)</span>, give <span class="math inline">\(\#\text{bad}\le4\|\hat VO-V\|_F^2/\Delta^2\)</span>.</li>
+<li><span class="math inline">\(k\)</span>-means does not know the true centers. A <span class="math inline">\((1+\epsilon)\)</span>-approximate <span class="math inline">\(k\)</span>-means solution loses only a constant factor (Lei–Rinaldo 2015, Lemma 5.3).</li>
+<li>Markov only counts bad vertices. Controlling <strong>every</strong> vertex needs <span class="math inline">\(\ell_{2\to\infty}\)</span> perturbation bounds (Cape–Tang–Priebe 2019; Abbe–Fan–Wang–Zhong 2020).</li>
+</ul>
+<aside class="notes">
+<p>~4 min. The natural count in ℓ²(D) is misclustered volume, i.e., π-mass: each vertex counts with its degree. Chain to remember: misclustered volume fraction ≲ ‖F̂O − F‖²_{D,F} ≤ 2‖sinΘ‖_F² ≤ 8k‖E‖_D²/δ0². Everything that follows is about bounding δ0 from below and ‖E‖ from above.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section class="title-slide slide level1 center">
+<h1>Deterministic perturbations: cut edges</h1>
+
+</section>
+<section class="slide level2">
+<h2>Turning cut edges into self-loops</h2>
+<p><span class="math inline">\(G\)</span> with planted partition <span class="math inline">\(S_1,\dots,S_k\)</span>. Split <span class="math inline">\(A=A_{\rm in}+A_{\rm out}\)</span>; <span class="math inline">\(\ d_{\rm out}(u)\)</span> = weight of <span class="math inline">\(u\)</span>’s edges leaving its cluster.</p>
+<div class="defn">
+<p><strong>Ideal graph <span class="math inline">\(G_0\)</span>:</strong> replace every cut edge <span class="math inline">\(\{u,v\}\)</span> of weight <span class="math inline">\(w\)</span> by a self-loop of weight <span class="math inline">\(w\)</span> at <span class="math inline">\(u\)</span> and at <span class="math inline">\(v\)</span>: <span class="math display">\[A_0=A_{\rm in}+D_{\rm out}.\]</span></p>
+</div>
+<ul>
+<li><strong>Same degrees</strong>, so the same <span class="math inline">\(D\)</span> and the same stationary distribution <span class="math inline">\(\pi\)</span>. The walk on <span class="math inline">\(G_0\)</span> <em>stays put</em> where the walk on <span class="math inline">\(G\)</span> would cross.</li>
+<li><span class="math inline">\(G_0\)</span> is disconnected, so the ideal case applies with <span class="math inline">\(\delta_0=\min_j\mu_2(G_j+\text{loops})\)</span>.</li>
+<li>The perturbation is a <strong>Laplacian of the cut</strong>: <span class="math display">\[E=P-P_0=D^{-1}(A_{\rm out}-D_{\rm out})=-D^{-1}L_{\rm out},\qquad \langle f,Ef\rangle_D=-f^\top L_{\rm out}f .\]</span></li>
+</ul>
+<div class="thm">
+<p><span class="math inline">\(0\le f^\top L_{\rm out}f\le2f^\top D_{\rm out}f\)</span>, hence <span class="math inline">\(\ \|E\|_D\le2\varepsilon_{\rm out}\)</span>, where <span class="math inline">\(\ \varepsilon_{\rm out}:=\max_u\dfrac{d_{\rm out}(u)}{d(u)}\)</span>.</p>
+</div>
+<aside class="notes">
+<p>~4 min. Without the loops, removing the cut edges also changes the degrees, and E picks up an extra diagonal term that is messier to bound. With loops the comparison is between two walks with the same π, which is the natural comparison after Lectures 2–4. Proof: (f(u) − f(v))² ≤ 2f(u)² + 2f(v)², so the ℓ²(D) Rayleigh quotient of L_out is at most max_u d_out(u)/d(u) times 2.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Deterministic guarantee</h2>
+<div class="thm">
+<p><strong>Theorem.</strong> Let <span class="math inline">\(\hat F\)</span> be the top-<span class="math inline">\(k\)</span> eigenvectors of <span class="math inline">\(P\)</span> and <span class="math inline">\(F=[f_1,\dots,f_k]\)</span> the cluster indicators (both orthonormal in <span class="math inline">\(\ell^2(D)\)</span>). Then <span class="math display">\[\|\sin\Theta(F,\hat F)\|\ \le\ \frac{4\,\varepsilon_{\rm out}}{\delta_0}\ \le\ \frac{8\,\varepsilon_{\rm out}}{\min_j\Phi(G_j)^2},\]</span> where <span class="math inline">\(\Phi(G_j)\)</span> is the conductance of <span class="math inline">\(G[S_j]\)</span> with volumes measured in <span class="math inline">\(G\)</span> (the loops count), and <span class="math inline">\(\ \sum_j\mathrm{vol}(\text{bad}\cap S_j)/\mathrm{vol}(S_j)\le8\|\sin\Theta\|_F^2\le128\,k\,\varepsilon_{\rm out}^2/\delta_0^2\)</span>.</p>
+</div>
+<p>Read it as: <strong>(fraction of each vertex’s edges leaving its cluster) ≪ (internal expansion)².</strong></p>
+<div class="warn">
+<p><strong>The weak point: <span class="math inline">\(\varepsilon_{\rm out}\)</span> is a maximum over vertices.</strong> Put all cross edges on a few <strong>hubs</strong>. One vertex with half its edges crossing gives <span class="math inline">\(\varepsilon_{\rm out}=\tfrac12\)</span>, and the bound is vacuous, although <span class="math inline">\(\Phi(S_j)\)</span> is tiny and the embedding is fine.</p>
+<p>The same per-vertex degree ratio appeared in KLLOT Cor. 4.16 (Lecture 7): <span class="math inline">\(\frac{d_1+d_2}{d_1}\)</span>.</p>
+</div>
+<aside class="notes">
+<p>~3 min. Operator norms are controlled by the worst vertex: test the Rayleigh quotient of E on the indicator of a single vertex u and you get d_out(u)/d(u). This is not an artifact of the proof: ‖E‖ really is large when there are hubs. The question is whether the subspace really moves, and the next slide shows that it does not.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>An energy bound that ignores hubs</h2>
+<div class="thm">
+<p><strong>Proposition</strong> (cf.&nbsp;Peng–Sun–Zanetti 2015). <span class="math inline">\(\hat F\)</span> = bottom-<span class="math inline">\(k\)</span> eigenvectors of <span class="math inline">\(L_{rw}=I-P\)</span> for the <strong>observed</strong> <span class="math inline">\(G\)</span>, orthonormal in <span class="math inline">\(\ell^2(D)\)</span>. Then <span class="math display">\[\|\sin\Theta(F,\hat F)\|_F^2\ \le\ \frac{\sum_j\Phi(S_j)}{\mu_{k+1}(G)}.\]</span></p>
+</div>
+<div class="pf">
+<p><span class="math inline">\(\langle f_j,L_{rw}f_j\rangle_D=\dfrac{w(S_j,\bar S_j)}{\mathrm{vol}(S_j)}=\Phi(S_j)\)</span> (Rayleigh quotient of an indicator). Expand <span class="math inline">\(f_j=\sum_i a_i\hat f_i\)</span> in the <span class="math inline">\(\ell^2(D)\)</span>-orthonormal eigenbasis of <span class="math inline">\(L_{rw}\)</span>: <span class="math display">\[\Phi(S_j)=\sum_i\mu_ia_i^2\ \ge\ \mu_{k+1}\sum_{i&gt;k}a_i^2=\mu_{k+1}\,\|\hat F_\perp^\top Df_j\|^2.\]</span> Sum over <span class="math inline">\(j\)</span> and use Lemma 2.1(1). <span class="math inline">\(\blacksquare\)</span></p>
+</div>
+<ul>
+<li>Uses the <strong>average</strong> leakage <span class="math inline">\(\Phi(S_j)\)</span> and the gap <span class="math inline">\(\mu_{k+1}\)</span> of the <strong>observed</strong> graph. By higher-order Cheeger, <span class="math inline">\(\mu_{k+1}\ge\rho_{k+1}(G)^2/O(k^4)\)</span>.</li>
+<li>This is the Lecture 6 exercise “Cheeger with an approximate eigenvector”, run backwards: a test vector with small Rayleigh quotient must lie mostly in the bottom eigenspace.</li>
+</ul>
+<aside class="notes">
+<p>~4 min. PSZ’s structure theorem starts from exactly this inequality, with Υ = λ_{k+1}/ρ(k) as the gap parameter, and then proves the converse (eigenvectors are close to indicators of good clusters) and a k-means analysis.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Two bounds, two kinds of perturbation</h2>
+
+<img data-src="figures/planted-spread-vs-hubs.svg" style="width:100.0%" class="r-stretch"><table class="caption-top">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">Davis–Kahan</th>
+<th style="text-align: left;">Energy bound</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">perturbation size</td>
+<td style="text-align: left;"><span class="math inline">\(\|E\|_D\le2\varepsilon_{\rm out}\)</span> (worst vertex)</td>
+<td style="text-align: left;"><span class="math inline">\(\sum_j\Phi(S_j)\)</span> (average)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">gap</td>
+<td style="text-align: left;">ideal graph: <span class="math inline">\(\delta_0\)</span></td>
+<td style="text-align: left;">observed graph: <span class="math inline">\(\mu_{k+1}(G)\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">rate</td>
+<td style="text-align: left;"><strong>linear</strong>: <span class="math inline">\(\varepsilon/\delta_0\)</span></td>
+<td style="text-align: left;"><strong>square root</strong>: <span class="math inline">\(\sqrt{\Phi/\mu_{k+1}}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">good for</td>
+<td style="text-align: left;"><strong>many, random</strong> cross edges (next)</td>
+<td style="text-align: left;"><strong>few, adversarial</strong> cross edges</td>
+</tr>
+</tbody>
+</table>
+<aside class="notes">
+<p>~3 min. Both bounds hold in both panels; constants make DK vacuous early on the left, and immediately on the right. The rate difference: the Rayleigh quotient is quadratic in the error of the vector, so bounding the vector by the energy loses a square root. In the SBM (next), Φ(S_j) is a constant (a constant fraction of each vertex’s edges cross!), so the energy bound cannot give vanishing error, while Davis–Kahan plus concentration can.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section class="title-slide slide level1 center">
+<h1>Stochastic perturbations: the stochastic block model</h1>
+
+</section>
+<section class="slide level2">
+<h2>The SBM and its population matrix</h2>
+<p><span class="math inline">\(n\)</span> vertices in <span class="math inline">\(k\)</span> blocks of size <span class="math inline">\(n/k\)</span>. Edges independent: probability <span class="math inline">\(p\)</span> inside a block, <span class="math inline">\(q&lt;p\)</span> across.</p>
+<p>With <span class="math inline">\(Z\in\{0,1\}^{n\times k}\)</span> the block membership matrix, <span class="math display">\[\mathbb EA=Z\big((p-q)I_k+qJ_k\big)Z^\top-pI.\]</span></p>
+<ul>
+<li>Eigenvalues: <span class="math inline">\(\ \tfrac nk(p-q)+nq-p\)</span>, then <span class="math inline">\(\tfrac nk(p-q)-p\)</span> with multiplicity <span class="math inline">\(k-1\)</span>, then <span class="math inline">\(-p\)</span>.</li>
+<li>Top-<span class="math inline">\(k\)</span> eigenspace: <span class="math inline">\(V=Z/\sqrt{n/k}\)</span>. Degrees are equal in expectation, so we stay in <span class="math inline">\(\ell^2\)</span> with <span class="math inline">\(A\)</span>: embed <span class="math inline">\(u\mapsto\hat x(u)=(\hat v_1(u),\dots,\hat v_k(u))\)</span> from the top-<span class="math inline">\(k\)</span> eigenvectors of <span class="math inline">\(A\)</span>. Ideal points: <span class="math inline">\(x(u)=\sqrt{k/n}\,e_j\)</span> for <span class="math inline">\(u\)</span> in block <span class="math inline">\(j\)</span>, so <span class="math inline">\(\Delta^2=2k/n\)</span>.</li>
+<li>Gap: <span class="math inline">\(\ \delta_0=\dfrac{n(p-q)}{k}\)</span>.</li>
+</ul>
+<div class="idea">
+<p>Here a constant fraction of each vertex’s edges cross, so the cut is <strong>not</strong> sparse. The cross edges are <strong>random</strong>, and that is what will save us: <span class="math inline">\(E=A-\mathbb EA\)</span> has norm <span class="math inline">\(\approx\sqrt d\)</span>, not <span class="math inline">\(d\)</span>.</p>
+</div>
+<aside class="notes">
+<p>~3 min. Check the eigenvalues with the k × k matrix (p − q)I + qJ scaled by n/k. The −pI comes from forbidding self-loops; it shifts all eigenvalues and does not change eigenvectors or the gap.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>How big is <span class="math inline">\(E=A-\mathbb EA\)</span>?</h2>
+<p>Let <span class="math inline">\(d=\max_u\sum_v p_{uv}\)</span> (max expected degree).</p>
+<ul>
+<li><strong>Lower bound:</strong> <span class="math inline">\(\ \|E\|\ge\|Ee_u\|\approx\sqrt{\sum_v p_{uv}(1-p_{uv})}\approx\sqrt d\)</span>.</li>
+<li><strong>Truth</strong> (dense enough): semicircle law, <span class="math inline">\(\ \|E\|\approx2\sigma\)</span>, <span class="math inline">\(\ \sigma^2=\max_u\sum_v p_{uv}(1-p_{uv})\)</span>.</li>
+</ul>
+<div class="thm">
+<p><strong>Matrix Bernstein</strong> (Tropp 2012). <span class="math inline">\(X_1,\dots,X_m\)</span> independent, symmetric <span class="math inline">\(n\times n\)</span>, <span class="math inline">\(\ \mathbb EX_i=0\)</span>, <span class="math inline">\(\ \|X_i\|\le L\)</span>, and <span class="math inline">\(\ \sigma^2=\big\|\sum_i\mathbb EX_i^2\big\|\)</span>. Then <span class="math display">\[\Pr\Big[\Big\|\sum_iX_i\Big\|\ge t\Big]\le2n\exp\Big(\frac{-t^2/2}{\sigma^2+Lt/3}\Big).\]</span></p>
+</div>
+<p><strong>Apply:</strong> <span class="math inline">\(X_{uv}=(A_{uv}-p_{uv})(e_ue_v^\top+e_ve_u^\top)\)</span> for <span class="math inline">\(u&lt;v\)</span>. Then <span class="math inline">\(L=1\)</span> and <span class="math inline">\(\sum\mathbb EX_{uv}^2=\operatorname{diag}\big(\sum_vp_{uv}(1-p_{uv})\big)\preceq d\,I\)</span>. With probability <span class="math inline">\(\ge1-2/n\)</span>, <span class="math display">\[\|E\|\ \le\ 2\sqrt{d\ln n}+\tfrac43\ln n\ \le\ 4\sqrt{d\ln n}\quad(d\ge\ln n).\]</span></p>
+<aside class="notes">
+<p>~4 min. Choose t = a + b with a = 2√(σ² ln n), b = (4/3) ln n.&nbsp;Then t² ≥ a² + bt = 4 ln n (σ² + t/3), so the exponent is ≤ −2 ln n and the probability ≤ 2n · n⁻² = 2/n.&nbsp;Only a √(ln n) factor is lost against the √d lower bound.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2 scrollable">
+<h2>Matrix Bernstein: proof sketch</h2>
+<p>Same four steps as the scalar proof, with <span class="math inline">\(\operatorname{tr}\)</span> and <span class="math inline">\(\exp\)</span> of matrices. Let <span class="math inline">\(Y=\sum_iX_i\)</span>.</p>
+<ol type="1">
+<li><strong>Laplace transform:</strong> <span class="math inline">\(\ \Pr[\lambda_{\max}(Y)\ge t]\le e^{-\theta t}\,\mathbb E\operatorname{tr}e^{\theta Y}\)</span>, since <span class="math inline">\(e^{\theta\lambda_{\max}(Y)}\le\operatorname{tr}e^{\theta Y}\)</span>.</li>
+<li><strong>Subadditivity of matrix cgfs</strong> (from <strong>Lieb’s concavity theorem</strong>): <span class="math inline">\(\ \mathbb E\operatorname{tr}\exp\big(\sum_i\theta X_i\big)\le\operatorname{tr}\exp\big(\sum_i\log\mathbb Ee^{\theta X_i}\big).\)</span></li>
+<li><strong>One summand:</strong> <span class="math inline">\(\|X\|\le L\)</span> and <span class="math inline">\(\mathbb EX=0\)</span> give <span class="math inline">\(\ \mathbb Ee^{\theta X}\preceq\exp\big(g(\theta)\,\mathbb EX^2\big)\)</span>, with <span class="math inline">\(g(\theta)=\frac{\theta^2/2}{1-L\theta/3}\)</span>, for <span class="math inline">\(0&lt;\theta&lt;3/L\)</span>.</li>
+<li><strong>Combine:</strong> <span class="math inline">\(\ \operatorname{tr}\exp\big(g(\theta)\sum_i\mathbb EX_i^2\big)\le n\,e^{g(\theta)\sigma^2}\)</span>. Optimize over <span class="math inline">\(\theta\)</span>.</li>
+</ol>
+<div class="warn">
+<p><strong>Why Lieb?</strong> The obvious route (Golden–Thompson, Ahlswede–Winter 2002) peels off one summand at a time and replaces <span class="math inline">\(\big\|\sum_i\mathbb EX_i^2\big\|\le d\)</span> by <span class="math inline">\(\sum_i\|\mathbb EX_i^2\|\approx nd/2\)</span>. For the SBM that gives <span class="math inline">\(\|E\|\lesssim\sqrt{nd\log n}\)</span>: worse than the trivial bound <span class="math inline">\(\|E\|\le\)</span> max degree.</p>
+</div>
+<p>The factor <span class="math inline">\(n\)</span> in front comes from the trace (step 4): it is the dimension, and it is where the <span class="math inline">\(\log n\)</span> comes from.</p>
+<aside class="notes">
+<p>~4 min. Step 3 uses the scalar inequality e^{θx} ≤ 1 + θx + g(θ)x² for |x| ≤ L, transferred to matrices (both sides are functions of the same matrix X), then I + M ⪯ e^M and monotonicity of log. Don’t prove Lieb; just say where it’s used.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Putting it together: SBM recovery</h2>
+<div class="thm">
+<p><strong>Theorem</strong> (Davis–Kahan + matrix Bernstein + counting). If <span class="math inline">\(d\ge\ln n\)</span>, then with probability <span class="math inline">\(\ge1-2/n\)</span>, spectral clustering on <span class="math inline">\(A\)</span> misclassifies (by nearest true center) at most <span class="math display">\[\frac{32k\,\|E\|^2}{\Delta^2\delta_0^2}=\frac{16\,n\,\|E\|^2}{\delta_0^2}\ \le\ \frac{256\,k^2\,p\ln n}{(p-q)^2}\quad\text{vertices.}\]</span></p>
+</div>
+<p>Chain: <span class="math inline">\(\ \#\text{bad}\le\frac{4}{\Delta^2}\|\hat VO-V\|_F^2\le\frac{8}{\Delta^2}\|\sin\Theta\|_F^2\le\frac{32k\|E\|^2}{\Delta^2\delta_0^2}\)</span>, with <span class="math inline">\(\Delta^2=\frac{2k}n\)</span>, <span class="math inline">\(\delta_0=\frac{n(p-q)}k\)</span>, <span class="math inline">\(\|E\|^2\le16\,np\ln n\)</span>.</p>
+<ul>
+<li><strong>Dense</strong> (<span class="math inline">\(p,q\)</span> fixed): a fraction <span class="math inline">\(O(\log n/n)\)</span> is misclassified.</li>
+<li><strong>Logarithmic degrees</strong>, <span class="math inline">\(p=\frac{a\ln n}n\)</span>, <span class="math inline">\(q=\frac{b\ln n}n\)</span>: a fraction <span class="math inline">\(\le256k^2a/(a-b)^2\)</span>, small once <span class="math inline">\((a-b)^2\gg k^2a\)</span>.</li>
+<li><strong>Removing the log:</strong> <span class="math inline">\(\|E\|=O(\sqrt d)\)</span> when <span class="math inline">\(d\gtrsim\log n\)</span> (Feige–Ofek 2005; Lei–Rinaldo 2015 for the SBM).</li>
+</ul>
+<aside class="notes">
+<p>~4 min. The proof is three black boxes snapped together. Lei–Rinaldo do it rigorously, with k-means instead of nearest true centers. Rohe–Chatterjee–Yu (2011) do the normalized Laplacian version, with k allowed to grow.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>How sharp is this?</h2>
+
+<img data-src="figures/sbm-regimes.svg" style="width:88.0%" class="r-stretch"><p class="small muted center">
+<span class="math inline">\(n=600\)</span>, <span class="math inline">\(k=2\)</span>, <span class="math inline">\(p=0.3\)</span>. Dashed: <span class="math inline">\(\pm2\sigma\)</span>. Blue dots: outlier eigenvalues. Colors: true blocks.
+</p>
+<ul>
+<li><strong>Spiked random matrix heuristic</strong> (BBP; Benaych-Georges–Nadakuditi 2011): an outlier separates iff <span class="math inline">\(\delta_0&gt;\sigma\)</span>, and then <span class="math inline">\(\|\sin\Theta\|\approx\sigma/\delta_0\)</span>. Davis–Kahan gives <span class="math inline">\(2\|E\|/\delta_0\approx4\sigma/\delta_0\)</span>: <strong>the right rate, off by a constant</strong>.</li>
+<li>What fails at <strong>constant degree</strong> (<span class="math inline">\(p=a/n\)</span>): hubs again. Max degree <span class="math inline">\(\sim\log n/\log\log n\)</span> forces <span class="math inline">\(\|E\|\gg\sqrt d\)</span> (Krivelevich–Sudakov 2003). Fixes: trim or regularize high-degree vertices (Feige–Ofek; Le–Levina–Vershynin 2017), or the non-backtracking matrix (Krzakala et al.&nbsp;2013; Bordenave–Lelarge–Massoulié 2015).</li>
+<li>Sharp thresholds (<span class="math inline">\(k=2\)</span>): partial recovery iff <span class="math inline">\((a-b)^2&gt;2(a+b)\)</span> for <span class="math inline">\(p=\frac an\)</span> (Mossel–Neeman–Sly; Massoulié); exact recovery iff <span class="math inline">\((\sqrt a-\sqrt b)^2&gt;2\)</span> for <span class="math inline">\(p=\frac{a\ln n}n\)</span> (Abbe–Bandeira–Hall; Mossel–Neeman–Sly).</li>
+</ul>
+<aside class="notes">
+<p>~4 min. In the figure, the numbers in the scatter titles are the actual sin Θ, the heuristic σ/δ0, and the Davis–Kahan bound 2‖E‖/δ0: (0.12, 0.12, 0.47), (0.30, 0.29, 1.14), (1.00, 1.00, 4.83). At q = 0.27 we have δ0 = 9 &lt; σ = 11: no outlier, and the embedding is noise. Hubs: the same phenomenon as in the deterministic part. A single high-degree vertex makes ‖E‖ large without moving the subspace much.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Demo</h2>
+<iframe class="demo-frame" style="height:640px" src="demos/spectral-clustering-demo.html">
+</iframe>
+<p class="tiny muted">
+Standalone: <a href="demos/spectral-clustering-demo.html" target="_blank">demos/spectral-clustering-demo.html</a> (append <code>#planted</code> to open the second tab). Try: SBM, move q toward p and watch the outliers merge into the bulk; planted clusters, switch “spread out” to “on 3 hubs”.
+</p>
+<aside class="notes">
+<p>Things to show live. (1) SBM, n = 300, k = 2, p = 0.3: move q from 0 to 0.3. The blue curve tracks the grey spiked-Wigner heuristic σ/δ0 closely; Davis–Kahan (orange) has the right shape but a factor ≈ 4. The shaded region is δ0 &lt; σ, where the outliers have merged into the bulk. (2) Matrix Bernstein row of the table: always true, a factor ≈ 3 loose at these sizes. (3) Planted, k = 3: spread vs.&nbsp;hubs with the same number of cross edges. Φ(S_j), and so the energy bound, is unchanged; ε_out jumps and Davis–Kahan becomes vacuous, while the actual sin Θ barely moves.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2 scrollable">
+<h2>Takeaways</h2>
+<ol type="1">
+<li><strong>Ideal case:</strong> <span class="math inline">\(k\)</span> disconnected clusters give a <span class="math inline">\(k\)</span>-fold top eigenvalue of <span class="math inline">\(P\)</span> whose eigenvectors are cluster indicators in <span class="math inline">\(\ell^2(D)\)</span>, and gap <span class="math inline">\(\delta_0=\min_j\mu_2(G_j)\ge\frac12\min_j\Phi(G_j)^2\)</span>.</li>
+<li><strong>Davis–Kahan:</strong> <span class="math inline">\(\ \|\sin\Theta\|\le\|EV\|/\delta\)</span>. The whole proof is the Sylvester equation <span class="math inline">\(\hat\Lambda_2X-X\Lambda_1=\hat V_\perp^\top EV\)</span> plus the centering lemma.</li>
+<li><strong>Recipe:</strong> gap of the ideal matrix + operator norm of the noise + Procrustes + Markov ⇒ few misclustered vertices.</li>
+<li><strong>Deterministic noise:</strong> cut edges → self-loops gives <span class="math inline">\(\|E\|_D\le2\varepsilon_{\rm out}\)</span>. Worst-vertex sensitive; the energy bound <span class="math inline">\(\sum_j\Phi(S_j)/\mu_{k+1}\)</span> is not.</li>
+<li><strong>Random noise:</strong> matrix Bernstein gives <span class="math inline">\(\|E\|\lesssim\sqrt{d\log n}\)</span>. This handles cuts that are <strong>not sparse at all</strong>, at the right rate up to constants.</li>
+</ol>
+</section>
+<section class="slide level2 scrollable">
+<h2>Discussion questions</h2>
+<ol type="1">
+<li>Where exactly does the proof of Davis–Kahan use that <span class="math inline">\(\hat A\)</span> is symmetric? What breaks for the transition matrix of a non-reversible chain?</li>
+<li>In the SBM, <span class="math inline">\(\Phi(S_j)\approx\frac{(k-1)q}{p+(k-1)q}\)</span>. What does the energy bound give? Why does Davis–Kahan do better here, while the energy bound does better with hubs?</li>
+<li>In the theorem for planted clusters, we compare <span class="math inline">\(P\)</span> with <span class="math inline">\(P_0\)</span>. Why are self-loops better than simply deleting the cut edges?</li>
+<li>The heuristic <span class="math inline">\(\sigma/\delta_0\)</span> suggests Davis–Kahan is off by a factor <span class="math inline">\(4\)</span> in the SBM. Which factor <span class="math inline">\(2\)</span> comes from Weyl, and which comes from <span class="math inline">\(\|E\|\approx2\sigma\)</span>?</li>
+<li>The counting lemma bounds the <strong>number</strong> of bad vertices. What would you need to prove that <strong>no</strong> vertex is bad (exact recovery)?</li>
+</ol>
+</section>
+<section class="slide level2">
+<h2>References</h2>
+<div class="small">
+<ul>
+<li><strong>C. Davis, W. M. Kahan.</strong> The rotation of eigenvectors by a perturbation. III. <em>SIAM J. Numer. Anal.</em> 1970. · R. Bhatia. <em>Matrix Analysis</em>, Ch. VII. Springer GTM 169, 1997. · G. W. Stewart, J.-G. Sun. <em>Matrix Perturbation Theory</em>. Academic Press, 1990.</li>
+<li>Y. Yu, T. Wang, R. J. Samworth. A useful variant of the Davis–Kahan theorem for statisticians. <em>Biometrika</em> 2015.</li>
+<li>A. Y. Ng, M. I. Jordan, Y. Weiss. On spectral clustering: analysis and an algorithm. <em>NIPS</em> 2001. · J. Shi, J. Malik. Normalized cuts and image segmentation. <em>IEEE TPAMI</em> 2000. · U. von Luxburg. A tutorial on spectral clustering. <em>Statistics and Computing</em> 2007.</li>
+<li>R. Peng, H. Sun, L. Zanetti. Partitioning well-clustered graphs: spectral clustering works! <em>COLT</em> 2015; <em>SIAM J. Comput.</em> 2017.</li>
+<li><strong>J. A. Tropp.</strong> User-friendly tail bounds for sums of random matrices. <em>Found. Comput. Math.</em> 2012. · R. Ahlswede, A. Winter. Strong converse for identification via quantum channels. <em>IEEE Trans. Inf. Theory</em> 2002.</li>
+<li>K. Rohe, S. Chatterjee, B. Yu. Spectral clustering and the high-dimensional stochastic blockmodel. <em>Ann. Statist.</em> 2011. · <strong>J. Lei, A. Rinaldo.</strong> Consistency of spectral clustering in stochastic block models. <em>Ann. Statist.</em> 2015.</li>
+<li>U. Feige, E. Ofek. Spectral techniques applied to sparse random graphs. <em>Random Structures Algorithms</em> 2005. · M. Krivelevich, B. Sudakov. The largest eigenvalue of sparse random graphs. <em>Combin. Probab. Comput.</em> 2003. · C. M. Le, E. Levina, R. Vershynin. Concentration and regularization of random graphs. <em>Random Structures Algorithms</em> 2017.</li>
+<li>F. Benaych-Georges, R. R. Nadakuditi. The eigenvalues and eigenvectors of finite, low rank perturbations of large random matrices. <em>Adv. Math.</em> 2011.</li>
+<li>F. Krzakala et al.&nbsp;Spectral redemption in clustering sparse networks. <em>PNAS</em> 2013. · C. Bordenave, M. Lelarge, L. Massoulié. Non-backtracking spectrum of random graphs. <em>FOCS</em> 2015.</li>
+<li>E. Abbe. Community detection and stochastic block models: recent developments. <em>JMLR</em> 2018 (survey; thresholds of Mossel–Neeman–Sly, Massoulié, Abbe–Bandeira–Hall).</li>
+<li>J. Cape, M. Tang, C. E. Priebe. The two-to-infinity norm and singular subspace geometry. <em>Ann. Statist.</em> 2019. · E. Abbe, J. Fan, K. Wang, Y. Zhong. Entrywise eigenvector analysis of random matrices with low expected rank. <em>Ann. Statist.</em> 2020.</li>
+</ul>
+</div>
+<p class="tiny muted">
+Reading: <a href="../../notes/davis-kahan.html">the Davis–Kahan note</a>, von Luxburg §7 (perturbation theory point of view), Yu–Wang–Samworth.
+</p>
+
+
+</section></section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="../../site_libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="../../site_libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="../../site_libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="../../site_libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="../../site_libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="../../site_libs/revealjs/plugin/search/search.js"></script>
+  <script src="../../site_libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="../../site_libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': true,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'none',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1050,
+
+        height: 700,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp("https:\/\/lorecchia\.github\.io\/cmsc35410");
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>
