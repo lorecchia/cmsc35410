@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Spectral clustering under perturbation — interactive demo</title>
+<style>
+  :root { --blue:#2a6fdb; --orange:#e8792b; --green:#2a9d5c; --purple:#8e44ad; --red:#c0392b; --grey:#8a8a8a; --ink:#222; }
+  html,body { margin:0; font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color:var(--ink); background:#fff; font-size:14px; }
+  .wrap { padding:10px 14px; }
+  .tabs { display:flex; gap:6px; margin-bottom:8px; }
+  .tabs button { border:1px solid #ccc; background:#f6f6f6; border-radius:6px; padding:4px 12px; font-size:13px; cursor:pointer; }
+  .tabs button.on { background:var(--blue); color:#fff; border-color:var(--blue); }
+  .controls { display:flex; flex-wrap:wrap; gap:16px; align-items:center; margin-bottom:8px; }
+  .controls label { font-weight:600; margin-right:5px; }
+  .controls button { font-size:12px; padding:2px 8px; }
+  select, input[type=range] { vertical-align:middle; }
+  .val { font-family: ui-monospace, Menlo, monospace; min-width:3.6em; display:inline-block; }
+  .grid { display:grid; grid-template-columns: 1fr 1fr 1.05fr; gap:10px; }
+  .panel { border:1px solid #e3e3e3; border-radius:8px; padding:6px 8px; }
+  .panel h4 { margin:2px 0 4px; font-size:13px; color:#444; font-weight:600; }
+  table { border-collapse:collapse; width:100%; font-size:12.5px; }
+  td { padding:2px 4px; border-bottom:1px solid #f0f0f0; }
+  td.num { text-align:right; font-family: ui-monospace, Menlo, monospace; white-space:nowrap; }
+  .ok { color:var(--green); font-weight:700; }
+  .bad { color:var(--red); font-weight:700; }
+  .legend span { margin-right:12px; white-space:nowrap; font-size:12px; }
+  .sw { display:inline-block; width:14px; height:3px; vertical-align:middle; margin-right:4px; }
+  .note { color:#666; font-size:11.5px; margin-top:4px; }
+  .busy { color:#999; font-size:12px; margin-left:8px; }
+  svg text { font-size:11px; fill:#444; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="tabs">
+    <button id="tabSBM" class="on">Stochastic block model</button>
+    <button id="tabPL">Planted clusters (deterministic)</button>
+    <span class="busy" id="busy"></span>
+  </div>
+
+  <div class="controls" id="ctlSBM">
+    <span><label for="sn">n</label><input id="sn" type="range" min="100" max="500" step="50" value="300"> <span class="val" id="snV"></span></span>
+    <span><label for="sk">k</label><input id="sk" type="range" min="2" max="4" step="1" value="2"> <span class="val" id="skV"></span></span>
+    <span><label for="sp">p</label><input id="sp" type="range" min="0.02" max="0.6" step="0.01" value="0.3"> <span class="val" id="spV"></span></span>
+    <span><label for="sq">q</label><input id="sq" type="range" min="0" max="0.3" step="0.005" value="0.1"> <span class="val" id="sqV"></span></span>
+    <button id="sre">resample</button>
+  </div>
+  <div class="controls" id="ctlPL" style="display:none">
+    <span><label for="pk">k</label><input id="pk" type="range" min="2" max="4" step="1" value="3"> <span class="val" id="pkV"></span></span>
+    <span><label for="pm">cluster size</label><input id="pm" type="range" min="40" max="120" step="10" value="80"> <span class="val" id="pmV"></span></span>
+    <span><label for="pd">internal degree</label><input id="pd" type="range" min="4" max="30" step="2" value="20"> <span class="val" id="pdV"></span></span>
+    <span><label for="pc">cross edges</label><input id="pc" type="range" min="0" max="400" step="5" value="40"> <span class="val" id="pcV"></span></span>
+    <span><label for="pmode">placement</label><select id="pmode"><option value="spread" selected>spread out</option><option value="hubs">on 3 hubs per cluster</option></select></span>
+    <button id="pre">resample</button>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h4 id="embTitle">Spectral embedding; ringed = misclustered by k-means</h4>
+      <svg id="emb" width="100%" viewBox="0 0 320 220"></svg>
+    </div>
+    <div class="panel">
+      <h4 id="midTitle"></h4>
+      <svg id="mid" width="100%" viewBox="0 0 320 220"></svg>
+      <div class="legend" id="midLegend"></div>
+    </div>
+    <div class="panel">
+      <h4>Numbers</h4>
+      <table id="tbl"></table>
+      <div class="note" id="tblNote"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:10px">
+    <h4 id="chartTitle"></h4>
+    <svg id="chart" width="100%" viewBox="0 0 980 160"></svg>
+    <div class="legend" id="chartLegend"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+// CORE-BEGIN  (pure numerics; no DOM. Tested against numpy by scripts/test_demo_core.js)
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function perm(m,rnd){const p=[...Array(m).keys()];for(let i=m-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[p[i],p[j]]=[p[j],p[i]];}return p;}
+function dot(a,b){let s=0;for(let i=0;i<a.length;i++)s+=a[i]*b[i];return s;}
+function axpy(y,a,x){for(let i=0;i<y.length;i++)y[i]+=a*x[i];}
+
+// Symmetric tridiagonal QL with implicit shifts (Numerical Recipes tqli).
+// d: diagonal (n), e: e[i] couples i-1 and i for i>=1. z (optional): array of n rows; columns are rotated.
+function tqli(d,e,z){
+  const n=d.length; for(let i=1;i<n;i++) e[i-1]=e[i]; if(n) e[n-1]=0;
+  for(let l=0;l<n;l++){ let iter=0, m;
+    do{
+      for(m=l;m<n-1;m++){ const dd=Math.abs(d[m])+Math.abs(d[m+1]); if(Math.abs(e[m])+dd===dd) break; }
+      if(m!==l){
+        if(iter++===80) break;
+        let g=(d[l+1]-d[l])/(2*e[l]); let r=Math.hypot(g,1);
+        g=d[m]-d[l]+e[l]/(g+(g>=0?Math.abs(r):-Math.abs(r)));
+        let s=1,c=1,p=0,i;
+        for(i=m-1;i>=l;i--){
+          let f=s*e[i]; const b=c*e[i]; e[i+1]=(r=Math.hypot(f,g));
+          if(r===0){ d[i+1]-=p; e[m]=0; break; }
+          s=f/r; c=g/r; g=d[i+1]-p; r=(d[i]-g)*s+2*c*b; d[i+1]=g+(p=s*r); g=c*r-b;
+          if(z) for(let k=0;k<z.length;k++){ const zk=z[k]; f=zk[i+1]; zk[i+1]=s*zk[i]+c*f; zk[i]=c*zk[i]-s*f; }
+        }
+        if(r===0 && i>=l) continue;
+        d[l]-=p; e[l]=g; e[m]=0;
+      }
+    } while(m!==l);
+  }
+}
+
+// Eigen-decomposition of a dense symmetric matrix given as flat Float64Array (row-major, n*n).
+// Householder tridiagonalization (+ accumulated Q if wantVecs) then tqli.
+// Returns {vals (descending), vecs: array of eigenvectors (Float64Array) in the same order} .
+function eigSym(aIn,n,wantVecs){
+  const a=Float64Array.from(aIn);
+  let Q=null; if(wantVecs){ Q=[]; for(let r=0;r<n;r++){ const row=new Float64Array(n); row[r]=1; Q.push(row);} }
+  const v=new Float64Array(n), w=new Float64Array(n), q=new Float64Array(n);
+  for(let k=0;k<n-2;k++){
+    const s=k+1, L=n-s; let nrm=0;
+    for(let i=0;i<L;i++){ const x=a[(s+i)*n+k]; v[i]=x; nrm+=x*x; }
+    nrm=Math.sqrt(nrm); if(nrm<1e-300) continue;
+    const alpha = v[0]>0 ? -nrm : nrm; v[0]-=alpha;
+    let vn=0; for(let i=0;i<L;i++) vn+=v[i]*v[i]; vn=Math.sqrt(vn); if(vn<1e-300) continue;
+    for(let i=0;i<L;i++) v[i]/=vn;
+    let c=0;
+    for(let i=0;i<L;i++){ let t=0; const off=(s+i)*n+s; for(let j=0;j<L;j++) t+=a[off+j]*v[j]; w[i]=t; c+=v[i]*t; }
+    for(let i=0;i<L;i++) q[i]=w[i]-c*v[i];
+    for(let i=0;i<L;i++){ const off=(s+i)*n+s, vi=2*v[i], qi=2*q[i]; for(let j=0;j<L;j++) a[off+j]-=vi*q[j]+qi*v[j]; }
+    a[s*n+k]=alpha; a[k*n+s]=alpha; for(let i=1;i<L;i++){ a[(s+i)*n+k]=0; a[k*n+s+i]=0; }
+    if(Q) for(let r=0;r<n;r++){ const row=Q[r]; let t=0; for(let j=0;j<L;j++) t+=row[s+j]*v[j]; t*=2; for(let j=0;j<L;j++) row[s+j]-=t*v[j]; }
+  }
+  const d=new Float64Array(n), e=new Float64Array(n);
+  for(let i=0;i<n;i++){ d[i]=a[i*n+i]; if(i>0) e[i]=a[i*n+i-1]; }
+  tqli(d,e,Q);
+  const idx=[...Array(n).keys()].sort((x,y)=>d[y]-d[x]);
+  const vals=idx.map(i=>d[i]);
+  const vecs= Q ? idx.map(i=>{ const u=new Float64Array(n); for(let r=0;r<n;r++) u[r]=Q[r][i]; return u; }) : null;
+  return {vals,vecs};
+}
+
+// Block Krylov + Rayleigh–Ritz with full reorthogonalization. Handles multiplicities up to the block size b.
+// matvec(x) -> new Float64Array. Returns {vals (desc), vec(i) -> Ritz vector, resid(i)}.
+function blockKrylov(matvec,n,b,maxCols,rnd){
+  maxCols=Math.min(n,maxCols);
+  const basis=[], imgs=[]; let cur=[];
+  for(let j=0;j<b;j++){ const x=new Float64Array(n); for(let i=0;i<n;i++) x[i]=rnd()-0.5; cur.push(x); }
+  while(basis.length<maxCols && cur.length){
+    const next=[];
+    for(const x0 of cur){
+      if(basis.length>=maxCols) break;
+      const x=Float64Array.from(x0); const nx0=Math.sqrt(dot(x,x));
+      for(let pass=0;pass<2;pass++) for(const u of basis) axpy(x,-dot(u,x),u);
+      const nx=Math.sqrt(dot(x,x)); if(nx<1e-9*Math.max(nx0,1e-300)) continue;
+      for(let i=0;i<n;i++) x[i]/=nx;
+      basis.push(x); const y=matvec(x); imgs.push(y); next.push(y);
+    }
+    cur=next;
+  }
+  const m=basis.length, H=new Float64Array(m*m);
+  for(let i=0;i<m;i++) for(let j=i;j<m;j++){ const h=0.5*(dot(basis[i],imgs[j])+dot(basis[j],imgs[i])); H[i*m+j]=h; H[j*m+i]=h; }
+  const {vals,vecs}=eigSym(H,m,true);
+  const vec=i=>{ const u=new Float64Array(n); const s=vecs[i]; for(let j=0;j<m;j++) axpy(u,s[j],basis[j]); return u; };
+  const resid=i=>{ const u=vec(i), r=matvec(u); axpy(r,-vals[i],u); return Math.sqrt(dot(r,r)); };
+  return {vals,vec,resid,m};
+}
+
+// ---- small dense helpers (k x k) ----
+function matTmul(Vh,V,n,k){ // returns k x k array M = Vh^T V
+  const M=[]; for(let a=0;a<k;a++){ M.push(new Float64Array(k)); for(let b=0;b<k;b++) M[a][b]=dot(Vh[a],V[b]); } return M; }
+function principal(M,k){ // cosines^2 = eig(M^T M)
+  const G=new Float64Array(k*k); for(let i=0;i<k;i++) for(let j=0;j<k;j++){ let s=0; for(let r=0;r<k;r++) s+=M[r][i]*M[r][j]; G[i*k+j]=s; }
+  const c2=eigSym(G,k,false).vals.map(x=>Math.min(1,Math.max(0,x)));
+  const sin=c2.map(x=>Math.sqrt(1-x));
+  return {sinOp:Math.max(...sin), sinF:Math.sqrt(sin.reduce((a,x)=>a+x*x,0))};
+}
+function inv(Min,k){ const A=Min.map(r=>Float64Array.from(r)), I=[]; for(let i=0;i<k;i++){I.push(new Float64Array(k)); I[i][i]=1;}
+  for(let c=0;c<k;c++){ let p=c; for(let r=c+1;r<k;r++) if(Math.abs(A[r][c])>Math.abs(A[p][c])) p=r;
+    [A[c],A[p]]=[A[p],A[c]]; [I[c],I[p]]=[I[p],I[c]]; const piv=A[c][c]; if(Math.abs(piv)<1e-14) return null;
+    for(let j=0;j<k;j++){A[c][j]/=piv; I[c][j]/=piv;}
+    for(let r=0;r<k;r++) if(r!==c){ const f=A[r][c]; for(let j=0;j<k;j++){A[r][j]-=f*A[c][j]; I[r][j]-=f*I[c][j];} } }
+  return I; }
+function polar(M,k){ // orthogonal polar factor via Newton: X <- (X + X^{-T})/2
+  let X=M.map(r=>Float64Array.from(r));
+  for(let it=0;it<60;it++){ const Xi=inv(X,k); if(!Xi) return null; let diff=0;
+    const Y=X.map((r,i)=>r.map((x,j)=>{ const y=0.5*(x+Xi[j][i]); diff+=Math.abs(y-x); return y; })); X=Y; if(diff<1e-13) break; }
+  return X; }
+
+// weighted k-means (k-means++ init, Lloyd, restarts) on rows: minimizes sum_i w_i ||row_i - c_{z(i)}||^2; returns labels
+function kmeans(rows,k,rnd,restarts=8,w=null){
+  const n=rows.length, dim=rows[0].length; let best=null; if(!w) w=new Float64Array(n).fill(1);
+  const d2=(a,b)=>{let s=0;for(let t=0;t<dim;t++){const u=a[t]-b[t];s+=u*u;}return s;};
+  for(let rep=0;rep<restarts;rep++){
+    const C=[Float64Array.from(rows[Math.floor(rnd()*n)])];
+    while(C.length<k){ const D=rows.map((r,i)=>w[i]*Math.min(...C.map(c=>d2(r,c)))); const tot=D.reduce((a,b)=>a+b,0);
+      let t=rnd()*tot, i=0; for(;i<n-1;i++){ t-=D[i]; if(t<=0) break; } C.push(Float64Array.from(rows[i])); }
+    let z=new Int32Array(n);
+    for(let it=0;it<60;it++){ let ch=false;
+      for(let i=0;i<n;i++){ let bj=0,bd=Infinity; for(let j=0;j<k;j++){ const dd=d2(rows[i],C[j]); if(dd<bd){bd=dd;bj=j;} } if(z[i]!==bj){z[i]=bj;ch=true;} }
+      const S=C.map(()=>new Float64Array(dim)), cnt=new Float64Array(k);
+      for(let i=0;i<n;i++){ cnt[z[i]]+=w[i]; for(let t=0;t<dim;t++) S[z[i]][t]+=w[i]*rows[i][t]; }
+      for(let j=0;j<k;j++) if(cnt[j]>0) for(let t=0;t<dim;t++) C[j][t]=S[j][t]/cnt[j];
+      if(!ch && it>0) break; }
+    let cost=0; for(let i=0;i<n;i++) cost+=w[i]*d2(rows[i],C[z[i]]);
+    if(!best||cost<best.cost) best={cost,z}; }
+  return best.z; }
+function perms(k){ if(k===1) return [[0]]; const out=[]; for(const p of perms(k-1)) for(let i=0;i<k;i++){ const q=p.slice(); q.splice(i,0,k-1); out.push(q);} return out; }
+function misclustered(z,lab,k){ let best=Infinity; for(const p of perms(k)){ let e=0; for(let i=0;i<z.length;i++) if(p[z[i]]!==lab[i]) e++; best=Math.min(best,e);} return best; }
+
+// ---------- graphs ----------
+function adjFromEdges(n,edges){ // edges: [u,v,w]; merges multi-edges
+  const maps=Array.from({length:n},()=>new Map());
+  for(const [u,v,w] of edges){ if(u===v) continue; maps[u].set(v,(maps[u].get(v)||0)+w); maps[v].set(u,(maps[v].get(u)||0)+w); }
+  const nbr=maps.map(mp=>Int32Array.from(mp.keys())), wt=maps.map(mp=>Float64Array.from(mp.values()));
+  return {n,nbr,wt};
+}
+function sbmGraph(n,k,p,q,seed){
+  const rnd=mulberry32(seed), lab=new Int32Array(n); for(let i=0;i<n;i++) lab[i]=Math.floor(i*k/n);
+  const edges=[]; for(let u=0;u<n;u++) for(let v=u+1;v<n;v++){ if(rnd()<(lab[u]===lab[v]?p:q)) edges.push([u,v,1]); }
+  const G=adjFromEdges(n,edges); G.lab=lab; G.k=k; G.p=p; G.q=q; G.m=edges.length; return G;
+}
+function plantedGraph(k,m,deg,c,mode,seed){
+  const rnd=mulberry32(seed), n=k*m, lab=new Int32Array(n); for(let i=0;i<n;i++) lab[i]=Math.floor(i/m);
+  const edges=[];
+  for(let j=0;j<k;j++) for(let h=0;h<deg/2;h++){ const P=perm(m,rnd); for(let i=0;i<m;i++) edges.push([j*m+P[i], j*m+P[(i+1)%m], 1]); }
+  for(let t=0;t<c;t++){ const j=Math.floor(rnd()*k); let l=Math.floor(rnd()*(k-1)); if(l>=j) l++;
+    const pick=()=> mode==='hubs' ? Math.floor(rnd()*3) : Math.floor(rnd()*m);
+    edges.push([j*m+pick(), l*m+pick(), 1]); }
+  const G=adjFromEdges(n,edges); G.lab=lab; G.k=k; return G;
+}
+
+// ---------- SBM analysis ----------
+function analyzeSBM(G,rnd,opts={}){
+  const {n,nbr,wt,lab,k,p,q}=G;
+  const Amv=x=>{ const y=new Float64Array(n); for(let u=0;u<n;u++){ let s=0; const nb=nbr[u],w=wt[u]; for(let t=0;t<nb.length;t++) s+=w[t]*x[nb[t]]; y[u]=s; } return y; };
+  const sizes=new Float64Array(k); for(let i=0;i<n;i++) sizes[lab[i]]++;
+  const Pmv=x=>{ const S=new Float64Array(k); let T=0; for(let i=0;i<n;i++){ S[lab[i]]+=x[i]; T+=x[i]; }
+    const y=new Float64Array(n); for(let i=0;i<n;i++) y[i]=(p-q)*S[lab[i]]+q*T-p*x[i]; return y; };
+  const Emv=x=>{ const y=Amv(x), z=Pmv(x); for(let i=0;i<n;i++) y[i]-=z[i]; return y; };
+  // population spectrum: nonzero eigenvalues of Z B Z^T are those of N^{1/2} B N^{1/2}; E[A] = Z B Z^T - p I
+  const Bt=new Float64Array(k*k); for(let a=0;a<k;a++) for(let b=0;b<k;b++) Bt[a*k+b]=Math.sqrt(sizes[a]*sizes[b])*(a===b?p:q);
+  const pop=eigSym(Bt,k,false).vals; const delta0=pop[k-1]; // lambda_{k+1}(ZBZ^T)=0
+  let sigma2=0; for(let a=0;a<k;a++) sigma2=Math.max(sigma2,(sizes[a]-1)*p*(1-p)+(n-sizes[a])*q*(1-q));
+  const sigma=Math.sqrt(sigma2); let dmax=0; for(let a=0;a<k;a++) dmax=Math.max(dmax,(sizes[a]-1)*p+(n-sizes[a])*q);
+  // ||E||
+  const KE=blockKrylov(Emv,n,1,opts.colsE||90,rnd); const normE=Math.max(Math.abs(KE.vals[0]),Math.abs(KE.vals[KE.vals.length-1]));
+  // top-k eigenvectors of A
+  const KA=blockKrylov(Amv,n,k+1,opts.colsA||120,rnd); const Vh=[]; for(let i=0;i<k;i++) Vh.push(KA.vec(i));
+  const V=[]; for(let a=0;a<k;a++){ const u=new Float64Array(n); for(let i=0;i<n;i++) if(lab[i]===a) u[i]=1/Math.sqrt(sizes[a]); V.push(u); }
+  const M=matTmul(Vh,V,n,k), {sinOp,sinF}=principal(M,k);
+  // Procrustes-aligned row errors and "bad" vertices (row error >= Delta/2)
+  let Delta2=Infinity; for(let a=0;a<k;a++) for(let b=a+1;b<k;b++) Delta2=Math.min(Delta2,1/sizes[a]+1/sizes[b]);
+  const O=polar(M,k); let bad=null, VOmV2=null;
+  if(O){ bad=0; VOmV2=0; for(let i=0;i<n;i++){ let e2=0; for(let b=0;b<k;b++){ let s=0; for(let a=0;a<k;a++) s+=Vh[a][i]*O[a][b]; const df=s-V[b][i]; e2+=df*df; } VOmV2+=e2; if(e2>=Delta2/4) bad++; } }
+  const rows=[]; for(let i=0;i<n;i++){ const r=new Float64Array(k); for(let a=0;a<k;a++) r[a]=Vh[a][i]; rows.push(r); }
+  const z=kmeans(rows,k,rnd), mis=misclustered(z,lab,k);
+  const lnN=Math.log(n);
+  return {n,k,p,q,sizes,pop:pop.map(x=>x-p),delta0,sigma,dmax,normE,ritzA:KA.vals.slice(0,k+1),residA:KA.resid(k-1),
+    Vh,rows,z,lab,sinOp,sinF,Delta2,bad,VOmV2,mis,
+    DKop:2*normE/delta0, DKF:2*Math.sqrt(k)*normE/delta0,
+    bern:2*Math.sqrt(dmax*lnN)+4/3*lnN, rmt: sigma<delta0 ? sigma/delta0 : 1,
+    badBoundSin: 8*sinF*sinF/Delta2, badBoundDK: 32*k*normE*normE/(Delta2*delta0*delta0)};
+}
+function denseSpectrum(G){ const n=G.n, a=new Float64Array(n*n); for(let u=0;u<n;u++){ const nb=G.nbr[u],w=G.wt[u]; for(let t=0;t<nb.length;t++) a[u*n+nb[t]]=w[t]; } return eigSym(a,n,false).vals; }
+
+// ---------- planted-cluster analysis ----------
+function analyzePlanted(G,rnd){
+  const {n,nbr,wt,lab,k}=G;
+  const d=new Float64Array(n), dout=new Float64Array(n);
+  for(let u=0;u<n;u++) for(let t=0;t<nbr[u].length;t++){ d[u]+=wt[u][t]; if(lab[nbr[u][t]]!==lab[u]) dout[u]+=wt[u][t]; }
+  const sd=Float64Array.from(d,x=>Math.sqrt(x));
+  const vol=new Float64Array(k), cut=new Float64Array(k); for(let u=0;u<n;u++){ vol[lab[u]]+=d[u]; cut[lab[u]]+=dout[u]; }
+  const Phi=Array.from(cut,(c,j)=>c/vol[j]);
+  let epsOut=0; for(let u=0;u<n;u++) epsOut=Math.max(epsOut,dout[u]/d[u]);
+  const Nmv=x=>{ const y=new Float64Array(n); for(let u=0;u<n;u++){ let s=0; const nb=nbr[u],w=wt[u]; for(let t=0;t<nb.length;t++) s+=w[t]*x[nb[t]]/sd[nb[t]]; y[u]=s/sd[u]; } return y; };
+  // E = N - N0 = -D^{-1/2} L_out D^{-1/2}
+  const Emv=x=>{ const y=new Float64Array(n); for(let u=0;u<n;u++){ let s=dout[u]*x[u]/sd[u]; const nb=nbr[u],w=wt[u]; for(let t=0;t<nb.length;t++) if(lab[nb[t]]!==lab[u]) s-=w[t]*x[nb[t]]/sd[nb[t]]; y[u]=-s/sd[u]; } return y; };
+  const KE=blockKrylov(Emv,n,1,90,rnd); const normE=Math.max(Math.abs(KE.vals[0]),Math.abs(KE.vals[KE.vals.length-1]));
+  // delta0 = min_j lambda_2(L of cluster j with cut edges turned into self-loops)
+  let delta0=Infinity;
+  for(let j=0;j<k;j++){ const idx=[]; for(let u=0;u<n;u++) if(lab[u]===j) idx.push(u); const mj=idx.length, loc=new Map(idx.map((u,i)=>[u,i]));
+    const mv=x=>{ const y=new Float64Array(mj); for(let i=0;i<mj;i++){ const u=idx[i]; let s=dout[u]*x[i]/sd[u]; const nb=nbr[u],w=wt[u];
+        for(let t=0;t<nb.length;t++){ const v=nb[t]; if(lab[v]===j) s+=w[t]*x[loc.get(v)]/sd[v]; } y[i]=s/sd[u]; } return y; };
+    const K=blockKrylov(mv,mj,2,Math.min(mj,100),rnd); delta0=Math.min(delta0,1-K.vals[1]); }
+  const KN=blockKrylov(Nmv,n,k+2,Math.min(n,140),rnd); const Vh=[]; for(let i=0;i<k;i++) Vh.push(KN.vec(i));
+  const mu1=1-KN.vals[k]; // mu_{k+1} of L_sym = I - N
+  const V=[]; for(let a=0;a<k;a++){ const u=new Float64Array(n); for(let i=0;i<n;i++) if(lab[i]===a) u[i]=sd[i]/Math.sqrt(vol[a]); V.push(u); }
+  const M=matTmul(Vh,V,n,k), {sinOp,sinF}=principal(M,k);
+  // random-walk embedding phihat(u) = (fhat_1(u),...,fhat_k(u)), fhat_i = D^{-1/2} vhat_i (orthonormal in l2(D)); k-means in l2(D) = d_u-weighted k-means
+  const rows=[]; for(let i=0;i<n;i++){ const r=new Float64Array(k); for(let a=0;a<k;a++) r[a]=Vh[a][i]/sd[i]; rows.push(r); }
+  const z=kmeans(rows,k,rnd,8,d), mis=misclustered(z,lab,k);
+  const sumPhi=Phi.reduce((a,b)=>a+b,0);
+  return {n,k,d,dout,vol,Phi,sumPhi,epsOut,normE,delta0,mu1,lam:KN.vals.slice(0,k+1),residN:KN.resid(k-1),
+    Vh,rows,z,lab,sinOp,sinF,mis,
+    DKop:2*normE/delta0, DKF:2*Math.sqrt(k)*normE/delta0, DKFeps:4*Math.sqrt(k)*epsOut/delta0,
+    energy:Math.sqrt(sumPhi/mu1)};
+}
+// CORE-END
+
+if(typeof module!=='undefined'){ module.exports={mulberry32,eigSym,blockKrylov,sbmGraph,plantedGraph,analyzeSBM,analyzePlanted,denseSpectrum}; }
+else {
+// ---------- drawing ----------
+const NS='http://www.w3.org/2000/svg';
+const COL=['#2a6fdb','#e8792b','#2a9d5c','#8e44ad'];
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function txt(s,x,y,str,attrs={}){ const t=el('text',Object.assign({x,y},attrs),s); t.textContent=str; return t; }
+function clear(s){while(s.firstChild)s.removeChild(s.firstChild);}
+function fmt(x){ if(x===null||x===undefined) return '—'; if(!isFinite(x)) return '∞'; const a=Math.abs(x); if(a!==0&&(a<1e-3||a>=1e4)) return x.toExponential(2); return x.toPrecision(3); }
+const $=id=>document.getElementById(id);
+const chk=b=>b?' <span class="ok">✓</span>':' <span class="bad">✗</span>';
+const vac=(x,cap)=> x>=cap ? ' <span class="muted" style="color:#999">(vacuous)</span>' : '';
+
+function drawEmbedding(R){
+  const s=$('emb'); clear(s); const w=320,h=220,P=14, k=R.k;
+  const [ca,cb]= k===2 ? [0,1] : [1,2];
+  const X=R.rows.map(r=>r[ca]), Y=R.rows.map(r=>r[cb]);
+  const mnx=Math.min(...X),mxx=Math.max(...X),mny=Math.min(...Y),mxy=Math.max(...Y);
+  const sx=x=>P+(x-mnx)/(mxx-mnx||1)*(w-2*P), sy=y=>h-P-(y-mny)/(mxy-mny||1)*(h-2*P);
+  // which k-means cluster maps to which true label (majority)
+  const maj=[]; for(let c=0;c<k;c++){ const cnt=new Array(k).fill(0); R.z.forEach((zz,i)=>{ if(zz===c) cnt[R.lab[i]]++; }); maj.push(cnt.indexOf(Math.max(...cnt))); }
+  for(let i=0;i<R.rows.length;i++){ const wrong=maj[R.z[i]]!==R.lab[i];
+    el('circle',{cx:sx(X[i]),cy:sy(Y[i]),r:wrong?3.6:2.4,fill:COL[R.lab[i]],'fill-opacity':0.75,stroke:wrong?'#000':'none','stroke-width':1.2},s); }
+  txt(s,P,h-2,`coords ${ca+1}, ${cb+1}; colour = true cluster`,{'font-size':10,fill:'#888'});
+}
+
+function drawSpectrum(R,spec){
+  const s=$('mid'); clear(s); const w=320,h=220,PL=10,PR=10,PT=26,PB=30;
+  const lo=Math.min(spec[spec.length-1],-2.2*R.sigma), hi=Math.max(spec[0],R.pop[0])*1.04;
+  const sx=x=>PL+(x-lo)/(hi-lo)*(w-PL-PR);
+  const nb=70, cnt=new Array(nb).fill(0); spec.forEach(x=>{ cnt[Math.min(nb-1,Math.floor((x-lo)/(hi-lo)*nb))]++; });
+  const cm=Math.max(...cnt), base=h-PB, bh=base-PT;
+  cnt.forEach((c,i)=>{ if(c) el('rect',{x:sx(lo+i*(hi-lo)/nb),y:base-c/cm*bh,width:(w-PL-PR)/nb-0.5,height:c/cm*bh,fill:'#c9d8f3'},s); });
+  el('line',{x1:PL,x2:w-PR,y1:base,y2:base,stroke:'#999'},s);
+  [-2*R.sigma,2*R.sigma].forEach(x=>el('line',{x1:sx(x),x2:sx(x),y1:PT-6,y2:base,stroke:'#888','stroke-dasharray':'4 3'},s));
+  txt(s,sx(2*R.sigma)+2,PT-8,'2σ',{fill:'#666'});
+  spec.forEach(x=>{ if(x>2*R.sigma*1.02) el('circle',{cx:sx(x),cy:base-4,r:3,fill:'var(--blue)'},s); });
+  R.pop.forEach(x=>{ el('line',{x1:sx(x),x2:sx(x),y1:base+3,y2:base+12,stroke:'var(--orange)','stroke-width':2},s); });
+  const tick=v=>{ el('line',{x1:sx(v),x2:sx(v),y1:base,y2:base+3,stroke:'#999'},s); txt(s,sx(v),base+24,fmt(v),{'text-anchor':'middle','font-size':10}); };
+  tick(0); tick(Math.round(R.pop[0])); if(R.k>=2) tick(Math.round(R.delta0*10)/10);
+  $('midLegend').innerHTML='<span><span class="sw" style="background:#c9d8f3;height:8px"></span>eigenvalues of A</span><span><span class="sw" style="background:var(--blue);height:6px;width:6px;border-radius:3px"></span>outliers &gt; 2σ</span><span><span class="sw" style="background:var(--orange)"></span>eigenvalues of 𝔼A</span>';
+}
+
+function drawBars(R){
+  const s=$('mid'); clear(s); const w=320,h=220,PL=118,PR=40,PT=10; const cap=Math.sqrt(R.k);
+  const items=[['actual ‖sin Θ‖_F',R.sinF,'var(--blue)'],['DK, 2√k‖E‖/δ₀',R.DKF,'var(--orange)'],['DK, 4√k ε_out/δ₀',R.DKFeps,'#f2b27f'],['energy √(ΣΦ/μ_{k+1})',R.energy,'var(--green)']];
+  const bw=(w-PL-PR), bh=30;
+  items.forEach(([lab,val,col],i)=>{ const y=PT+i*(bh+14); const v=Math.min(val,cap);
+    txt(s,PL-6,y+bh/2+4,lab,{'text-anchor':'end','font-size':11});
+    el('rect',{x:PL,y,width:bw*v/cap,height:bh,fill:col},s);
+    txt(s,PL+bw*v/cap+3,y+bh/2+4,(val>cap?'≥ ':'')+fmt(Math.min(val,999)),{'font-size':11}); });
+  el('line',{x1:PL+bw,x2:PL+bw,y1:PT-4,y2:PT+4*(bh+14),stroke:'#999','stroke-dasharray':'3 3'},s);
+  txt(s,PL+bw,PT+4*(bh+14)+10,'√k (trivial)',{'text-anchor':'middle','font-size':10,fill:'#888'});
+  $('midLegend').innerHTML='<span>Bars clipped at √k = max possible ‖sin Θ‖<sub>F</sub>.</span>';
+}
+
+function tableSBM(R){
+  const rows=[
+    ['δ₀ = λ_k(𝔼A) − λ_{k+1}(𝔼A) = n(p−q)/k', fmt(R.delta0)],
+    ['max expected degree d', fmt(R.dmax)],
+    ['‖E‖ = ‖A − 𝔼A‖ (computed)', fmt(R.normE)],
+    ['   2σ (semicircle edge)', fmt(2*R.sigma)],
+    ['   matrix Bernstein, 2√(d ln n) + (4/3) ln n', fmt(R.bern)+chk(R.normE<=R.bern)],
+    ['‖sin Θ‖ actual', fmt(R.sinOp)],
+    ['   Davis–Kahan 2‖E‖/δ₀', fmt(R.DKop)+(R.DKop>=1?vac(1,1):chk(R.sinOp<=R.DKop))],
+    ['   heuristic σ/δ₀ (spiked Wigner)', fmt(R.rmt)],
+    ['‖sin Θ‖_F actual / DK 2√k‖E‖/δ₀', fmt(R.sinF)+' / '+fmt(R.DKF)],
+    ['bad vertices, ‖Oᵀx̂(u) − x(u)‖ ≥ Δ/2', R.bad===null?'—':String(R.bad)],
+    ['   ≤ 8‖sinΘ‖²_F/Δ² (actual sinΘ)', fmt(R.badBoundSin)+(R.bad===null?'':chk(R.bad<=R.badBoundSin+1e-9))],
+    ['   ≤ 32k‖E‖²/(Δ²δ₀²) (DK)', fmt(R.badBoundDK)],
+    ['misclustered by k-means', R.mis+' / '+R.n],
+  ];
+  $('tbl').innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td class="num">${r[1]}</td></tr>`).join('');
+  $('tblNote').innerHTML='Δ² = min squared distance between ideal points x(u) = 2k/n for equal blocks. V̂ aligned to V by the Procrustes rotation O.';
+}
+function tablePL(R){
+  const rows=[
+    ['ε_out = max_u d_out(u)/d(u)', fmt(R.epsOut)],
+    ['‖E‖_D (computed) ≤ 2ε_out', fmt(R.normE)+' ≤ '+fmt(2*R.epsOut)+chk(R.normE<=2*R.epsOut+1e-9)],
+    ['δ₀ = min_j λ₂(cluster j, cut edges → loops)', fmt(R.delta0)],
+    ['Φ(S_j)', R.Phi.map(fmt).join(', ')],
+    ['μ_{k+1}(G)  (observed graph)', fmt(R.mu1)],
+    ['‖sin Θ‖ actual', fmt(R.sinOp)],
+    ['   DK 2‖E‖_D/δ₀', fmt(R.DKop)+(R.DKop>=1?vac(1,1):chk(R.sinOp<=R.DKop))],
+    ['‖sin Θ‖_F actual', fmt(R.sinF)],
+    ['   DK 2√k‖E‖_D/δ₀', fmt(R.DKF)+(R.DKF>=Math.sqrt(R.k)?vac(1,1):chk(R.sinF<=R.DKF))],
+    ['   energy √(ΣΦ(S_j)/μ_{k+1})', fmt(R.energy)+chk(R.sinF<=R.energy+1e-9)],
+    ['misclustered (k-means in ℓ²(D))', R.mis+' / '+R.n],
+  ];
+  $('tbl').innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td class="num">${r[1]}</td></tr>`).join('');
+  $('tblNote').innerHTML='Ideal graph: every cut edge {u,v} replaced by self-loops at u and v, so degrees (and π) are unchanged. P = D<sup>−1</sup>A, E = P − P<sub>0</sub>, norms and angles in ℓ²(D). Rounding: k-means in ℓ²(D), min over z, c of Σ<sub>u</sub> d<sub>u</sub>‖φ̂(u) − c<sub>z(u)</sub>‖².';
+}
+
+function lineChart(data,xkey,series,opts){
+  const s=$('chart'); clear(s); const w=980,h=160,PL=50,PR=20,PT=12,PB=34;
+  const xs=data.map(p=>p[xkey]), x0=Math.min(...xs), x1=Math.max(...xs), ymax=opts.ymax;
+  const sx=x=>PL+(x-x0)/((x1-x0)||1)*(w-PL-PR), sy=y=>h-PB-Math.min(y,ymax)/ymax*(h-PT-PB);
+  if(opts.shade) el('rect',{x:sx(opts.shade[0]),y:PT,width:Math.max(0,sx(opts.shade[1])-sx(opts.shade[0])),height:h-PT-PB,fill:'#f4f4f4'},s);
+  el('line',{x1:PL,y1:h-PB,x2:w-PR,y2:h-PB,stroke:'#999'},s); el('line',{x1:PL,y1:PT,x2:PL,y2:h-PB,stroke:'#999'},s);
+  for(let t=0;t<=4;t++){ const y=ymax*t/4; el('line',{x1:PL,x2:w-PR,y1:sy(y),y2:sy(y),stroke:'#eee'},s); txt(s,PL-6,sy(y)+4,fmt(y),{'text-anchor':'end'}); }
+  data.forEach((p,i)=>{ if(i%2===0) txt(s,sx(p[xkey]),h-PB+14,fmt(p[xkey]),{'text-anchor':'middle'}); });
+  txt(s,(PL+w-PR)/2,h-4,opts.xlabel,{'text-anchor':'middle'});
+  if(opts.marker!==undefined) el('line',{x1:sx(opts.marker),x2:sx(opts.marker),y1:PT,y2:h-PB,stroke:'#444','stroke-width':1.2},s);
+  if(opts.shadeLabel) txt(s,sx(opts.shade[0])+4,PT+12,opts.shadeLabel,{fill:'#888'});
+  for(const [key,col,dash] of series){
+    el('polyline',{points:data.map(p=>sx(p[xkey])+','+sy(p[key])).join(' '),fill:'none',stroke:col,'stroke-width':2.2,'stroke-dasharray':dash||''},s);
+    data.forEach(p=>el('circle',{cx:sx(p[xkey]),cy:sy(p[key]),r:2.6,fill:col},s)); }
+}
+
+// ---------- state & wiring ----------
+let tab='sbm', seedS=11, seedP=5, sweepKeyS=null, sweepKeyP=null, sweepS=null, sweepP=null, timer=null;
+function setBusy(b){ $('busy').textContent=b?'computing…':''; }
+
+function runSBM(){
+  const n=+$('sn').value, k=+$('sk').value, p=+$('sp').value;
+  $('sq').max=p; let q=Math.min(+$('sq').value,p); $('sq').value=q;
+  $('snV').textContent=n; $('skV').textContent=k; $('spV').textContent=p.toFixed(2); $('sqV').textContent=q.toFixed(3);
+  const G=sbmGraph(n,k,p,q,seedS*1000+Math.round(q*1000)), R=analyzeSBM(G,mulberry32(seedS+1));
+  $('embTitle').textContent='Embedding x̂(u) = (v̂₁(u),…,v̂ₖ(u)), top-k eigenvectors of A; ringed = misclustered';
+  $('midTitle').textContent='Spectrum of A: bulk [−2σ, 2σ] plus k outliers';
+  drawEmbedding(R); drawSpectrum(R,denseSpectrum(G)); tableSBM(R);
+  const key=[n,k,p,seedS].join(',');
+  if(key!==sweepKeyS){ sweepKeyS=key; sweepS=[];
+    for(let i=0;i<=12;i++){ const qq=p*i/12; const GG=sbmGraph(n,k,p,qq,seedS*1000+Math.round(qq*1000)); const r=analyzeSBM(GG,mulberry32(seedS+1),{colsA:90,colsE:70});
+      sweepS.push({q:qq,act:r.sinOp,dk:Math.min(1,r.DKop),rmt:r.rmt,mis:r.mis/n,delta0:r.delta0,sigma:r.sigma}); } }
+  // BBP-type threshold: delta0 = sigma
+  let qstar=null; for(let i=0;i<sweepS.length-1;i++){ const a=sweepS[i], b=sweepS[i+1]; const fa=a.delta0-a.sigma, fb=b.delta0-b.sigma; if(fa>0&&fb<=0){ qstar=a.q+(b.q-a.q)*fa/(fa-fb); break; } }
+  $('chartTitle').textContent=`Sweep over q (n=${n}, k=${k}, p=${p.toFixed(2)}): subspace error vs. Davis–Kahan`;
+  lineChart(sweepS,'q',[['dk','var(--orange)'],['rmt','var(--grey)','5 4'],['act','var(--blue)'],['mis','var(--green)']],
+    {ymax:1,xlabel:'q (between-block edge probability)',marker:q,shade:qstar!==null?[qstar,p]:null,shadeLabel:qstar!==null?'δ₀ < σ: no outliers':''});
+  $('chartLegend').innerHTML='<span><span class="sw" style="background:var(--blue)"></span>actual ‖sin Θ‖</span><span><span class="sw" style="background:var(--orange)"></span>Davis–Kahan 2‖E‖/δ₀ (capped at 1)</span><span><span class="sw" style="background:var(--grey)"></span>spiked-Wigner heuristic σ/δ₀</span><span><span class="sw" style="background:var(--green)"></span>fraction misclustered (k-means)</span>';
+}
+
+function runPL(){
+  const k=+$('pk').value, m=+$('pm').value, deg=+$('pd').value, c=+$('pc').value, mode=$('pmode').value;
+  $('pkV').textContent=k; $('pmV').textContent=m; $('pdV').textContent=deg; $('pcV').textContent=c;
+  const G=plantedGraph(k,m,deg,c,mode,seedP), R=analyzePlanted(G,mulberry32(seedP+1));
+  $('embTitle').textContent='Embedding φ̂(u) = (f̂₁(u),…,f̂ₖ(u)), top-k eigenvectors of P = D⁻¹A; ringed = misclustered';
+  $('midTitle').textContent='‖sin Θ‖_F: actual vs. the two bounds';
+  drawEmbedding(R); drawBars(R); tablePL(R);
+  const key=[k,m,deg,mode,seedP].join(',');
+  if(key!==sweepKeyP){ sweepKeyP=key; sweepP=[];
+    for(let cc=0;cc<=400;cc+=25){ const r=analyzePlanted(plantedGraph(k,m,deg,cc,mode,seedP),mulberry32(seedP+1)); const cap=Math.sqrt(k);
+      sweepP.push({c:cc,act:r.sinF,dk:Math.min(cap,r.DKF),dke:Math.min(cap,r.DKFeps),en:Math.min(cap,r.energy)}); } }
+  $('chartTitle').textContent=`Sweep over the number of cross edges (${mode==='hubs'?'on hubs':'spread out'}): ‖sin Θ‖_F and its bounds`;
+  lineChart(sweepP,'c',[['dke','#f2b27f','5 4'],['dk','var(--orange)'],['en','var(--green)'],['act','var(--blue)']],{ymax:Math.sqrt(k),xlabel:'number of cross edges',marker:c});
+  $('chartLegend').innerHTML='<span><span class="sw" style="background:var(--blue)"></span>actual ‖sin Θ‖<sub>F</sub></span><span><span class="sw" style="background:var(--orange)"></span>DK 2√k‖E‖/δ₀</span><span><span class="sw" style="background:#f2b27f"></span>DK via ‖E‖ ≤ 2ε_out</span><span><span class="sw" style="background:var(--green)"></span>energy bound √(ΣΦ/μ<sub>k+1</sub>)</span><span>(all capped at √k)</span>';
+}
+
+function update(){ clearTimeout(timer); setBusy(true); timer=setTimeout(()=>{ try{ tab==='sbm'?runSBM():runPL(); } finally{ setBusy(false);} },15); }
+function setTab(t){ tab=t; $('tabSBM').classList.toggle('on',t==='sbm'); $('tabPL').classList.toggle('on',t==='pl');
+  $('ctlSBM').style.display=t==='sbm'?'':'none'; $('ctlPL').style.display=t==='pl'?'':'none'; update(); }
+$('tabSBM').onclick=()=>setTab('sbm'); $('tabPL').onclick=()=>setTab('pl');
+['sn','sk','sp','sq','pk','pm','pd','pc','pmode'].forEach(id=>$(id).addEventListener('input',update));
+$('sre').onclick=()=>{ seedS++; update(); }; $('pre').onclick=()=>{ seedP++; update(); };
+const h=location.hash.replace('#',''); setTab(h==='planted'?'pl':'sbm');
+}
+</script>
+</body>
+</html>

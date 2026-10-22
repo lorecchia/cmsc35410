@@ -49,4 +49,4 @@ Deduce that $t\ge\dfrac1{\varepsilon\lambda}\ln\dfrac2{\delta\,\varepsilon\lambd
 
 **Hint for (e).** $\lambda(C_n)=1-\cos(2\pi/n)\approx2\pi^2/n^2$, so $1/\lambda\approx 500$ for $n=100$.
 
-**Hint for (f).** Work with $S=D^{-1/2}AD^{-1/2}$ and deflate its top eigenvector $\sqrt{d/\mathrm{vol}(V)}$. After each Lanczos step, take the largest eigenvalue $\theta$ of the tridiagonal matrix (`scipy.linalg.eigh_tridiagonal`); then $1-\theta$ is the Rayleigh quotient of the current Ritz vector. Stop when $1-\theta\le1.1\lambda$.
+**Hint for (f).** Work with $N=D^{-1/2}AD^{-1/2}$ and deflate its top eigenvector $\sqrt{d/\mathrm{vol}(V)}$. After each Lanczos step, take the largest eigenvalue $\theta$ of the tridiagonal matrix (`scipy.linalg.eigh_tridiagonal`); then $1-\theta$ is the Rayleigh quotient of the current Ritz vector. Stop when $1-\theta\le1.1\lambda$.
