@@ -14,45 +14,35 @@ Notation follows the [Lecture 8 slides](lectures/lecture08/lecture8.qmd) and the
 
 ### 1. Davis–Kahan as stability of a minimizer
 
-*Theory.*
+*Theory / expository.*
 
-The lecture proves Davis–Kahan with a Sylvester equation. There is a second, variational route: the top-$k$ eigenspace is the **minimizer** of $f_A(\Pi)=-\operatorname{tr}(\Pi A)$ over rank-$k$ projections, and perturbation bounds follow from how fast $f_A$ grows away from its minimizer. The argument has two steps.
-
-- **Quadratic growth.** If $\Pi$ projects onto the top-$k$ eigenspace of $A$ and $\delta_0=\lambda_k(A)-\lambda_{k+1}(A)$, then for every rank-$k$ projection $\hat\Pi$,
-$$\operatorname{tr}(\Pi A)-\operatorname{tr}(\hat\Pi A)\ \ge\ \delta_0\,\|\sin\Theta\|_F^2 .$$
-- **Optimality.** If $\hat\Pi$ is the top-$k$ projection of $A+E$, then $\operatorname{tr}(\hat\Pi(A+E))\ge\operatorname{tr}(\Pi(A+E))$. Combining the two steps gives $\delta_0\|\sin\Theta\|_F^2\le\operatorname{tr}((\hat\Pi-\Pi)E)$.
-
-Bounding the right-hand side by duality, $\ |\operatorname{tr}((\hat\Pi-\Pi)E)|\le\|\hat\Pi-\Pi\|_*\|E\|$ or $\le\|\hat\Pi-\Pi\|_F\|E\|_F$, gives
-$$\|\sin\Theta\|_F\ \le\ \frac{\min\big(2\sqrt k\,\|E\|,\ \sqrt2\,\|E\|_F\big)}{\delta_0},$$
-the Frobenius form of Yu–Wang–Samworth, with no Weyl step and no case distinction. A tempting shortcut bounds $\operatorname{tr}((\hat\Pi-\Pi)E)$ by $2k\|E\|$ directly. That only gives the square-root rate $\sqrt{2k\|E\|/\delta_0}$: the same rate as the energy bound in the lecture, and not Davis–Kahan.
+The lecture proves Davis–Kahan with a Sylvester equation. There is also a variational route: the top-$k$ eigenspace of $A$ is the **minimizer** of $f_A(\Pi)=-\operatorname{tr}(\Pi A)$ over rank-$k$ projections, so a perturbation of $A$ is a perturbation of an optimization problem, and perturbation bounds follow from how fast $f_A$ grows away from its minimizer. This route appears in the statistics literature, through the "curvature lemma" of Vu–Cho–Lei–Rohe (2013), and is closely related to Yu–Wang–Samworth's variant of Davis–Kahan.
 
 **Questions.**
 
-1. Prove both steps. Where exactly does the duality step turn a square-root rate into a linear one?
-2. **Literature.** The quadratic-growth inequality appears as a "curvature lemma" in Vu–Cho–Lei–Rohe (2013), and Yu–Wang–Samworth (2015) compare their result to its Corollary 3.1. Find out precisely which parts of this argument are already in the literature, and in what form.
-3. **Geometry.** Quadratic growth holds globally, but $f_A$ is geodesically convex on the Grassmannian only in a neighborhood of radius $O(\sqrt{\delta_0})$ of the minimizer (Alimisis–Vandereycken). Which of the two properties does a perturbation argument really need? Can the argument be phrased as "the argmin of a strongly convex function is Lipschitz in the gradient of the perturbation"?
-4. **Operator norm.** The variational route gives Frobenius bounds. Can it give $\|\sin\Theta\|\lesssim\|E\|/\delta_0$ without the $\sqrt k$ loss?
-5. **Beyond the top-$k$ block.** Extend the argument to an interior block of the spectrum, and to $\ell^2(D)$ (where it should apply directly to $P$).
+1. Present the curvature lemma and a variational proof of a Frobenius-norm Davis–Kahan bound in the notation of the course. Compare the constants with Corollary 3.3 of the lecture.
+2. **Literature.** Find out precisely which parts of this argument are in Vu et al. and in Yu–Wang–Samworth, and in what form.
+3. **Geometry.** $f_A$ is geodesically convex on the Grassmannian only near its minimizer (Alimisis–Vandereycken). What does a perturbation argument actually need from $f_A$: convexity, strong convexity along geodesics, or something weaker?
+4. **Operator norm.** Can a variational argument give the operator-norm bound $\|\sin\Theta\|\lesssim\|E\|/\delta_0$?
+5. **Beyond the top-$k$ block.** Extend the argument to an interior block of the spectrum, and to $\ell^2(D)$.
 
-**First step.** Write the proof of the quadratic-growth inequality using the weights $w_i=\|\hat V^\top u_i\|^2$, where the $u_i$ are eigenvectors of $A$. Check the final bound numerically against Corollary 3.3 of the lecture.
+**First step.** Read the curvature lemma in Vu et al. and the proof of the main theorem in Yu–Wang–Samworth.
 
-**References.** Course note: [Davis–Kahan from strong convexity](notes/davis-kahan-variational.qmd). · Vu, Cho, Lei & Rohe, *Fantope projection and selection* (NeurIPS 2013). · Yu, Wang & Samworth, *A useful variant of the Davis–Kahan theorem for statisticians* (Biometrika 2015). · Alimisis & Vandereycken, *Geodesic convexity of the symmetric eigenvalue problem and convergence of steepest descent* (JOTA 2024; arXiv:2209.03480).
+**References.** Vu, Cho, Lei & Rohe, *Fantope projection and selection* (NeurIPS 2013). · Yu, Wang & Samworth, *A useful variant of the Davis–Kahan theorem for statisticians* (Biometrika 2015). · Alimisis & Vandereycken, *Geodesic convexity of the symmetric eigenvalue problem and convergence of steepest descent* (JOTA 2024; arXiv:2209.03480).
 
 ### 2. Bounds that survive hubs
 
 *Theory + experimental.*
 
-The lecture has two bounds for planted clusters. Davis–Kahan is linear in the perturbation but pays for the worst vertex ($\varepsilon_{\rm out}$). The energy bound $\|\sin\Theta\|_F^2\le\sum_j\Phi(S_j)/\mu_{k+1}(G)$ uses only average quantities but has a square-root rate and needs the gap of the *observed* graph. The variational argument of Project 1 gives a third bound. The perturbation $E=P-P_0$ is negative semidefinite in $\ell^2(D)$, so the optimality step yields
-$$\|\sin\Theta\|_F^2\ \le\ \frac{\sum_j\Phi(S_j)}{\delta_0},$$
-which is hub-robust and uses the gap of the *ideal* graph.
+The lecture has two bounds for planted clusters. Davis–Kahan is linear in the perturbation but pays for the worst vertex ($\varepsilon_{\rm out}$). The energy bound $\|\sin\Theta\|_F^2\le\sum_j\Phi(S_j)/\mu_{k+1}(G)$ uses only average quantities but has a square-root rate and needs the gap of the *observed* graph.
 
 **Questions.**
 
-1. Prove this bound. Where is negative semidefiniteness used?
+1. Is there a hub-robust bound, depending only on average quantities such as $\sum_j\Phi(S_j)$, that uses the gap $\delta_0$ of the *ideal* graph instead?
 2. Is there a bound that is both **linear** in the perturbation and depends only on **average** quantities, e.g. on $\sum_j\Phi(S_j)$ instead of $\max_u d_{\rm out}(u)/d(u)$? Or construct a family of graphs showing that no such bound can hold.
 3. **Regularization for deterministic graphs.** In random graphs, trimming or down-weighting high-degree vertices restores concentration (Le–Levina–Vershynin). Does a deterministic analogue (e.g., adding $\tau/n$ to every entry of $A$, or capping $d_{\rm out}(u)$) make Davis–Kahan hub-robust?
 
-**First step.** Add the new bound to the planted-clusters tab of the [Lecture 8 demo](lectures/lecture08/demos/spectral-clustering-demo.html#planted) and compare all three bounds on spread and hub placements.
+**First step.** Use the planted-clusters tab of the [Lecture 8 demo](lectures/lecture08/demos/spectral-clustering-demo.html#planted) to compare the two bounds on spread and hub placements, and look for graphs where both are loose.
 
 **References.** Peng, Sun & Zanetti, *Partitioning well-clustered graphs: spectral clustering works!* (COLT 2015; SIAM J. Comput. 2017). · Le, Levina & Vershynin, *Concentration and regularization of random graphs* (Random Structures Algorithms 2017).
 
@@ -147,49 +137,39 @@ The proof of Davis–Kahan uses self-adjointness in one place: $\hat V_\perp^\to
 
 **References.** Tropp, *An introduction to matrix concentration inequalities* (Found. Trends Mach. Learn. 2015). · Ahlswede & Winter, *Strong converse for identification via quantum channels* (IEEE Trans. Inf. Theory 2002). · Feige & Ofek, *Spectral techniques applied to sparse random graphs* (Random Structures Algorithms 2005).
 
-### 9. Oja's method through the variational lens
+### 9. Oja's method for streaming PCA
 
 *Theory + experimental.*
 
-Oja's method for streaming PCA, $W_{t+1}=\operatorname{qr}(W_t+\eta_tx_tx_t^\top W_t)$, is stochastic Riemannian gradient ascent on $Q\mapsto\operatorname{tr}(Q\Sigma)$ over the Grassmannian. Each sample perturbs the objective by a zero-mean **linear** term $-\operatorname{tr}\big(Q(x_tx_t^\top-\Sigma)\big)$: a Davis–Kahan perturbation, one sample at a time. Project 1 gives the two ingredients a convergence proof needs:
-
-- **quadratic growth:** $\operatorname{tr}(\Pi\Sigma)-\operatorname{tr}(Q\Sigma)\ge\delta_0\|\sin\Theta\|_F^2$, which holds globally;
-- **a PL inequality**, which holds only away from the saddles, with a constant set by how far the Ritz values of $\Sigma$ on $Q$ stay above $\lambda_{k+1}$.
-
-Linearizing the minimizer predicts the optimal error
+Oja's method, $W_{t+1}=\operatorname{qr}(W_t+\eta_tx_tx_t^\top W_t)$, estimates the top-$k$ eigenspace of a covariance $\Sigma$ from a stream of samples. It can be read as stochastic Riemannian gradient ascent on $Q\mapsto\operatorname{tr}(Q\Sigma)$ over the Grassmannian. The classical benchmark is the offline estimator, whose asymptotic error for Gaussian data is given by Anderson's formula
 $$
-t\cdot\mathbb E\|\sin\Theta\|_F^2\ \to\ \sum_{i\le k<j}\frac{\mathbb E[(u_i^\top x)^2(u_j^\top x)^2]}{(\lambda_i-\lambda_j)^2}\ \le\ \frac{\mathbb E\|(I-\Pi)xx^\top V\|_F^2}{\delta_0^2},
+t\cdot\mathbb E\|\sin\Theta\|_F^2\ \to\ \sum_{i\le k<j}\frac{\lambda_i\lambda_j}{(\lambda_i-\lambda_j)^2}.
 $$
-in which only the noise that tilts the subspace appears. For Gaussian data this is Anderson's classical formula.
 
 **Questions.**
 
-1. Show that one step of Oja is, to first order in $\eta_t$, a retracted stochastic Riemannian gradient step, and compute the Hessian and the gradient-noise covariance at $\Pi$ in tangent coordinates. Derive the limit above.
-2. **Local phase.** Prove a non-asymptotic bound $\mathbb E\|\sin\Theta\|_F^2\lesssim\mathbb E\|(I-\Pi)xx^\top V\|_F^2/(\delta_0^2t)$ once $Q_t$ is close to $\Pi$, using quadratic growth and the PL inequality. Compare with the variance parameter of Jain et al.
-3. **Global phase.** From a random start, $Q_0$ is near the saddles, where PL degenerates. Analyze the burn-in with the Ritz margin $\vartheta_{\min}(Q_t)-\lambda_{k+1}$ as a potential, and compare with the $\tan\Theta$ potentials used for the noisy power method.
-4. **Experiment.** Compare plain Oja (step $a/t$), Oja with Polyak–Ruppert averaging and the offline estimator against the predicted constant, on spectra with unequal gaps $\lambda_i-\lambda_j$. Explain why a single step size is suboptimal there.
+1. Show that one step of Oja is, to first order in $\eta_t$, a retracted stochastic Riemannian gradient step. Compute the Hessian and the gradient-noise covariance at the optimum in tangent coordinates, and recover Anderson's formula from them.
+2. Present the analysis of Jain et al. (one direction) or Allen-Zhu–Li (general $k$). How do they handle the start, when the iterate is far from the optimum and near the saddles?
+3. Which properties of the objective (geodesic convexity, Polyak–Łojasiewicz, quadratic growth) hold on the Grassmannian, and where? Which ones does a convergence proof for Oja need?
+4. **Experiment.** Compare plain Oja (step $a/t$), Oja with Polyak–Ruppert averaging and the offline estimator against Anderson's constant, on spectra with unequal gaps $\lambda_i-\lambda_j$.
 
-**First step.** Simulate the offline estimator and Oja with $n=10$, $k=2$ and a Gaussian spectrum, and plot $t\cdot\mathbb E\|\sin\Theta\|_F^2$ against the predicted limit.
+**First step.** Simulate the offline estimator and Oja with $n=10$, $k=2$ and a Gaussian spectrum, and plot $t\cdot\mathbb E\|\sin\Theta\|_F^2$ against Anderson's limit.
 
 **References.** Jain, Jin, Kakade, Netrapalli & Sidford, *Streaming PCA: matching matrix Bernstein and near-optimal finite sample guarantees for Oja's algorithm* (COLT 2016). · Allen-Zhu & Li, *First efficient convergence for streaming k-PCA: a global, gap-free, and near-optimal rate* (FOCS 2017). · Hardt & Price, *The noisy power method: a meta algorithm with applications* (NeurIPS 2014). · Tripuraneni, Flammarion, Bach & Jordan, *Averaging stochastic gradient descent on Riemannian manifolds* (COLT 2018). · Karimi, Nutini & Schmidt, *Linear convergence of gradient and proximal-gradient methods under the Polyak–Łojasiewicz condition* (ECML-PKDD 2016). · Anderson, *Asymptotic theory for principal component analysis* (Ann. Math. Statist. 1963).
 
-### 10. Online PCA: eigengap versus regularizer
+### 10. Online PCA
 
 *Theory + experimental. Bridges Lecture 8 and [Lecture 10](schedule.qmd) (matrix multiplicative weights).*
 
-In online PCA an adversary reveals PSD matrices $X_t$ with $\|X_t\|\le1$, the learner plays a rank-$k$ projection $Q_t$ before seeing $X_t$ and gains $\operatorname{tr}(Q_tX_t)$, and regret is measured against the best fixed projection. **Follow the leader** (FTL) plays the top-$k$ projection of $S_{t-1}=\sum_{s<t}X_s$. Its regret is at most $\sum_t\operatorname{tr}((Q_{t+1}-Q_t)X_t)$, i.e., how much the leader moves, and the variational proof of Project 1 bounds this directly. With $\gamma_t$ the eigengap of $S_t$,
-$$
-\gamma_t\|\sin\Theta(Q_t,Q_{t+1})\|_F^2\ \le\ \operatorname{tr}\big((Q_{t+1}-Q_t)X_t\big)\ \le\ \frac{4k\|X_t\|^2}{\gamma_t}.
-$$
-So when the gap grows linearly ($\gamma_t\gtrsim\delta_0t$, e.g., i.i.d. data with a population gap), FTL has **logarithmic** regret $O(\frac k{\delta_0}\log T)$ with no regularization. Against an adversary the gap can stay bounded and FTL has linear regret. Then the curvature must come from a regularizer instead: von Neumann entropy gives matrix multiplicative weights and $O(\sqrt T)$-type regret.
+In online PCA an adversary reveals PSD matrices $X_t$ with $\|X_t\|\le1$, the learner plays a rank-$k$ projection $Q_t$ before seeing $X_t$ and gains $\operatorname{tr}(Q_tX_t)$, and regret is measured against the best fixed projection. Matrix multiplicative weights (matrix exponentiated gradient) achieves regret of order $\sqrt T$, logarithmic in the dimension (Warmuth–Kuzmin). **Follow the leader** (FTL), which plays the top-$k$ projection of $S_{t-1}=\sum_{s<t}X_s$, can fail badly against an adversary.
 
 **Questions.**
 
-1. Prove the display above and the logarithmic regret bound for FTL under a growing gap. For i.i.d. data, use matrix Bernstein to show that the gap grows linearly after a burn-in of order $\log(nT)/\delta_0^2$.
-2. Construct an adversarial sequence on which FTL has linear regret, and explain the failure in terms of $\gamma_t$.
-3. **Best of both worlds.** Design an algorithm whose regret is logarithmic when the data has a gap and $O(\sqrt{kT\log n})$ otherwise, without knowing which case holds. Options: a meta-algorithm over FTL and matrix multiplicative weights (as in Huang et al. for curved sets), or FTRL with a data-dependent regularization weight. Can quadratic growth from the data and from the regularizer be added?
-4. **Experiment.** Compare FTL, matrix multiplicative weights and Oja's method (online gradient ascent on the Grassmannian) on stochastic data with and without a gap, and on adversarial sequences. In a quick simulation FTL's regret grew like $\log T$, while the per-round bound above was loose by a factor of about $35$: can you explain or close that gap?
+1. Construct an adversarial sequence on which FTL has linear regret.
+2. What regret does FTL get on i.i.d. data whose covariance has an eigengap? Relate the answer to the curved-constraint-set results of Huang–Lattimore–György–Szepesvári.
+3. **Best of both worlds.** Can an algorithm get the better of the two behaviors without knowing whether the data has a gap?
+4. **Experiment.** Compare FTL, matrix multiplicative weights and Oja's method (online gradient ascent on the Grassmannian) on stochastic data with and without a gap, and on adversarial sequences.
 
-**First step.** Implement FTL for $n=10$, $k=2$ on Gaussian data with a population gap, plot the regret against $\log T$, and overlay the per-round bound $4k\|X_t\|^2/\gamma_t$.
+**First step.** Implement FTL and matrix multiplicative weights for $n=10$, $k=2$ on Gaussian data with a population gap, and plot the regret of both against $T$.
 
 **References.** Warmuth & Kuzmin, *Randomized online PCA algorithms with regret bounds that are logarithmic in the dimension* (JMLR 2008). · Nie, Kotłowski & Warmuth, *Online PCA with optimal regret* (JMLR 2016). · Huang, Lattimore, György & Szepesvári, *Following the leader and fast rates in online linear prediction: curved constraint sets and other regularities* (JMLR 2017). · Allen-Zhu & Li, *Follow the compressed leader: faster online learning of eigenvectors and faster MMWU* (ICML 2017).
