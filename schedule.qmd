@@ -16,7 +16,15 @@ Tentative and updated as the quarter goes. Slides open in presentation mode (pre
 | 6 | 10/15 | Conductance and Cheeger's Inequality | [Slides](lectures/lecture06/lecture6.qmd) |  |  |
 | 7 | 10/20 | Higher-order and k-way Cheeger's Inequalities | [Slides](lectures/lecture07/lecture7.qmd) · demo: [Improved Cheeger](lectures/lecture07/demos/improved-cheeger-demo.html) |  |  |
 | 8 | 10/22 | Spectral Clustering and Eigenvector Perturbation | [Slides](lectures/lecture08/lecture8.qmd) · demo: [SBM and planted clusters](lectures/lecture08/demos/spectral-clustering-demo.html) · [Projects](projects.qmd#lecture-8-spectral-clustering-and-eigenvector-perturbation) | [Davis–Kahan](notes/davis-kahan.qmd) |  |
-| 9 | 10/27 | Electrical Flows and Fast Laplacian Solvers |  |  |  |
-| 10 | 10/29 | Semidefinite Programming and MMWUs |  |  |  |
-|  |  |  | [LA Review II](notes/la-review-part2.qmd) |  |  |
+| 9 | 10/27 | Electrical Flows, Effective Resistance, and Fast Laplacian Solvers |  |  |  |
+| 10 | 10/29 | Spectral Sparsification: Effective-Resistance Sampling, Expanders as Sparsifiers of the Complete Graph |  |  |  |
+| 11 | 11/3 | Semidefinite Programming and the Matrix Multiplicative Weights Update for Balanced Separator |  |  |  |
+| 12 | 11/5 | Log-Sobolev Inequalities: Tensorization, the Hypercube, and log log n Mixing |  |  |  |
+| 13 | 11/10 | Sturm–Liouville Theory and Spectral Collocation |  | [LA Review II](notes/la-review-part2.qmd) |  |
+| 14 | 11/12 | Markov Processes in Continuous Space: Generators, Dirichlet Forms, Brownian Motion and the Laplacian |  |  |  |
+| 15 | 11/17 | Langevin Dynamics and the Fokker–Planck Equation: Ornstein–Uhlenbeck, Poincaré for Log-Concave Measures |  |  |  |
+| 16 | 11/19 | Bakry–Émery Theory: Curvature, Log-Sobolev, and Mixing |  |  |  |
+| 17 | 11/24 | Manifold Learning: Laplacian Eigenmaps and Diffusion Maps |  |  |  |
+| 18 | 12/1 | Method of Moments for Latent-Variable Models (or buffer) |  |  |  |
+| 19 | 12/3 | TBD: Review / Project Presentations / In-Class Final |  |  |  |
 :::
