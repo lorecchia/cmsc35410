@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Projects – CMSC 35410</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b626d73c4c936ccc3cb08be7d45d1df6.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-ec6c034766f78be6d2b3c979ae054acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-79f87882548c91cf1952f391da7ff80a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-ec6c034766f78be6d2b3c979ae054acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">CMSC 35410</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./schedule.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./notes.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="./projects.html" aria-current="page"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./resources.html"> 
+<span class="menu-text">Resources</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/lorecchia/cmsc35410"> <i class="bi bi-github" role="img" aria-label="GitHub repository">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#lecture-8-spectral-clustering-and-eigenvector-perturbation" id="toc-lecture-8-spectral-clustering-and-eigenvector-perturbation" class="nav-link active" data-scroll-target="#lecture-8-spectral-clustering-and-eigenvector-perturbation">Lecture 8: Spectral clustering and eigenvector perturbation</a>
+  <ul class="collapse">
+  <li><a href="#daviskahan-as-stability-of-a-minimizer" id="toc-daviskahan-as-stability-of-a-minimizer" class="nav-link" data-scroll-target="#daviskahan-as-stability-of-a-minimizer">1. Davis–Kahan as stability of a minimizer</a></li>
+  <li><a href="#bounds-that-survive-hubs" id="toc-bounds-that-survive-hubs" class="nav-link" data-scroll-target="#bounds-that-survive-hubs">2. Bounds that survive hubs</a></li>
+  <li><a href="#how-sharp-is-daviskahan-in-the-sbm" id="toc-how-sharp-is-daviskahan-in-the-sbm" class="nav-link" data-scroll-target="#how-sharp-is-daviskahan-in-the-sbm">3. How sharp is Davis–Kahan in the SBM?</a></li>
+  <li><a href="#sparse-graphs-why-spectral-clustering-fails-and-how-to-fix-it" id="toc-sparse-graphs-why-spectral-clustering-fails-and-how-to-fix-it" class="nav-link" data-scroll-target="#sparse-graphs-why-spectral-clustering-fails-and-how-to-fix-it">4. Sparse graphs: why spectral clustering fails, and how to fix it</a></li>
+  <li><a href="#from-counting-bad-vertices-to-exact-recovery" id="toc-from-counting-bad-vertices-to-exact-recovery" class="nav-link" data-scroll-target="#from-counting-bad-vertices-to-exact-recovery">5. From counting bad vertices to exact recovery</a></li>
+  <li><a href="#rounding-what-does-k-means-actually-guarantee" id="toc-rounding-what-does-k-means-actually-guarantee" class="nav-link" data-scroll-target="#rounding-what-does-k-means-actually-guarantee">6. Rounding: what does <span class="math inline">\(k\)</span>-means actually guarantee?</a></li>
+  <li><a href="#directed-graphs-and-non-reversible-chains" id="toc-directed-graphs-and-non-reversible-chains" class="nav-link" data-scroll-target="#directed-graphs-and-non-reversible-chains">7. Directed graphs and non-reversible chains</a></li>
+  <li><a href="#matrix-concentration-from-scratch" id="toc-matrix-concentration-from-scratch" class="nav-link" data-scroll-target="#matrix-concentration-from-scratch">8. Matrix concentration from scratch</a></li>
+  <li><a href="#ojas-method-for-streaming-pca" id="toc-ojas-method-for-streaming-pca" class="nav-link" data-scroll-target="#ojas-method-for-streaming-pca">9. Oja’s method for streaming PCA</a></li>
+  <li><a href="#online-pca" id="toc-online-pca" class="nav-link" data-scroll-target="#online-pca">10. Online PCA</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/projects.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Projects</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Possible course projects, grouped by lecture. Each one lists a type (<strong>theory</strong>, <strong>experimental</strong> or <strong>expository</strong>), a concrete first step and a few key references. They are starting points: you can narrow, combine or redirect them. Talk to me before you commit to one.</p>
+<p>A good project produces one of the following: a clean proof of a result (new or not, but written in our language), a careful experiment that tests a theoretical prediction, or a self-contained exposition of a paper that goes beyond the lectures.</p>
+<section id="lecture-8-spectral-clustering-and-eigenvector-perturbation" class="level2">
+<h2 class="anchored" data-anchor-id="lecture-8-spectral-clustering-and-eigenvector-perturbation">Lecture 8: Spectral clustering and eigenvector perturbation</h2>
+<p>Notation follows the <a href="./lectures/lecture08/lecture8.html">Lecture 8 slides</a> and the <a href="./notes/davis-kahan.html">Davis–Kahan note</a>: <span class="math inline">\(P=D^{-1}A\)</span>, <span class="math inline">\(\ \ell^2(D)\)</span>, planted clusters <span class="math inline">\(S_1,\dots,S_k\)</span>, ideal walk <span class="math inline">\(P_0\)</span> (cut edges turned into self-loops), <span class="math inline">\(\ \delta_0\)</span> the ideal gap, <span class="math inline">\(\ \Phi(S_j)\)</span> the conductance of cluster <span class="math inline">\(j\)</span>.</p>
+<section id="daviskahan-as-stability-of-a-minimizer" class="level3">
+<h3 class="anchored" data-anchor-id="daviskahan-as-stability-of-a-minimizer">1. Davis–Kahan as stability of a minimizer</h3>
+<p><em>Theory / expository.</em></p>
+<p>The lecture proves Davis–Kahan with a Sylvester equation. There is also a variational route: the top-<span class="math inline">\(k\)</span> eigenspace of <span class="math inline">\(A\)</span> is the <strong>minimizer</strong> of <span class="math inline">\(f_A(\Pi)=-\operatorname{tr}(\Pi A)\)</span> over rank-<span class="math inline">\(k\)</span> projections, so a perturbation of <span class="math inline">\(A\)</span> is a perturbation of an optimization problem, and perturbation bounds follow from how fast <span class="math inline">\(f_A\)</span> grows away from its minimizer. This route appears in the statistics literature, through the “curvature lemma” of Vu–Cho–Lei–Rohe (2013), and is closely related to Yu–Wang–Samworth’s variant of Davis–Kahan.</p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Present the curvature lemma and a variational proof of a Frobenius-norm Davis–Kahan bound in the notation of the course. Compare the constants with Corollary 3.3 of the lecture.</li>
+<li><strong>Literature.</strong> Find out precisely which parts of this argument are in Vu et al.&nbsp;and in Yu–Wang–Samworth, and in what form.</li>
+<li><strong>Geometry.</strong> <span class="math inline">\(f_A\)</span> is geodesically convex on the Grassmannian only near its minimizer (Alimisis–Vandereycken). What does a perturbation argument actually need from <span class="math inline">\(f_A\)</span>: convexity, strong convexity along geodesics, or something weaker?</li>
+<li><strong>Operator norm.</strong> Can a variational argument give the operator-norm bound <span class="math inline">\(\|\sin\Theta\|\lesssim\|E\|/\delta_0\)</span>?</li>
+<li><strong>Beyond the top-<span class="math inline">\(k\)</span> block.</strong> Extend the argument to an interior block of the spectrum, and to <span class="math inline">\(\ell^2(D)\)</span>.</li>
+</ol>
+<p><strong>First step.</strong> Read the curvature lemma in Vu et al.&nbsp;and the proof of the main theorem in Yu–Wang–Samworth.</p>
+<p><strong>References.</strong> Vu, Cho, Lei &amp; Rohe, <em>Fantope projection and selection</em> (NeurIPS 2013). · Yu, Wang &amp; Samworth, <em>A useful variant of the Davis–Kahan theorem for statisticians</em> (Biometrika 2015). · Alimisis &amp; Vandereycken, <em>Geodesic convexity of the symmetric eigenvalue problem and convergence of steepest descent</em> (JOTA 2024; arXiv:2209.03480).</p>
+</section>
+<section id="bounds-that-survive-hubs" class="level3">
+<h3 class="anchored" data-anchor-id="bounds-that-survive-hubs">2. Bounds that survive hubs</h3>
+<p><em>Theory + experimental.</em></p>
+<p>The lecture has two bounds for planted clusters. Davis–Kahan is linear in the perturbation but pays for the worst vertex (<span class="math inline">\(\varepsilon_{\rm out}\)</span>). The energy bound <span class="math inline">\(\|\sin\Theta\|_F^2\le\sum_j\Phi(S_j)/\mu_{k+1}(G)\)</span> uses only average quantities but has a square-root rate and needs the gap of the <em>observed</em> graph.</p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Is there a hub-robust bound, depending only on average quantities such as <span class="math inline">\(\sum_j\Phi(S_j)\)</span>, that uses the gap <span class="math inline">\(\delta_0\)</span> of the <em>ideal</em> graph instead?</li>
+<li>Is there a bound that is both <strong>linear</strong> in the perturbation and depends only on <strong>average</strong> quantities, e.g.&nbsp;on <span class="math inline">\(\sum_j\Phi(S_j)\)</span> instead of <span class="math inline">\(\max_u d_{\rm out}(u)/d(u)\)</span>? Or construct a family of graphs showing that no such bound can hold.</li>
+<li><strong>Regularization for deterministic graphs.</strong> In random graphs, trimming or down-weighting high-degree vertices restores concentration (Le–Levina–Vershynin). Does a deterministic analogue (e.g., adding <span class="math inline">\(\tau/n\)</span> to every entry of <span class="math inline">\(A\)</span>, or capping <span class="math inline">\(d_{\rm out}(u)\)</span>) make Davis–Kahan hub-robust?</li>
+</ol>
+<p><strong>First step.</strong> Use the planted-clusters tab of the <a href="lectures/lecture08/demos/spectral-clustering-demo.html#planted">Lecture 8 demo</a> to compare the two bounds on spread and hub placements, and look for graphs where both are loose.</p>
+<p><strong>References.</strong> Peng, Sun &amp; Zanetti, <em>Partitioning well-clustered graphs: spectral clustering works!</em> (COLT 2015; SIAM J. Comput. 2017). · Le, Levina &amp; Vershynin, <em>Concentration and regularization of random graphs</em> (Random Structures Algorithms 2017).</p>
+</section>
+<section id="how-sharp-is-daviskahan-in-the-sbm" class="level3">
+<h3 class="anchored" data-anchor-id="how-sharp-is-daviskahan-in-the-sbm">3. How sharp is Davis–Kahan in the SBM?</h3>
+<p><em>Theory + experimental.</em></p>
+<p>In the SBM experiments of the lecture, the actual <span class="math inline">\(\|\sin\Theta\|\)</span> matches the spiked-random-matrix prediction <span class="math inline">\(\sigma/\delta_0\)</span> almost exactly, while Davis–Kahan gives about <span class="math inline">\(4\sigma/\delta_0\)</span>.</p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Derive the prediction for the two-block SBM from the theory of finite-rank perturbations of random matrices (BBP transition, Benaych-Georges–Nadakuditi): the location of the outlier eigenvalue and the limiting <span class="math inline">\(\|\sin\Theta\|\)</span>, including the block structure of the noise variance.</li>
+<li>Account for the factor <span class="math inline">\(4\)</span>: which factor of <span class="math inline">\(2\)</span> comes from Weyl, and which from <span class="math inline">\(\|E\|\approx2\sigma\)</span>? Is there a deterministic perturbation bound that captures the “random direction” of <span class="math inline">\(E\)</span>, e.g.&nbsp;by using <span class="math inline">\(\|EV\|\)</span> in place of <span class="math inline">\(\|E\|\)</span>?</li>
+<li>Test the predictions numerically for <span class="math inline">\(k&gt;2\)</span> and unequal block sizes.</li>
+</ol>
+<p><strong>First step.</strong> Reproduce the sweep in the <a href="lectures/lecture08/demos/spectral-clustering-demo.html">demo</a> at <span class="math inline">\(n=2000\)</span> in Python, and overlay the BBP formula.</p>
+<p><strong>References.</strong> Baik, Ben Arous &amp; Péché, <em>Phase transition of the largest eigenvalue for nonnull complex sample covariance matrices</em> (Ann. Probab. 2005). · Benaych-Georges &amp; Nadakuditi, <em>The eigenvalues and eigenvectors of finite, low rank perturbations of large random matrices</em> (Adv. Math. 2011).</p>
+</section>
+<section id="sparse-graphs-why-spectral-clustering-fails-and-how-to-fix-it" class="level3">
+<h3 class="anchored" data-anchor-id="sparse-graphs-why-spectral-clustering-fails-and-how-to-fix-it">4. Sparse graphs: why spectral clustering fails, and how to fix it</h3>
+<p><em>Experimental.</em></p>
+<p>At constant average degree (<span class="math inline">\(p=a/n\)</span>, <span class="math inline">\(q=b/n\)</span>), high-degree vertices create eigenvalues that swamp the community signal, and plain spectral clustering fails well above the information-theoretic threshold <span class="math inline">\((a-b)^2&gt;2(a+b)\)</span>.</p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Show the failure empirically: plot the spectrum of <span class="math inline">\(A\)</span> and the localized top eigenvectors.</li>
+<li>Implement and compare three fixes: regularized spectral clustering (<span class="math inline">\(A+\tau\mathbf 1\mathbf 1^\top/n\)</span>), the non-backtracking matrix, and the Bethe Hessian. Measure the overlap with the planted partition as <span class="math inline">\((a-b)^2/(2(a+b))\)</span> crosses <span class="math inline">\(1\)</span>.</li>
+<li>Explain, in the language of this course, why each fix works.</li>
+</ol>
+<p><strong>First step.</strong> Generate SBMs with <span class="math inline">\(n=10^4\)</span>, <span class="math inline">\(a+b=6\)</span>, and plot the top eigenvectors of <span class="math inline">\(A\)</span> and of the regularized Laplacian.</p>
+<p><strong>References.</strong> Krzakala et al., <em>Spectral redemption in clustering sparse networks</em> (PNAS 2013). · Saade, Krzakala &amp; Zdeborová, <em>Spectral clustering of graphs with the Bethe Hessian</em> (NeurIPS 2014). · Amini, Chen, Bickel &amp; Levina, <em>Pseudo-likelihood methods for community detection in large sparse networks</em> (Ann. Statist. 2013). · Le, Levina &amp; Vershynin (2017).</p>
+</section>
+<section id="from-counting-bad-vertices-to-exact-recovery" class="level3">
+<h3 class="anchored" data-anchor-id="from-counting-bad-vertices-to-exact-recovery">5. From counting bad vertices to exact recovery</h3>
+<p><em>Theory / expository.</em></p>
+<p>Davis–Kahan plus Markov bounds the <strong>number</strong> of misclustered vertices. Exact recovery needs every row of the embedding to be close to its center, i.e., a bound on <span class="math inline">\(\|\hat VO-V\|_{2\to\infty}\)</span>.</p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Present the leave-one-out argument of Abbe–Fan–Wang–Zhong for the two-block SBM, and show that spectral clustering recovers the partition exactly when <span class="math inline">\(p=\frac{a\ln n}n\)</span>, <span class="math inline">\(q=\frac{b\ln n}n\)</span> and <span class="math inline">\((\sqrt a-\sqrt b)^2&gt;2\)</span>.</li>
+<li>Compare with the deterministic <span class="math inline">\(2\to\infty\)</span> bounds of Cape–Tang–Priebe. Which assumptions does each approach need?</li>
+</ol>
+<p><strong>First step.</strong> Read the introduction of Abbe–Fan–Wang–Zhong and write out their main entrywise bound in the special case of the two-block SBM.</p>
+<p><strong>References.</strong> Abbe, Fan, Wang &amp; Zhong, <em>Entrywise eigenvector analysis of random matrices with low expected rank</em> (Ann. Statist. 2020). · Cape, Tang &amp; Priebe, <em>The two-to-infinity norm and singular subspace geometry with applications to high-dimensional statistics</em> (Ann. Statist. 2019). · Abbe, <em>Community detection and stochastic block models: recent developments</em> (JMLR 2018).</p>
+</section>
+<section id="rounding-what-does-k-means-actually-guarantee" class="level3">
+<h3 class="anchored" data-anchor-id="rounding-what-does-k-means-actually-guarantee">6. Rounding: what does <span class="math inline">\(k\)</span>-means actually guarantee?</h3>
+<p><em>Theory.</em></p>
+<p>The lecture counts bad vertices with respect to the <strong>true</strong> centers. An algorithm only has the <span class="math inline">\(k\)</span>-means solution, and <span class="math inline">\(k\)</span>-means is NP-hard to optimize exactly.</p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Prove that a <span class="math inline">\((1+\epsilon)\)</span>-approximate weighted <span class="math inline">\(k\)</span>-means solution in <span class="math inline">\(\ell^2(D)\)</span> misclusters a volume fraction <span class="math inline">\(O\big((1+\epsilon)\,\|\hat FO-F\|_{D,F}^2\big)\)</span>, following Lei–Rinaldo, Lemma 5.3.</li>
+<li>Compare with the “proximity condition” analysis of Kumar–Kannan and Awasthi–Sheffet, which works directly with the spectral norm of the perturbation.</li>
+<li><strong>Degree heterogeneity.</strong> In the degree-corrected SBM, compare NJW row normalization, the random-walk embedding with weighted <span class="math inline">\(k\)</span>-means, and SCORE (ratios of eigenvectors), theoretically or experimentally.</li>
+</ol>
+<p><strong>First step.</strong> Prove part 1 for exact <span class="math inline">\(k\)</span>-means (<span class="math inline">\(\epsilon=0\)</span>) and <span class="math inline">\(k=2\)</span>.</p>
+<p><strong>References.</strong> Lei &amp; Rinaldo, <em>Consistency of spectral clustering in stochastic block models</em> (Ann. Statist. 2015). · Kumar &amp; Kannan, <em>Clustering with spectral norm and the k-means algorithm</em> (FOCS 2010). · Awasthi &amp; Sheffet, <em>Improved spectral-norm bounds for clustering</em> (APPROX 2012). · Qin &amp; Rohe, <em>Regularized spectral clustering under the degree-corrected stochastic blockmodel</em> (NeurIPS 2013). · Jin, <em>Fast community detection by SCORE</em> (Ann. Statist. 2015).</p>
+</section>
+<section id="directed-graphs-and-non-reversible-chains" class="level3">
+<h3 class="anchored" data-anchor-id="directed-graphs-and-non-reversible-chains">7. Directed graphs and non-reversible chains</h3>
+<p><em>Theory / expository.</em></p>
+<p>The proof of Davis–Kahan uses self-adjointness in one place: <span class="math inline">\(\hat V_\perp^\top\hat A=\hat\Lambda_2\hat V_\perp^\top\)</span>. For a non-reversible walk the eigenvectors are not orthogonal in any fixed inner product, and the inverse of the Sylvester operator can be large even when the gap is large.</p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Construct a family of non-normal matrices with a fixed eigengap whose invariant subspaces are arbitrarily unstable. Relate the instability to pseudospectra.</li>
+<li>Present a spectral clustering method for directed graphs, e.g.&nbsp;Hermitian adjacency matrices (Cucuringu–Li–Sun–Zanetti), and explain which perturbation theory it relies on.</li>
+<li>Is there a variational (Project 1) version for non-reversible chains, e.g.&nbsp;via the symmetric part of the generator?</li>
+</ol>
+<p><strong>First step.</strong> Compute the invariant subspaces of a perturbed Jordan-type block numerically and compare their movement with <span class="math inline">\(\|E\|/\text{gap}\)</span>.</p>
+<p><strong>References.</strong> Trefethen &amp; Embree, <em>Spectra and Pseudospectra</em> (Princeton 2005). · Cucuringu, Li, Sun &amp; Zanetti, <em>Hermitian matrices for clustering directed graphs: insights and applications</em> (AISTATS 2020). · The course note on <a href="./notes/non-reversible-generic.html">non-reversible chains</a>.</p>
+</section>
+<section id="matrix-concentration-from-scratch" class="level3">
+<h3 class="anchored" data-anchor-id="matrix-concentration-from-scratch">8. Matrix concentration from scratch</h3>
+<p><em>Expository.</em></p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Prove matrix Bernstein in full, including the step that uses Lieb’s concavity theorem. You may take Lieb’s theorem as given, but explain what it says.</li>
+<li>Show where the dimension factor and the <span class="math inline">\(\sqrt{\log n}\)</span> loss come from, and why the Ahlswede–Winter (Golden–Thompson) argument loses much more for the SBM.</li>
+<li>Present the Feige–Ofek argument that removes the <span class="math inline">\(\log n\)</span> factor when <span class="math inline">\(d\gtrsim\log n\)</span>, or the light/heavy-pairs method behind it.</li>
+</ol>
+<p><strong>References.</strong> Tropp, <em>An introduction to matrix concentration inequalities</em> (Found. Trends Mach. Learn. 2015). · Ahlswede &amp; Winter, <em>Strong converse for identification via quantum channels</em> (IEEE Trans. Inf. Theory 2002). · Feige &amp; Ofek, <em>Spectral techniques applied to sparse random graphs</em> (Random Structures Algorithms 2005).</p>
+</section>
+<section id="ojas-method-for-streaming-pca" class="level3">
+<h3 class="anchored" data-anchor-id="ojas-method-for-streaming-pca">9. Oja’s method for streaming PCA</h3>
+<p><em>Theory + experimental.</em></p>
+<p>Oja’s method, <span class="math inline">\(W_{t+1}=\operatorname{qr}(W_t+\eta_tx_tx_t^\top W_t)\)</span>, estimates the top-<span class="math inline">\(k\)</span> eigenspace of a covariance <span class="math inline">\(\Sigma\)</span> from a stream of samples. It can be read as stochastic Riemannian gradient ascent on <span class="math inline">\(Q\mapsto\operatorname{tr}(Q\Sigma)\)</span> over the Grassmannian. The classical benchmark is the offline estimator, whose asymptotic error for Gaussian data is given by Anderson’s formula <span class="math display">\[
+t\cdot\mathbb E\|\sin\Theta\|_F^2\ \to\ \sum_{i\le k&lt;j}\frac{\lambda_i\lambda_j}{(\lambda_i-\lambda_j)^2}.
+\]</span></p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Show that one step of Oja is, to first order in <span class="math inline">\(\eta_t\)</span>, a retracted stochastic Riemannian gradient step. Compute the Hessian and the gradient-noise covariance at the optimum in tangent coordinates, and recover Anderson’s formula from them.</li>
+<li>Present the analysis of Jain et al.&nbsp;(one direction) or Allen-Zhu–Li (general <span class="math inline">\(k\)</span>). How do they handle the start, when the iterate is far from the optimum and near the saddles?</li>
+<li>Which properties of the objective (geodesic convexity, Polyak–Łojasiewicz, quadratic growth) hold on the Grassmannian, and where? Which ones does a convergence proof for Oja need?</li>
+<li><strong>Experiment.</strong> Compare plain Oja (step <span class="math inline">\(a/t\)</span>), Oja with Polyak–Ruppert averaging and the offline estimator against Anderson’s constant, on spectra with unequal gaps <span class="math inline">\(\lambda_i-\lambda_j\)</span>.</li>
+</ol>
+<p><strong>First step.</strong> Simulate the offline estimator and Oja with <span class="math inline">\(n=10\)</span>, <span class="math inline">\(k=2\)</span> and a Gaussian spectrum, and plot <span class="math inline">\(t\cdot\mathbb E\|\sin\Theta\|_F^2\)</span> against Anderson’s limit.</p>
+<p><strong>References.</strong> Jain, Jin, Kakade, Netrapalli &amp; Sidford, <em>Streaming PCA: matching matrix Bernstein and near-optimal finite sample guarantees for Oja’s algorithm</em> (COLT 2016). · Allen-Zhu &amp; Li, <em>First efficient convergence for streaming k-PCA: a global, gap-free, and near-optimal rate</em> (FOCS 2017). · Hardt &amp; Price, <em>The noisy power method: a meta algorithm with applications</em> (NeurIPS 2014). · Tripuraneni, Flammarion, Bach &amp; Jordan, <em>Averaging stochastic gradient descent on Riemannian manifolds</em> (COLT 2018). · Karimi, Nutini &amp; Schmidt, <em>Linear convergence of gradient and proximal-gradient methods under the Polyak–Łojasiewicz condition</em> (ECML-PKDD 2016). · Anderson, <em>Asymptotic theory for principal component analysis</em> (Ann. Math. Statist. 1963).</p>
+</section>
+<section id="online-pca" class="level3">
+<h3 class="anchored" data-anchor-id="online-pca">10. Online PCA</h3>
+<p><em>Theory + experimental. Bridges Lecture 8 and <a href="./schedule.html">Lecture 10</a> (matrix multiplicative weights).</em></p>
+<p>In online PCA an adversary reveals PSD matrices <span class="math inline">\(X_t\)</span> with <span class="math inline">\(\|X_t\|\le1\)</span>, the learner plays a rank-<span class="math inline">\(k\)</span> projection <span class="math inline">\(Q_t\)</span> before seeing <span class="math inline">\(X_t\)</span> and gains <span class="math inline">\(\operatorname{tr}(Q_tX_t)\)</span>, and regret is measured against the best fixed projection. Matrix multiplicative weights (matrix exponentiated gradient) achieves regret of order <span class="math inline">\(\sqrt T\)</span>, logarithmic in the dimension (Warmuth–Kuzmin). <strong>Follow the leader</strong> (FTL), which plays the top-<span class="math inline">\(k\)</span> projection of <span class="math inline">\(S_{t-1}=\sum_{s&lt;t}X_s\)</span>, can fail badly against an adversary.</p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Construct an adversarial sequence on which FTL has linear regret.</li>
+<li>What regret does FTL get on i.i.d. data whose covariance has an eigengap? Relate the answer to the curved-constraint-set results of Huang–Lattimore–György–Szepesvári.</li>
+<li><strong>Best of both worlds.</strong> Can an algorithm get the better of the two behaviors without knowing whether the data has a gap?</li>
+<li><strong>Experiment.</strong> Compare FTL, matrix multiplicative weights and Oja’s method (online gradient ascent on the Grassmannian) on stochastic data with and without a gap, and on adversarial sequences.</li>
+</ol>
+<p><strong>First step.</strong> Implement FTL and matrix multiplicative weights for <span class="math inline">\(n=10\)</span>, <span class="math inline">\(k=2\)</span> on Gaussian data with a population gap, and plot the regret of both against <span class="math inline">\(T\)</span>.</p>
+<p><strong>References.</strong> Warmuth &amp; Kuzmin, <em>Randomized online PCA algorithms with regret bounds that are logarithmic in the dimension</em> (JMLR 2008). · Nie, Kotłowski &amp; Warmuth, <em>Online PCA with optimal regret</em> (JMLR 2016). · Huang, Lattimore, György &amp; Szepesvári, <em>Following the leader and fast rates in online linear prediction: curved constraint sets and other regularities</em> (JMLR 2017). · Allen-Zhu &amp; Li, <em>Follow the compressed leader: faster online learning of eigenvectors and faster MMWU</em> (ICML 2017).</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/lorecchia\.github\.io\/cmsc35410");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/projects.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
