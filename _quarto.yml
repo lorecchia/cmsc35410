@@ -24,6 +24,8 @@ website:
         text: Schedule
       - href: notes.qmd
         text: Notes
+      - href: projects.qmd
+        text: Projects
       - href: resources.qmd
         text: Resources
     right:

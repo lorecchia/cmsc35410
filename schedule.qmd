@@ -15,7 +15,7 @@ Tentative and updated as the quarter goes. Slides open in presentation mode (pre
 | 5 | 10/13 | Bounding the Spectral Gap: Test Functions and Canonical Paths | [Slides](lectures/lecture05/lecture5.qmd) |  |  |
 | 6 | 10/15 | Conductance and Cheeger's Inequality | [Slides](lectures/lecture06/lecture6.qmd) |  |  |
 | 7 | 10/20 | Higher-order and k-way Cheeger's Inequalities | [Slides](lectures/lecture07/lecture7.qmd) · demo: [Improved Cheeger](lectures/lecture07/demos/improved-cheeger-demo.html) |  |  |
-| 8 | 10/22 | Spectral Clustering and Eigenvector Perturbation | [Slides](lectures/lecture08/lecture8.qmd) · demo: [SBM and planted clusters](lectures/lecture08/demos/spectral-clustering-demo.html) | [Davis–Kahan](notes/davis-kahan.qmd) |  |
+| 8 | 10/22 | Spectral Clustering and Eigenvector Perturbation | [Slides](lectures/lecture08/lecture8.qmd) · demo: [SBM and planted clusters](lectures/lecture08/demos/spectral-clustering-demo.html) · [Projects](projects.qmd#lecture-8-spectral-clustering-and-eigenvector-perturbation) | [Davis–Kahan](notes/davis-kahan.qmd) |  |
 | 9 | 10/27 | Electrical Flows and Fast Laplacian Solvers |  |  |  |
 | 10 | 10/29 | Semidefinite Programming and MMWUs |  |  |  |
 |  |  |  | [LA Review II](notes/la-review-part2.qmd) |  |  |

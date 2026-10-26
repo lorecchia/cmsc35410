@@ -129,3 +129,27 @@ for p, q in [(0.10, 0.02), (0.06, 0.03), (0.04, 0.03)]:
     print(f"SBM p={p} q={q}: eig {w[:3].round(2)} pred {np.round(pred,2)} delta0={delta0:.2f} (n(p-q)/k={n*(p-q)/k:.2f})"
           f" |E|={normE:.2f} 2sqrt(d)={2*np.sqrt(dmax):.2f} Bernstein={bern:.2f} sin={s:.3f} DK={2*normE/delta0:.3f}"
           f" bad={bad} bound={badbound:.0f} kmeans_err={km}")
+
+# ---------- 5. Projects page: variational Davis-Kahan and the hub-robust bound ----------
+rng5 = np.random.default_rng(5); worst_qg = np.inf; worst_dk = 0
+for t in range(3000):
+    n = 8; k = int(rng5.integers(1, 5))
+    A = rng5.standard_normal((n, n)); A = A + A.T; E = 0.5*rng5.standard_normal((n, n)); E = E + E.T
+    w, U = np.linalg.eigh(A); w = w[::-1]; U = U[:, ::-1]; V = U[:, :k]; d0 = w[k-1] - w[k]
+    X = np.linalg.qr(rng5.standard_normal((n, k)))[0]; _, sF = sin_theta(V, X)
+    worst_qg = min(worst_qg, np.trace(V.T@A@V) - np.trace(X.T@A@X) - d0*sF**2)   # quadratic growth
+    _, Vh = topk(A + E, k); _, sF = sin_theta(V, Vh)
+    worst_dk = max(worst_dk, sF / (min(2*np.sqrt(k)*np.linalg.norm(E, 2), np.sqrt(2)*np.linalg.norm(E))/d0))
+print("quadratic growth: min slack (>= 0):", round(worst_qg, 4), "| variational DK: max actual/bound (<= 1):", round(worst_dk, 4))
+for mode in ['spread', 'hubs']:
+    for nc in [10, 100, 400]:
+        W, lab = planted(3, 60, nc, mode, np.random.default_rng(1)); k = 3
+        d = W.sum(1); Dm = np.diag(d**-0.5); same = lab[:, None] == lab[None, :]
+        dout = (W*~same).sum(1); N = Dm@W@Dm; N0 = Dm@(W*same + np.diag(dout))@Dm
+        w0 = np.linalg.eigvalsh(N0)[::-1]; d0 = w0[k-1] - w0[k]
+        vol = np.array([d[lab == j].sum() for j in range(k)])
+        V = np.stack([np.where(lab == j, np.sqrt(d/vol[j]), 0) for j in range(k)], 1)
+        _, Vh = topk(N, k); _, sF = sin_theta(V, Vh)
+        Phi = np.array([dout[lab == j].sum()/vol[j] for j in range(k)])
+        assert sF**2 <= Phi.sum()/d0 + 1e-12
+        print(f"hub-robust bound ({mode}, {nc} cross edges): sinF^2 = {sF**2:.4f} <= sum Phi/delta0 = {Phi.sum()/d0:.4f}")
