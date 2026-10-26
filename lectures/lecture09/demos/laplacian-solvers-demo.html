@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laplacian solvers — interactive demo</title>
+<style>
+  :root { --blue:#2a6fdb; --orange:#e8792b; --green:#2a9d5c; --purple:#8e44ad; --red:#c0392b; --grey:#8a8a8a; --ink:#222; }
+  html,body { margin:0; font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color:var(--ink); background:#fff; font-size:14px; }
+  .wrap { padding:10px 14px; }
+  .tabs { display:flex; gap:6px; margin-bottom:8px; align-items:center; }
+  .tabs button { border:1px solid #ccc; background:#f6f6f6; border-radius:6px; padding:4px 12px; font-size:13px; cursor:pointer; }
+  .tabs button.on { background:var(--blue); color:#fff; border-color:var(--blue); }
+  .controls { display:flex; flex-wrap:wrap; gap:14px; align-items:center; margin-bottom:8px; }
+  .controls label { font-weight:600; margin-right:5px; }
+  .controls button { font-size:12px; padding:3px 10px; cursor:pointer; }
+  select, input[type=range] { vertical-align:middle; }
+  .val { font-family: ui-monospace, Menlo, monospace; min-width:2.8em; display:inline-block; }
+  .row { display:grid; grid-template-columns: 1.55fr 1fr; gap:10px; }
+  .panel { border:1px solid #e3e3e3; border-radius:8px; padding:6px 8px; }
+  .panel h4 { margin:2px 0 4px; font-size:13px; color:#444; font-weight:600; }
+  table { border-collapse:collapse; width:100%; font-size:12.5px; }
+  td, th { padding:2px 4px; border-bottom:1px solid #f0f0f0; text-align:left; }
+  th { font-weight:600; color:#555; }
+  td.num { text-align:right; font-family: ui-monospace, Menlo, monospace; white-space:nowrap; }
+  .legend span { margin-right:12px; white-space:nowrap; font-size:12px; }
+  .sw { display:inline-block; width:16px; height:3px; vertical-align:middle; margin-right:4px; }
+  .note { color:#666; font-size:11.5px; margin-top:4px; line-height:1.35; }
+  .busy { color:#999; font-size:12px; margin-left:8px; }
+  svg text { font-size:11px; fill:#444; }
+  .big { font-family: ui-monospace, Menlo, monospace; font-size:12.5px; }
+  @media (max-width: 800px) { .row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="tabs">
+    <button id="tabConv" class="on">Convergence: GD · CG · PCG · KOSZ</button>
+    <button id="tabTog">Cycle toggling, step by step</button>
+    <span class="busy" id="busy"></span>
+  </div>
+
+  <!-- ===================== Tab 1 ===================== -->
+  <div id="paneConv">
+    <div class="controls">
+      <span><label for="cg">graph</label><select id="cg">
+        <option value="grid" selected>grid, unit weights</option>
+        <option value="wgrid">grid, weights e^U(−s,s)</option>
+        <option value="reg">random 4-regular (2 Hamiltonian cycles)</option>
+      </select></span>
+      <span id="ckWrap"><label for="ck">side k</label><input id="ck" type="range" min="8" max="48" step="4" value="32"> <span class="val" id="ckV"></span></span>
+      <span id="cnWrap" style="display:none"><label for="cn">n</label><input id="cn" type="range" min="64" max="2048" step="64" value="1024"> <span class="val" id="cnV"></span></span>
+      <span id="csWrap" style="display:none"><label for="cs">spread s</label><input id="cs" type="range" min="0" max="6" step="0.5" value="4"> <span class="val" id="csV"></span></span>
+      <span><label for="ct">tree</label><select id="ct" title="recursive cross: grids only (BFS otherwise)">
+        <option value="bfs">BFS</option>
+        <option value="rec" selected>recursive cross (grids)</option>
+        <option value="mw">max-weight</option>
+      </select></span>
+      <span><label for="cw">work budget</label><input id="cw" type="range" min="200" max="4000" step="100" value="2000"> <span class="val" id="cwV"></span><span class="note"> × m</span></span>
+      <button id="crun">run</button> <button id="cre">resample</button>
+    </div>
+    <div class="row">
+      <div class="panel">
+        <h4>Relative error ‖x − x*‖<sub>L</sub> / ‖x*‖<sub>L</sub> against work / m</h4>
+        <svg id="chart" width="100%" viewBox="0 0 620 330"></svg>
+        <div class="legend">
+          <span><span class="sw" style="background:var(--grey)"></span>gradient descent</span>
+          <span><span class="sw" style="background:var(--blue)"></span>conjugate gradient</span>
+          <span><span class="sw" style="background:var(--green)"></span>PCG, tree preconditioner</span>
+          <span><span class="sw" style="background:var(--orange)"></span>KOSZ, cycle toggling</span>
+        </div>
+        <div class="note">Work: one product with L costs m; a PCG iteration costs m + n; a toggle costs the number of centroid-tree entries it touches (≈ 4·depth). Demand χ = 1<sub>s</sub> − 1<sub>t</sub> between two far-apart vertices.</div>
+      </div>
+      <div class="panel">
+        <h4>Numbers</h4>
+        <table id="tbl"></table>
+        <div class="note" id="tblNote"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== Tab 2 ===================== -->
+  <div id="paneTog" style="display:none">
+    <div class="controls">
+      <span><label for="tk">side k</label><input id="tk" type="range" min="4" max="12" step="1" value="8"> <span class="val" id="tkV"></span></span>
+      <span><label for="tw">weights</label><select id="tw"><option value="0" selected>unit</option><option value="2">e^U(−2,2)</option><option value="4">e^U(−4,4)</option></select></span>
+      <span><label for="tt">tree</label><select id="tt"><option value="bfs" selected>BFS</option><option value="rec">recursive cross</option><option value="mw">max-weight</option></select></span>
+      <button id="t1">toggle 1</button><button id="t10">10</button><button id="t100">100</button><button id="tres">reset</button>
+    </div>
+    <div class="row">
+      <div class="panel">
+        <h4 id="togTitle">Vertex colour = tree-induced potential x<sub>T</sub>; edge width = |flow|; orange = last toggled cycle</h4>
+        <svg id="gview" width="100%" viewBox="0 0 520 440"></svg>
+      </div>
+      <div class="panel">
+        <h4>Last toggle</h4>
+        <table id="tlast"></table>
+        <h4 style="margin-top:8px">State</h4>
+        <table id="tstate"></table>
+        <svg id="tchart" width="100%" viewBox="0 0 360 190" style="margin-top:6px"></svg>
+        <div class="note">Plotted: energy gap 𝓔(f) − 𝓔* (orange) and the guarantee (1 − 1/τ)<sup>k</sup>(𝓔(f<sub>0</sub>) − 𝓔*) (grey), log scale. s = top-left (source), t = bottom-right (sink).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ================================================================ numerical core (also run by scripts/test_demo_core.js)
+const Core = (function () {
+  function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  function finish(n, U, V, W, extra) {
+    const m = U.length, r = new Float64Array(m); for (let e = 0; e < m; e++) r[e] = 1 / W[e];
+    const deg = new Int32Array(n); for (let e = 0; e < m; e++) { deg[U[e]]++; deg[V[e]]++; }
+    const off = new Int32Array(n + 1); for (let u = 0; u < n; u++) off[u + 1] = off[u] + deg[u];
+    const nb = new Int32Array(2 * m), ne = new Int32Array(2 * m), fill = off.slice(0, n);
+    for (let e = 0; e < m; e++) { nb[fill[U[e]]] = V[e]; ne[fill[U[e]]++] = e; nb[fill[V[e]]] = U[e]; ne[fill[V[e]]++] = e; }
+    const d = new Float64Array(n); for (let e = 0; e < m; e++) { d[U[e]] += W[e]; d[V[e]] += W[e]; }
+    return Object.assign({ n, m, U, V, W, r, off, nb, ne, d }, extra || {});
+  }
+  function gridGraph(k, spread, rng) {
+    const U = [], V = []; for (let i = 0; i < k; i++) for (let j = 0; j < k; j++) { const u = i * k + j;
+      if (j + 1 < k) { U.push(u); V.push(u + 1); } if (i + 1 < k) { U.push(u); V.push(u + k); } }
+    const W = new Float64Array(U.length); for (let e = 0; e < U.length; e++) W[e] = spread > 0 ? Math.exp(spread * (2 * rng() - 1)) : 1;
+    return finish(k * k, Int32Array.from(U), Int32Array.from(V), W, { k, kind: 'grid' });
+  }
+  function regularGraph(n, rng) {            // union of two random Hamiltonian cycles: 4-regular multigraph, connected
+    const U = [], V = [];
+    for (let c = 0; c < 2; c++) { const p = Array.from({ length: n }, (_, i) => i);
+      for (let i = n - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [p[i], p[j]] = [p[j], p[i]]; }
+      for (let i = 0; i < n; i++) { U.push(p[i]); V.push(p[(i + 1) % n]); } }
+    return finish(n, Int32Array.from(U), Int32Array.from(V), new Float64Array(U.length).fill(1), { kind: 'reg' });
+  }
+  function matvec(G, x, y) { y.fill(0); const { U, V, W, m } = G;
+    for (let e = 0; e < m; e++) { const t = W[e] * (x[U[e]] - x[V[e]]); y[U[e]] += t; y[V[e]] -= t; } return y; }
+  function dot(a, b) { let s = 0; for (let i = 0; i < a.length; i++) s += a[i] * b[i]; return s; }
+
+  // ---------------------------------------------------------------- spanning trees
+  function bfsTree(G, root) { const { n, off, nb, ne } = G, seen = new Uint8Array(n), T = [], q = [root]; seen[root] = 1;
+    for (let h = 0; h < q.length; h++) { const u = q[h]; for (let p = off[u]; p < off[u + 1]; p++) { const v = nb[p];
+      if (!seen[v]) { seen[v] = 1; T.push(ne[p]); q.push(v); } } } return T; }
+  function maxWeightTree(G) { const { n, m, U, V, W } = G, par = Int32Array.from({ length: n }, (_, i) => i);
+    const find = x => { while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; } return x; };
+    const ord = Array.from({ length: m }, (_, i) => i).sort((a, b) => W[b] - W[a]), T = [];
+    for (const e of ord) { const a = find(U[e]), b = find(V[e]); if (a !== b) { par[a] = b; T.push(e); } } return T; }
+  function recursiveGridTree(G) {             // same construction as scripts/core.py
+    const k = G.k, idx = new Map(); for (let e = 0; e < G.m; e++) { idx.set(G.U[e] * G.n + G.V[e], e); idx.set(G.V[e] * G.n + G.U[e], e); }
+    const T = new Set(), ed = (a, b) => T.add(idx.get((a[0] * k + a[1]) * G.n + (b[0] * k + b[1])));
+    (function build(r0, r1, c0, c1) {
+      if (r1 <= r0 || c1 <= c0) return;
+      if (r1 - r0 <= 2 || c1 - c0 <= 2) { for (let r = r0; r < r1; r++) for (let c = c0; c < c1 - 1; c++) ed([r, c], [r, c + 1]);
+        for (let r = r0; r < r1 - 1; r++) ed([r, c0], [r + 1, c0]); return; }
+      const rm = (r0 + r1) >> 1, cm = (c0 + c1) >> 1;
+      for (let c = c0; c < c1 - 1; c++) ed([rm, c], [rm, c + 1]);
+      for (let r = r0; r < r1 - 1; r++) if (r !== rm - 1 && r !== rm) ed([r, cm], [r + 1, cm]);
+      if (rm - 1 >= r0) ed([rm - 1, cm], [rm, cm]); if (rm + 1 < r1) ed([rm, cm], [rm + 1, cm]);
+      const Q = [[r0, rm, c0, cm, [rm - 1, cm - 1], [rm, cm - 1]], [r0, rm, cm + 1, c1, [rm - 1, cm + 1], [rm, cm + 1]],
+                 [rm + 1, r1, c0, cm, [rm + 1, cm - 1], [rm, cm - 1]], [rm + 1, r1, cm + 1, c1, [rm + 1, cm + 1], [rm, cm + 1]]];
+      for (const [a0, a1, b0, b1, x, y] of Q) if (a1 > a0 && b1 > b0) { build(a0, a1, b0, b1); ed(x, y); }
+    })(0, k, 0, k);
+    return Array.from(T);
+  }
+  function rootedTree(G, T, root) {
+    const n = G.n, adj = Array.from({ length: n }, () => []);
+    for (const e of T) { adj[G.U[e]].push([G.V[e], e]); adj[G.V[e]].push([G.U[e], e]); }
+    const par = new Int32Array(n).fill(-1), pe = new Int32Array(n).fill(-1), dep = new Int32Array(n), h = new Float64Array(n);
+    const seen = new Uint8Array(n), order = [root]; seen[root] = 1;
+    for (let i = 0; i < order.length; i++) { const u = order[i]; for (const [v, e] of adj[u]) if (!seen[v]) {
+      seen[v] = 1; par[v] = u; pe[v] = e; dep[v] = dep[u] + 1; h[v] = h[u] + G.r[e]; order.push(v); } }
+    if (order.length !== n) throw new Error('tree not spanning');
+    const lca = (a, b) => { while (dep[a] > dep[b]) a = par[a]; while (dep[b] > dep[a]) b = par[b]; while (a !== b) { a = par[a]; b = par[b]; } return a; };
+    const dist = (a, b) => h[a] + h[b] - 2 * h[lca(a, b)];
+    const pathEdges = (a, b) => { const c = lca(a, b), P = [], Q = []; while (a !== c) { P.push(pe[a]); a = par[a]; } while (b !== c) { Q.push(pe[b]); b = par[b]; } return P.concat(Q.reverse()); };
+    function solve(chi) {                       // O(n) tree solve, potentials centred
+      const s = Float64Array.from(chi), fup = new Float64Array(n);
+      for (let i = n - 1; i > 0; i--) { const v = order[i]; fup[v] = s[v]; s[par[v]] += s[v]; }
+      const x = new Float64Array(n); for (let i = 1; i < n; i++) { const v = order[i]; x[v] = x[par[v]] + G.r[pe[v]] * fup[v]; }
+      let mu = 0; for (let i = 0; i < n; i++) mu += x[i]; mu /= n; for (let i = 0; i < n; i++) x[i] -= mu; return x;
+    }
+    return { n, adj, par, pe, dep, h, order, root, lca, dist, pathEdges, solve };
+  }
+
+  // ---------------------------------------------------------------- centroid structure: Psi(u) = sum_v q_v R_T(u,v)
+  function centroidDS(tr, G) {
+    const n = tr.n, adj = tr.adj, removed = new Uint8Array(n), ancC = Array.from({ length: n }, () => []), ancD = Array.from({ length: n }, () => []);
+    const stack = [tr.root];
+    const par = new Int32Array(n), size = new Int32Array(n), dist = new Float64Array(n), mark = new Int32Array(n).fill(-1);
+    let stamp = 0;
+    while (stack.length) {
+      const s = stack.pop(); stamp++;
+      const comp = [s]; par[s] = -1; mark[s] = stamp;
+      for (let i = 0; i < comp.length; i++) { const u = comp[i]; for (const [v] of adj[u]) if (!removed[v] && mark[v] !== stamp) { mark[v] = stamp; par[v] = u; comp.push(v); } }
+      for (const u of comp) size[u] = 1; for (let i = comp.length - 1; i > 0; i--) size[par[comp[i]]] += size[comp[i]];
+      const N = comp.length; let c = s;
+      for (;;) { let nxt = -1; for (const [v] of adj[c]) if (!removed[v] && v !== par[c] && mark[v] === stamp && size[v] > (N >> 1)) { nxt = v; break; } if (nxt < 0) break; c = nxt; }
+      stamp++; const q = [c]; dist[c] = 0; mark[c] = stamp;
+      for (let i = 0; i < q.length; i++) { const u = q[i]; for (const [v, e] of adj[u]) if (!removed[v] && mark[v] !== stamp) { mark[v] = stamp; dist[v] = dist[u] + G.r[e]; q.push(v); } }
+      for (const u of q) { ancC[u].push(c); ancD[u].push(dist[u]); }
+      removed[c] = 1; for (const [v] of adj[c]) if (!removed[v]) stack.push(v);
+    }
+    for (let u = 0; u < n; u++) { ancC[u].reverse(); ancD[u].reverse(); }
+    const S = new Float64Array(n), D = new Float64Array(n), Dp = new Float64Array(n);
+    let depth = 0; for (let u = 0; u < n; u++) depth = Math.max(depth, ancC[u].length);
+    const ds = { depth, touches: 0,
+      add(a, alpha) { const C = ancC[a], Ds = ancD[a], L = C.length;
+        for (let i = 0; i < L; i++) { const c = C[i]; S[c] += alpha; D[c] += alpha * Ds[i]; if (i + 1 < L) Dp[c] += alpha * Ds[i + 1]; }
+        ds.touches += L; },
+      psi(u) { const C = ancC[u], Ds = ancD[u], L = C.length; let tot = 0, prev = -1;
+        for (let i = 0; i < L; i++) { const c = C[i]; let Sc = S[c], Dc = D[c]; if (prev >= 0) { Sc -= S[prev]; Dc -= Dp[prev]; } tot += Dc + Ds[i] * Sc; prev = c; }
+        ds.touches += L; return tot; },
+      // R_T(a,b) via the centroid LCA (both chains end at the same root centroid)
+      dist(a, b) { const Ca = ancC[a], Cb = ancC[b]; let i = Ca.length - 1, j = Cb.length - 1;
+        while (i > 0 && j > 0 && Ca[i - 1] === Cb[j - 1]) { i--; j--; } return ancD[a][i] + ancD[b][j]; } };
+    return ds;
+  }
+
+  // ---------------------------------------------------------------- KOSZ
+  function kosz(G, T, chi, rng) {
+    const tr = rootedTree(G, T, 0), ds = centroidDS(tr, G), inT = new Uint8Array(G.m); for (const e of T) inT[e] = 1;
+    const off = []; for (let e = 0; e < G.m; e++) if (!inT[e]) off.push(e);
+    const x0 = tr.solve(chi), K = off.length, Rc = new Float64Array(K), stOff = new Float64Array(K), cum = new Float64Array(K);
+    let tau = 0; for (let i = 0; i < K; i++) { const e = off[i], RT = ds.dist(G.U[e], G.V[e]); Rc[i] = G.r[e] + RT; stOff[i] = RT / G.r[e]; tau += Rc[i] / G.r[e]; cum[i] = tau; }
+    const foff = new Float64Array(K), q = new Float64Array(G.n);
+    const pot = u => x0[u] - 0.5 * ds.psi(u);
+    const sample = () => { const t = rng() * tau; let lo = 0, hi = K - 1; while (lo < hi) { const mid = (lo + hi) >> 1; if (cum[mid] < t) lo = mid + 1; else hi = mid; } return lo; };
+    const S = { tr, ds, off, tau, Rc, stOff, foff, q, steps: 0,
+      step(i) { if (i === undefined) i = sample(); const e = off[i], a = G.U[e], b = G.V[e];
+        const delta = G.r[e] * foff[i] + pot(b) - pot(a), alpha = -delta / Rc[i];
+        foff[i] += alpha; q[b] += alpha; q[a] -= alpha; ds.add(b, alpha); ds.add(a, -alpha); S.steps++;
+        return { i, e, a, b, delta, alpha }; },
+      potentials() { const x = new Float64Array(G.n); let mu = 0; for (let u = 0; u < G.n; u++) { x[u] = pot(u); mu += x[u]; } mu /= G.n;
+        for (let u = 0; u < G.n; u++) x[u] -= mu; return x; },
+      flow() { const f = new Float64Array(G.m), dem = Float64Array.from(chi);
+        for (let i = 0; i < K; i++) { const e = off[i]; f[e] = foff[i]; dem[G.U[e]] -= foff[i]; dem[G.V[e]] += foff[i]; }
+        const s = dem, fup = new Float64Array(G.n);
+        for (let j = G.n - 1; j > 0; j--) { const v = tr.order[j]; fup[v] = s[v]; s[tr.par[v]] += s[v]; }
+        for (let v = 0; v < G.n; v++) if (v !== tr.root) { const e = tr.pe[v]; f[e] = G.U[e] === v ? fup[v] : -fup[v]; }
+        return f; },
+      energy() { const f = S.flow(); let E = 0; for (let e = 0; e < G.m; e++) E += G.r[e] * f[e] * f[e]; return E; },
+      stTotal() { let s = 0; for (let i = 0; i < K; i++) s += stOff[i]; return s + (G.n - 1); } };
+    return S;
+  }
+
+  // ---------------------------------------------------------------- classical solvers (errors in the L-norm)
+  function Lerr(G, x, xs, tmp) { const d = new Float64Array(x.length); for (let i = 0; i < x.length; i++) d[i] = x[i] - xs[i]; matvec(G, d, tmp); return Math.sqrt(Math.max(dot(d, tmp), 0)); }
+  function lambdaMax(G, rng) { let x = new Float64Array(G.n).map(() => rng() - 0.5), y = new Float64Array(G.n), lam = 0;
+    for (let it = 0; it < 80; it++) { matvec(G, x, y); lam = Math.sqrt(dot(y, y) / dot(x, x)); const s = Math.sqrt(dot(y, y)); for (let i = 0; i < G.n; i++) x[i] = y[i] / s; } return lam * 1.02; }
+  function gd(G, b, xs, its, eta) { const n = G.n, x = new Float64Array(n), y = new Float64Array(n), tmp = new Float64Array(n), out = [Lerr(G, x, xs, tmp)];
+    for (let k = 0; k < its; k++) { matvec(G, x, y); for (let i = 0; i < n; i++) x[i] -= eta * (y[i] - b[i]); out.push(Lerr(G, x, xs, tmp)); } return out; }
+  function pcg(G, b, xs, its, prec, tol) {      // returns errors (if xs) and Lanczos coefficients
+    const n = G.n, x = new Float64Array(n), r = Float64Array.from(b), Lp = new Float64Array(n), tmp = new Float64Array(n);
+    let z = prec ? prec(r) : Float64Array.from(r), p = Float64Array.from(z), rz = dot(r, z); const out = xs ? [Lerr(G, x, xs, tmp)] : [], al = [], be = [];
+    const r0 = Math.sqrt(dot(r, r));
+    for (let k = 0; k < its; k++) { matvec(G, p, Lp); const pLp = dot(p, Lp); if (!(pLp > 0) || !(rz > 0)) break;
+      const a = rz / pLp; for (let i = 0; i < n; i++) { x[i] += a * p[i]; r[i] -= a * Lp[i]; }
+      z = prec ? prec(r) : Float64Array.from(r); const rz2 = dot(r, z), bb = rz2 / rz; al.push(a); be.push(bb);
+      for (let i = 0; i < n; i++) p[i] = z[i] + bb * p[i]; rz = rz2; if (xs) out.push(Lerr(G, x, xs, tmp));
+      if (Math.sqrt(dot(r, r)) < (tol || 1e-13) * r0) break; }
+    let mu = 0; for (let i = 0; i < n; i++) mu += x[i]; mu /= n; for (let i = 0; i < n; i++) x[i] -= mu;
+    return { x, errs: out, al, be };
+  }
+  function ritzExtremes(al, be) {               // CG coefficients -> Lanczos tridiagonal -> extreme eigenvalues (bisection)
+    const k = al.length; if (!k) return [NaN, NaN]; const dg = [], od = [];
+    for (let j = 0; j < k; j++) { dg.push(1 / al[j] + (j > 0 ? be[j - 1] / al[j - 1] : 0)); if (j < k - 1) od.push(Math.sqrt(be[j]) / al[j]); }
+    const cnt = t => { let c = 0, d = 1; for (let j = 0; j < k; j++) { d = dg[j] - t - (j > 0 ? od[j - 1] * od[j - 1] / d : 0); if (d === 0) d = 1e-300; if (d < 0) c++; } return c; };
+    let hi = 0; for (let j = 0; j < k; j++) hi = Math.max(hi, Math.abs(dg[j]) + (j > 0 ? od[j - 1] : 0) + (j < k - 1 ? od[j] : 0));
+    const kth = idx => { let lo = 0, up = hi; for (let it = 0; it < 200; it++) { const mid = (lo + up) / 2; if (cnt(mid) > idx) up = mid; else lo = mid; } return (lo + up) / 2; };
+    return [kth(0), kth(k - 1)];
+  }
+  return { mulberry32, gridGraph, regularGraph, matvec, dot, bfsTree, maxWeightTree, recursiveGridTree, rootedTree, centroidDS, kosz, gd, pcg, lambdaMax, ritzExtremes, Lerr };
+})();
+if (typeof module !== 'undefined') module.exports = Core;
+</script>
+
+<script>
+// ================================================================ UI
+(function () {
+  if (typeof document === 'undefined') return;
+  const C = Core, $ = id => document.getElementById(id), NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs, parent) => { const x = document.createElementNS(NS, tag); for (const k in attrs) x.setAttribute(k, attrs[k]); if (parent) parent.appendChild(x); return x; };
+  const COL = { gd: '#8a8a8a', cg: '#2a6fdb', pcg: '#2a9d5c', kosz: '#e8792b' };
+  const fmt = (x, d = 3) => (x === null || x === undefined || !isFinite(x)) ? '—' : (Math.abs(x) >= 1e4 || (Math.abs(x) < 1e-2 && x !== 0) ? x.toExponential(2) : x.toFixed(d).replace(/\.?0+$/, ''));
+  const setBusy = s => { $('busy').textContent = s; };
+
+  // ---------------- tabs
+  function showTab(t) { $('paneConv').style.display = t === 'conv' ? '' : 'none'; $('paneTog').style.display = t === 'tog' ? '' : 'none';
+    $('tabConv').classList.toggle('on', t === 'conv'); $('tabTog').classList.toggle('on', t === 'tog'); if (t === 'tog' && !TG) resetTog(); }
+  $('tabConv').onclick = () => showTab('conv'); $('tabTog').onclick = () => showTab('tog');
+
+  function pickTree(G, kind) {
+    if (kind === 'rec' && G.kind === 'grid') return C.recursiveGridTree(G);
+    if (kind === 'mw') return C.maxWeightTree(G);
+    return C.bfsTree(G, 0);
+  }
+
+  // ================================================================ Tab 1
+  let seed = 1;
+  const sync = () => { const g = $('cg').value; $('ckWrap').style.display = g === 'reg' ? 'none' : ''; $('cnWrap').style.display = g === 'reg' ? '' : 'none';
+    $('csWrap').style.display = g === 'wgrid' ? '' : 'none'; $('ckV').textContent = $('ck').value; $('cnV').textContent = $('cn').value;
+    $('csV').textContent = $('cs').value; $('cwV').textContent = $('cw').value; };
+  ['cg', 'ck', 'cn', 'cs', 'cw', 'ct'].forEach(id => $(id).addEventListener('input', sync)); sync();
+
+  function runConv() {
+    setBusy('computing…');
+    setTimeout(() => {
+      const t0 = performance.now(), rng = C.mulberry32(seed * 7919), g = $('cg').value;
+      const G = g === 'reg' ? C.regularGraph(+$('cn').value, rng) : C.gridGraph(+$('ck').value, g === 'wgrid' ? +$('cs').value : 0, rng);
+      const n = G.n, m = G.m, budget = +$('cw').value;
+      const s = 0, t = g === 'reg' ? Math.floor(n / 2) : n - 1; const chi = new Float64Array(n); chi[s] = 1; chi[t] = -1;
+      // reference solution: PCG with the max-weight tree to tiny residual
+      const trRef = C.rootedTree(G, C.maxWeightTree(G), 0);
+      const ref = C.pcg(G, chi, null, 20000, r => trRef.solve(r), 1e-14); const xs = ref.x;
+      const tmp = new Float64Array(n); const nrm = Math.sqrt(C.dot(xs, C.matvec(G, xs, tmp)));
+      const lmax = C.lambdaMax(G, rng);
+      const eg = C.gd(G, chi, xs, budget, 1 / lmax).map(v => v / nrm);
+      const cgr = C.pcg(G, chi, xs, budget, null, 1e-12); const ec = cgr.errs.map(v => v / nrm);
+      const [l2, ln] = C.ritzExtremes(cgr.al, cgr.be);
+      const tk = $('ct').value, T = pickTree(G, tk === 'rec' && G.kind !== 'grid' ? 'bfs' : tk), tr = C.rootedTree(G, T, 0);
+      const pr = C.pcg(G, chi, xs, Math.ceil(budget * m / (m + n)), r => tr.solve(r), 1e-12); const ep = pr.errs.map(v => v / nrm);
+      const K = C.kosz(G, T, chi, C.mulberry32(seed * 104729)); const every = Math.max(1, Math.min(Math.floor(K.tau / 10), 2 * m));
+      const ek = [], wk = []; const maxT = budget * m;
+      for (let it = 0; ; it++) { if (it % every === 0) { const x = K.potentials(); ek.push(C.Lerr(G, x, xs, tmp) / nrm); wk.push(K.ds.touches / m); if (ek[ek.length - 1] < 1e-7 || K.ds.touches > maxT) break; } K.step(); }
+      const series = [
+        { c: COL.gd, x: eg.map((_, i) => i), y: eg }, { c: COL.cg, x: ec.map((_, i) => i), y: ec },
+        { c: COL.pcg, x: ep.map((_, i) => i * (m + n) / m), y: ep }, { c: COL.kosz, x: wk, y: ek } ];
+      drawChart($('chart'), series, budget);
+      const first = (xs_, ys, eps) => { for (let i = 0; i < ys.length; i++) if (ys[i] <= eps) return xs_[i]; return null; };
+      const rows = [['', '10⁻³', '10⁻⁶'], ...[['GD', series[0]], ['CG', series[1]], ['PCG (tree)', series[2]], ['KOSZ', series[3]]].map(([nm, S]) => [nm, first(S.x, S.y, 1e-3), first(S.x, S.y, 1e-6)])];
+      const st = K.stTotal();
+      $('tbl').innerHTML =
+        `<tr><td>n, m</td><td class="num">${n}, ${m}</td></tr>` +
+        `<tr><td>λ₂, λₙ (Ritz values from CG)</td><td class="num">${fmt(l2)}, ${fmt(ln)}</td></tr>` +
+        `<tr><td>κ = λₙ/λ₂</td><td class="num">${fmt(ln / l2, 1)}</td></tr>` +
+        `<tr><td>st<sub>T</sub>(G) / m</td><td class="num">${fmt(st / m, 2)}</td></tr>` +
+        `<tr><td>τ(T) / m</td><td class="num">${fmt(K.tau / m, 2)}</td></tr>` +
+        `<tr><td>centroid-tree depth (log₂ n = ${fmt(Math.log2(n), 1)})</td><td class="num">${K.ds.depth}</td></tr>` +
+        `<tr><td>touches per toggle</td><td class="num">${fmt(K.ds.touches / Math.max(K.steps, 1), 1)}</td></tr>` +
+        `<tr><td colspan="2" style="padding-top:6px"><b>work / m to reach relative error</b></td></tr>` +
+        rows.map((r, i) => i === 0 ? `<tr><th>${r[0]}</th><th class="num">${r[1]}</th><th class="num">${r[2]}</th></tr>` :
+          `<tr><td>${r[0]}</td><td class="num">${r[1] === null ? '> budget' : fmt(r[1], 0)}</td><td class="num">${r[2] === null ? '> budget' : fmt(r[2], 0)}</td></tr>`).join('');
+      const uniformW = G.W.every(w => w === G.W[0]);
+      $('tblNote').innerHTML = (tk === 'mw' && uniformW ? 'All weights are equal, so the "max-weight" tree is whatever Kruskal meets first (on the 4-regular graph: a Hamiltonian path, with huge stretch). ' : '') + `KOSZ ran ${K.steps.toLocaleString()} toggles = ${fmt(K.steps / K.tau, 2)} τ. Guarantee: τ·ln(τ·st/ε) toggles for E‖x−x*‖²<sub>L</sub> ≤ ε‖x*‖²<sub>L</sub>. ` +
+        (tk === 'rec' && G.kind !== 'grid' ? 'The recursive tree is defined for grids only; using BFS. ' : '') + `(${fmt(performance.now() - t0, 0)} ms)`;
+      setBusy('');
+    }, 20);
+  }
+  function drawChart(svg, series, xmax) {
+    svg.innerHTML = ''; const W = 620, H = 330, L = 52, R = 24, T = 10, B = 34, ymin = -7, ymax = 1.5;
+    const X = x => L + (W - L - R) * Math.min(x, xmax) / xmax, Y = y => T + (H - T - B) * (ymax - Math.max(ymin, Math.min(ymax, Math.log10(Math.max(y, 1e-12))))) / (ymax - ymin);
+    for (let e = ymin; e <= 1; e++) { el('line', { x1: L, x2: W - R, y1: Y(10 ** e), y2: Y(10 ** e), stroke: '#eee' }, svg); const tx = el('text', { x: L - 6, y: Y(10 ** e) + 4, 'text-anchor': 'end' }, svg); tx.textContent = `1e${e}`; }
+    for (let i = 0; i <= 5; i++) { const xv = xmax * i / 5; el('line', { x1: X(xv), x2: X(xv), y1: T, y2: H - B, stroke: '#f3f3f3' }, svg); const tx = el('text', { x: X(xv), y: H - B + 15, 'text-anchor': 'middle' }, svg); tx.textContent = Math.round(xv); }
+    const lab = el('text', { x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle' }, svg); lab.textContent = 'work / m';
+    el('line', { x1: L, x2: L, y1: T, y2: H - B, stroke: '#999' }, svg); el('line', { x1: L, x2: W - R, y1: H - B, y2: H - B, stroke: '#999' }, svg);
+    for (const S of series) { let d = ''; for (let i = 0; i < S.x.length; i++) { if (S.x[i] > xmax * 1.001) break; d += (d ? 'L' : 'M') + X(S.x[i]).toFixed(1) + ',' + Y(S.y[i]).toFixed(1); if (S.y[i] < 10 ** ymin) break; }
+      el('path', { d, fill: 'none', stroke: S.c, 'stroke-width': 2 }, svg); }
+  }
+  $('crun').onclick = runConv; $('cre').onclick = () => { seed++; runConv(); };
+  ['cg', 'ck', 'cn', 'cs', 'ct'].forEach(id => $(id).addEventListener('change', runConv));
+  $('cw').addEventListener('change', runConv);
+
+  // ================================================================ Tab 2
+  let TG = null;
+  const syncT = () => { $('tkV').textContent = $('tk').value; }; $('tk').addEventListener('input', syncT); syncT();
+  function resetTog() {
+    const k = +$('tk').value, rng = C.mulberry32(seed * 31 + k), G = C.gridGraph(k, +$('tw').value, rng);
+    const chi = new Float64Array(G.n); chi[0] = 1; chi[G.n - 1] = -1;
+    const T = pickTree(G, $('tt').value), K = C.kosz(G, T, chi, C.mulberry32(seed * 977 + 5));
+    const trRef = C.rootedTree(G, C.maxWeightTree(G), 0), xs = C.pcg(G, chi, null, 5000, r => trRef.solve(r), 1e-14).x;
+    const tmp = new Float64Array(G.n), Estar = C.dot(xs, C.matvec(G, xs, tmp));
+    const inT = new Uint8Array(G.m); for (const e of T) inT[e] = 1;
+    TG = { G, K, xs, Estar, inT, chi, last: null, hist: [K.energy() - Estar], E0: K.energy() };
+    drawTog();
+  }
+  function togSteps(s) { if (!TG) resetTog(); for (let i = 0; i < s; i++) { TG.last = TG.K.step(); TG.hist.push(TG.K.energy() - TG.Estar); } drawTog(); }
+  $('t1').onclick = () => togSteps(1); $('t10').onclick = () => togSteps(10); $('t100').onclick = () => togSteps(100);
+  $('tres').onclick = () => { seed++; resetTog(); }; ['tk', 'tw', 'tt'].forEach(id => $(id).addEventListener('change', resetTog));
+
+  function colormap(t) {                         // t in [-1,1]: blue - white - orange
+    const a = [42, 111, 219], w = [250, 250, 250], o = [232, 121, 43], u = Math.max(-1, Math.min(1, t)), c = u < 0 ? a : o, s = Math.abs(u);
+    return `rgb(${Math.round(w[0] + (c[0] - w[0]) * s)},${Math.round(w[1] + (c[1] - w[1]) * s)},${Math.round(w[2] + (c[2] - w[2]) * s)})`;
+  }
+  function drawTog() {
+    const { G, K, inT, last, Estar } = TG, k = G.k, svg = $('gview'); svg.innerHTML = '';
+    const pad = 30, sz = Math.min(520, 440) - 2 * pad, step = sz / (k - 1), ox = (520 - sz) / 2, oy = pad;
+    const P = u => [ox + (u % k) * step, oy + Math.floor(u / k) * step];
+    const f = K.flow(), x = K.potentials(); let fmax = 1e-12, xmax = 1e-12;
+    for (let e = 0; e < G.m; e++) fmax = Math.max(fmax, Math.abs(f[e])); for (let u = 0; u < G.n; u++) xmax = Math.max(xmax, Math.abs(x[u]));
+    const cyc = new Set(); if (last) { cyc.add(last.e); for (const e of K.tr.pathEdges(last.b, last.a)) cyc.add(e); }
+    for (const e of cyc) { const [x1, y1] = P(G.U[e]), [x2, y2] = P(G.V[e]); el('line', { x1, y1, x2, y2, stroke: '#e8792b', 'stroke-width': 12, 'stroke-opacity': 0.35, 'stroke-linecap': 'round' }, svg); }
+    for (let e = 0; e < G.m; e++) { const [x1, y1] = P(G.U[e]), [x2, y2] = P(G.V[e]), w = 1 + 6 * Math.abs(f[e]) / fmax;
+      el('line', { x1, y1, x2, y2, stroke: inT[e] ? '#2a6fdb' : '#999', 'stroke-width': w.toFixed(2), 'stroke-dasharray': inT[e] ? '' : '4 3' }, svg); }
+    if (last) { const [x1, y1] = P(last.a), [x2, y2] = P(last.b); el('line', { x1, y1, x2, y2, stroke: '#c0392b', 'stroke-width': 4 }, svg); }
+    for (let u = 0; u < G.n; u++) { const [cx, cy] = P(u); el('circle', { cx, cy, r: Math.max(4, Math.min(9, step / 4)), fill: colormap(x[u] / xmax), stroke: '#555', 'stroke-width': 0.8 }, svg); }
+    const [sx, sy] = P(0), [tx_, ty_] = P(G.n - 1); const a1 = el('text', { x: sx - 14, y: sy - 10 }, svg); a1.textContent = 's'; const a2 = el('text', { x: tx_ + 8, y: ty_ + 16 }, svg); a2.textContent = 't';
+    // tables
+    const E = K.energy(), gap = (() => { let g = 0; for (let i = 0; i < K.off.length; i++) { const e = K.off[i], d = G.r[e] * K.foff[i] + x[G.V[e]] - x[G.U[e]]; g += d * d / G.r[e]; } return g; })();
+    const dx = new Float64Array(G.n); for (let u = 0; u < G.n; u++) dx[u] = x[u] - TG.xs[u]; const tmp = new Float64Array(G.n); const err2 = C.dot(dx, C.matvec(G, dx, tmp));
+    if (last) { const i = last.i; $('tlast').innerHTML =
+      `<tr><td>edge e = (a, b)</td><td class="num">(${last.a}, ${last.b})</td></tr>` +
+      `<tr><td>stretch st<sub>T</sub>(e), cycle length</td><td class="num">${fmt(K.stOff[i], 2)}, ${K.tr.pathEdges(last.b, last.a).length + 1}</td></tr>` +
+      `<tr><td>sampling prob. (R<sub>e</sub>/r<sub>e</sub>)/τ</td><td class="num">${fmt(K.Rc[i] / G.r[last.e] / K.tau, 4)}</td></tr>` +
+      `<tr><td>KVL violation Δ<sub>e</sub> before</td><td class="num">${fmt(last.delta, 4)}</td></tr>` +
+      `<tr><td>pushed α = −Δ<sub>e</sub>/R<sub>e</sub></td><td class="num">${fmt(last.alpha, 4)}</td></tr>`; }
+    else $('tlast').innerHTML = '<tr><td class="note">Press "toggle 1". The initial flow f₀ is the tree flow: all of the s–t current goes through the tree.</td></tr>';
+    $('tstate').innerHTML =
+      `<tr><td>toggles k (τ = ${fmt(K.tau, 1)})</td><td class="num">${K.steps}  (${fmt(K.steps / K.tau, 2)} τ)</td></tr>` +
+      `<tr><td>energy 𝓔(f) / 𝓔* = 𝓔(f) / R<sub>eff</sub>(s,t)</td><td class="num">${fmt(E / Estar, 5)}</td></tr>` +
+      `<tr><td>duality gap Σ Δ<sub>e</sub>²/r<sub>e</sub></td><td class="num">${fmt(gap, 4)}</td></tr>` +
+      `<tr><td>‖x<sub>T</sub> − x*‖²<sub>L</sub> / ‖x*‖²<sub>L</sub></td><td class="num">${fmt(err2 / Estar, 4)}</td></tr>`;
+    // chart
+    const sv = $('tchart'); sv.innerHTML = ''; const Wc = 360, Hc = 190, Lc = 44, Rc = 8, Tc = 8, Bc = 26, H0 = TG.hist, N = Math.max(H0.length - 1, 10);
+    const bN = H0[0] * Math.pow(1 - 1 / K.tau, N), vmin = Math.max(1e-14, Math.min(bN, ...H0.map(v => Math.max(v, 1e-14))));
+    const hi = Math.ceil(Math.log10(Math.max(...H0, 1e-12))), lo = Math.min(hi - 2, Math.floor(Math.log10(vmin))), tstep = hi - lo > 6 ? 2 : 1;
+    const X = i => Lc + (Wc - Lc - Rc) * i / N, Y = v => Tc + (Hc - Tc - Bc) * (hi - Math.max(lo, Math.log10(Math.max(v, 1e-14)))) / (hi - lo || 1);
+    for (let e = lo; e <= hi; e += tstep) { el('line', { x1: Lc, x2: Wc - Rc, y1: Y(10 ** e), y2: Y(10 ** e), stroke: '#eee' }, sv); const t = el('text', { x: Lc - 4, y: Y(10 ** e) + 4, 'text-anchor': 'end' }, sv); t.textContent = `1e${e}`; }
+    el('line', { x1: Lc, x2: Lc, y1: Tc, y2: Hc - Bc, stroke: '#999' }, sv); el('line', { x1: Lc, x2: Wc - Rc, y1: Hc - Bc, y2: Hc - Bc, stroke: '#999' }, sv);
+    const tl = el('text', { x: (Lc + Wc) / 2, y: Hc - 6, 'text-anchor': 'middle' }, sv); tl.textContent = `toggles (0 … ${N})`;
+    let d = '', g = ''; for (let i = 0; i < H0.length; i++) d += (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(H0[i]).toFixed(1);
+    for (let i = 0; i <= N; i += Math.max(1, Math.floor(N / 60))) g += (g ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(H0[0] * Math.pow(1 - 1 / K.tau, i)).toFixed(1);
+    el('path', { d: g, fill: 'none', stroke: '#8a8a8a', 'stroke-width': 1.5, 'stroke-dasharray': '4 3' }, sv); el('path', { d, fill: 'none', stroke: '#e8792b', 'stroke-width': 2 }, sv);
+  }
+
+  if (location.hash === '#toggle') showTab('tog');
+  runConv();
+})();
+</script>
+</body>
+</html>

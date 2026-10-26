@@ -173,3 +173,93 @@ In online PCA an adversary reveals PSD matrices $X_t$ with $\|X_t\|\le1$, the le
 **First step.** Implement FTL and matrix multiplicative weights for $n=10$, $k=2$ on Gaussian data with a population gap, and plot the regret of both against $T$.
 
 **References.** Warmuth & Kuzmin, *Randomized online PCA algorithms with regret bounds that are logarithmic in the dimension* (JMLR 2008). · Nie, Kotłowski & Warmuth, *Online PCA with optimal regret* (JMLR 2016). · Huang, Lattimore, György & Szepesvári, *Following the leader and fast rates in online linear prediction: curved constraint sets and other regularities* (JMLR 2017). · Allen-Zhu & Li, *Follow the compressed leader: faster online learning of eigenvectors and faster MMWU* (ICML 2017).
+
+## Lecture 9: Electrical flows and fast Laplacian solvers
+
+Notation follows the [Lecture 9 slides](lectures/lecture09/lecture9.qmd): resistances $r_e=1/w_e$, demand $\chi$, energy $\mathcal E(f)=\sum_er_ef_e^2$, spanning tree $T$, stretch $\mathrm{st}_T(e)$, cycle resistance $R_e$, $\tau(T)=\sum_{e\notin T}R_e/r_e$. Code for the solvers, the centroid data structure and approximate elimination is in `lectures/lecture09/scripts/core.py` and in the [demo](lectures/lecture09/demos/laplacian-solvers-demo.html).
+
+### 1. Accelerated cycle toggling
+
+*Theory + experimental.*
+
+Lee–Sidford accelerate randomized coordinate descent so that the iteration count depends on $\sum_i\sqrt{L_i/\mu}$ instead of $\sum_iL_i/\mu$, and apply it to KOSZ: $\sqrt{m\,\tau(T)}$ toggles instead of $\tau(T)$.
+
+**Questions.**
+
+1. Present accelerated RCD for a quadratic with a complete proof (estimate sequences or a potential-function argument), in the notation of the lecture.
+2. An accelerated step updates a linear combination of two or three sequences. Show how to implement it with the centroid structure of the lecture in $O(\log n)$ time per step (Lee–Sidford maintain the iterates in a changing basis).
+3. **Experiment.** Implement it on grids and random graphs and compare with plain KOSZ and CG. Does the $\sqrt{\cdot}$ improvement appear at practical sizes?
+
+**First step.** Read Lee–Sidford §§3–4 and write accelerated RCD for a small dense quadratic; check the rate numerically.
+
+**References.** Lee & Sidford, *Efficient accelerated coordinate descent methods and faster algorithms for solving linear systems* (FOCS 2013). · Nesterov, *Efficiency of coordinate descent methods on huge-scale optimization problems* (SIAM J. Optim. 2012). · Allen-Zhu, Qu, Richtárik & Yuan, *Even faster accelerated coordinate descent using non-uniform sampling* (ICML 2016).
+
+### 2. Cycle toggling in practice
+
+*Experimental.*
+
+In the lecture's experiments KOSZ loses to CG by a large factor on unit-weight grids and wins on weighted grids, while PCG with the same tree wins everywhere.
+
+**Questions.**
+
+1. Which part of the KOSZ bound is loose on these examples: $\lambda_{\min}(M)\ge1$, $\lambda_{\max}(M)\le\operatorname{tr}M$, or the start bound? Measure the spectrum of $M$.
+2. Try variants: sampling without replacement (epochs over a random permutation), sampling $\propto$ current $\Delta_e^2/r_e$ (greedy / Gauss–Southwell), block toggles of several cycles at once, and using KOSZ as a preconditioner for CG.
+3. Test on real networks (road networks, meshes, social graphs) with trees from a practical low-stretch heuristic.
+
+**First step.** Reproduce the convergence figure of the lecture with `scripts/make_figures.py`, then add the epoch-based variant.
+
+**References.** Kelner, Orecchia, Sidford & Zhu (STOC 2013). · Boman, Deweese & Gilbert, *An empirical comparison of graph Laplacian solvers* (ALENEX 2016). · Spielman's `Laplacians.jl` for baselines.
+
+### 3. Low-stretch spanning trees
+
+*Theory / expository + experimental.*
+
+**Questions.**
+
+1. Present the AKPW construction and its $\exp(O(\sqrt{\log n\log\log n}))$ bound, then the star decomposition of Elkin–Emek–Spielman–Teng, and explain what Abraham–Neiman's petal decomposition improves.
+2. Prove the $\Omega(\log n)$ lower bound on the average stretch of any spanning tree of the grid (Alon–Karp–Peleg–West).
+3. **Experiment.** Implement one construction and compare its total stretch with BFS, maximum-weight and random (Wilson) spanning trees. How does the stretch of a uniformly random spanning tree compare? (Its expected stretch is related to effective resistances: $\Pr[e\in T]=w_eR_{\rm eff}(e)$.)
+
+**First step.** Compute the stretch of uniformly random spanning trees on grids of increasing size and compare with the recursive tree of the lecture.
+
+**References.** Alon, Karp, Peleg & West (SIAM J. Comput. 1995). · Elkin, Emek, Spielman & Teng, *Lower-stretch spanning trees* (STOC 2005). · Abraham & Neiman, *Using petal-decompositions to build a low stretch spanning tree* (STOC 2012). · Wilson, *Generating random spanning trees more quickly than the cover time* (STOC 1996).
+
+### 4. Approximate Gaussian elimination
+
+*Theory + experimental.*
+
+**Questions.**
+
+1. Prove a version of the Kyng–Sachdeva theorem: with $\rho=O(\log^2n)$ splits and a random elimination order, $\tfrac12L\preceq\tilde L\preceq\tfrac32L$ w.h.p. You may take matrix Freedman as given; state it precisely.
+2. Why is the order important? Give an order for which clique sampling produces a disconnected approximation with constant probability (hint: a star eliminated center-first).
+3. **Experiment.** Compare random order, minimum-degree order and nested dissection on grids and random graphs, for the approximation quality and the number of nonzeros. Compare with the robust variant of Gao–Kyng–Spielman.
+
+**First step.** Run `approx_cholesky` in `scripts/core.py` with different orders and plot the spectrum of $L^{+/2}\tilde LL^{+/2}$.
+
+**References.** Kyng & Sachdeva, *Approximate Gaussian elimination for Laplacians: fast, sparse, and simple* (FOCS 2016). · Kyng, *Approximate Gaussian elimination* (PhD thesis, Yale 2017). · Gao, Kyng & Spielman, *Robust and practical solution of Laplacian equations by approximate elimination* (arXiv:2303.00709). · Tropp, *Freedman's inequality for matrix martingales* (Electron. Commun. Probab. 2011).
+
+### 5. Primal vs. dual coordinate descent
+
+*Theory.*
+
+KOSZ runs coordinate descent on flows (the cycle space). One can instead run it on potentials, one vertex at a time (Gauss–Seidel / randomized Kaczmarz on the dual).
+
+**Questions.**
+
+1. Apply the RCD theorem of the lecture to $\max_x\mathcal D(x)$ with vertex coordinates. What is the rate, and why does it depend on $\lambda_2$?
+2. Explain the asymmetry: why does a spanning tree give a good basis of the cycle space, but no analogous basis of the potentials?
+3. Read the "dual randomized Kaczmarz" view of KOSZ: KOSZ can be read as Kaczmarz on the KVL constraints. Make the correspondence precise.
+
+**References.** Strohmer & Vershynin (J. Fourier Anal. Appl. 2009). · Leventhal & Lewis (Math. Oper. Res. 2010). · Gower & Richtárik, *Randomized iterative methods for linear systems* (SIAM J. Matrix Anal. Appl. 2015).
+
+### 6. Electrical flows as an algorithmic primitive
+
+*Expository.*
+
+**Questions.**
+
+1. Present the Christiano–Kelner–Mądry–Spielman–Teng algorithm for approximate maximum flow: multiplicative weights over electrical flows, and the role of the solver.
+2. Present Spielman–Srivastava's estimation of all effective resistances with $O(\log n/\varepsilon^2)$ solves via Johnson–Lindenstrauss.
+3. Optional: survey how electrical flows enter interior-point methods for flows (Mądry 2013) and the later almost-linear-time max-flow algorithm (Chen, Kyng, Liu, Peng, Probst Gutenberg & Sachdeva 2022), which replaces them by other primitives.
+
+**References.** Christiano, Kelner, Mądry, Spielman & Teng, *Electrical flows, Laplacian systems, and faster approximation of maximum flow in undirected graphs* (STOC 2011). · Spielman & Srivastava, *Graph sparsification by effective resistances* (STOC 2008). · Mądry, *Navigating central path with electrical flows* (FOCS 2013). · Vishnoi, *Lx = b* (FnT TCS 2013).
