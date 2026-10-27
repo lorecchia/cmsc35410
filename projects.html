@@ -346,6 +346,15 @@ window.Quarto = {
   <li><a href="#ojas-method-for-streaming-pca" id="toc-ojas-method-for-streaming-pca" class="nav-link" data-scroll-target="#ojas-method-for-streaming-pca">9. Oja’s method for streaming PCA</a></li>
   <li><a href="#online-pca" id="toc-online-pca" class="nav-link" data-scroll-target="#online-pca">10. Online PCA</a></li>
   </ul></li>
+  <li><a href="#lecture-9-electrical-flows-and-fast-laplacian-solvers" id="toc-lecture-9-electrical-flows-and-fast-laplacian-solvers" class="nav-link" data-scroll-target="#lecture-9-electrical-flows-and-fast-laplacian-solvers">Lecture 9: Electrical flows and fast Laplacian solvers</a>
+  <ul class="collapse">
+  <li><a href="#accelerated-cycle-toggling" id="toc-accelerated-cycle-toggling" class="nav-link" data-scroll-target="#accelerated-cycle-toggling">1. Accelerated cycle toggling</a></li>
+  <li><a href="#cycle-toggling-in-practice" id="toc-cycle-toggling-in-practice" class="nav-link" data-scroll-target="#cycle-toggling-in-practice">2. Cycle toggling in practice</a></li>
+  <li><a href="#low-stretch-spanning-trees" id="toc-low-stretch-spanning-trees" class="nav-link" data-scroll-target="#low-stretch-spanning-trees">3. Low-stretch spanning trees</a></li>
+  <li><a href="#approximate-gaussian-elimination" id="toc-approximate-gaussian-elimination" class="nav-link" data-scroll-target="#approximate-gaussian-elimination">4. Approximate Gaussian elimination</a></li>
+  <li><a href="#primal-vs.-dual-coordinate-descent" id="toc-primal-vs.-dual-coordinate-descent" class="nav-link" data-scroll-target="#primal-vs.-dual-coordinate-descent">5. Primal vs.&nbsp;dual coordinate descent</a></li>
+  <li><a href="#electrical-flows-as-an-algorithmic-primitive" id="toc-electrical-flows-as-an-algorithmic-primitive" class="nav-link" data-scroll-target="#electrical-flows-as-an-algorithmic-primitive">6. Electrical flows as an algorithmic primitive</a></li>
+  </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/projects.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -509,6 +518,83 @@ t\cdot\mathbb E\|\sin\Theta\|_F^2\ \to\ \sum_{i\le k&lt;j}\frac{\lambda_i\lambda
 </ol>
 <p><strong>First step.</strong> Implement FTL and matrix multiplicative weights for <span class="math inline">\(n=10\)</span>, <span class="math inline">\(k=2\)</span> on Gaussian data with a population gap, and plot the regret of both against <span class="math inline">\(T\)</span>.</p>
 <p><strong>References.</strong> Warmuth &amp; Kuzmin, <em>Randomized online PCA algorithms with regret bounds that are logarithmic in the dimension</em> (JMLR 2008). · Nie, Kotłowski &amp; Warmuth, <em>Online PCA with optimal regret</em> (JMLR 2016). · Huang, Lattimore, György &amp; Szepesvári, <em>Following the leader and fast rates in online linear prediction: curved constraint sets and other regularities</em> (JMLR 2017). · Allen-Zhu &amp; Li, <em>Follow the compressed leader: faster online learning of eigenvectors and faster MMWU</em> (ICML 2017).</p>
+</section>
+</section>
+<section id="lecture-9-electrical-flows-and-fast-laplacian-solvers" class="level2">
+<h2 class="anchored" data-anchor-id="lecture-9-electrical-flows-and-fast-laplacian-solvers">Lecture 9: Electrical flows and fast Laplacian solvers</h2>
+<p>Notation follows the <a href="./lectures/lecture09/lecture9.html">Lecture 9 slides</a>: resistances <span class="math inline">\(r_e=1/w_e\)</span>, demand <span class="math inline">\(\chi\)</span>, energy <span class="math inline">\(\mathcal E(f)=\sum_er_ef_e^2\)</span>, spanning tree <span class="math inline">\(T\)</span>, stretch <span class="math inline">\(\mathrm{st}_T(e)\)</span>, cycle resistance <span class="math inline">\(R_e\)</span>, <span class="math inline">\(\tau(T)=\sum_{e\notin T}R_e/r_e\)</span>. Code for the solvers, the centroid data structure and approximate elimination is in <code>lectures/lecture09/scripts/core.py</code> and in the <a href="lectures/lecture09/demos/laplacian-solvers-demo.html">demo</a>.</p>
+<section id="accelerated-cycle-toggling" class="level3">
+<h3 class="anchored" data-anchor-id="accelerated-cycle-toggling">1. Accelerated cycle toggling</h3>
+<p><em>Theory + experimental.</em></p>
+<p>Lee–Sidford accelerate randomized coordinate descent so that the iteration count depends on <span class="math inline">\(\sum_i\sqrt{L_i/\mu}\)</span> instead of <span class="math inline">\(\sum_iL_i/\mu\)</span>, and apply it to KOSZ: <span class="math inline">\(\sqrt{m\,\tau(T)}\)</span> toggles instead of <span class="math inline">\(\tau(T)\)</span>.</p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Present accelerated RCD for a quadratic with a complete proof (estimate sequences or a potential-function argument), in the notation of the lecture.</li>
+<li>An accelerated step updates a linear combination of two or three sequences. Show how to implement it with the centroid structure of the lecture in <span class="math inline">\(O(\log n)\)</span> time per step (Lee–Sidford maintain the iterates in a changing basis).</li>
+<li><strong>Experiment.</strong> Implement it on grids and random graphs and compare with plain KOSZ and CG. Does the <span class="math inline">\(\sqrt{\cdot}\)</span> improvement appear at practical sizes?</li>
+</ol>
+<p><strong>First step.</strong> Read Lee–Sidford §§3–4 and write accelerated RCD for a small dense quadratic; check the rate numerically.</p>
+<p><strong>References.</strong> Lee &amp; Sidford, <em>Efficient accelerated coordinate descent methods and faster algorithms for solving linear systems</em> (FOCS 2013). · Nesterov, <em>Efficiency of coordinate descent methods on huge-scale optimization problems</em> (SIAM J. Optim. 2012). · Allen-Zhu, Qu, Richtárik &amp; Yuan, <em>Even faster accelerated coordinate descent using non-uniform sampling</em> (ICML 2016).</p>
+</section>
+<section id="cycle-toggling-in-practice" class="level3">
+<h3 class="anchored" data-anchor-id="cycle-toggling-in-practice">2. Cycle toggling in practice</h3>
+<p><em>Experimental.</em></p>
+<p>In the lecture’s experiments KOSZ loses to CG by a large factor on unit-weight grids and wins on weighted grids, while PCG with the same tree wins everywhere.</p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Which part of the KOSZ bound is loose on these examples: <span class="math inline">\(\lambda_{\min}(M)\ge1\)</span>, <span class="math inline">\(\lambda_{\max}(M)\le\operatorname{tr}M\)</span>, or the start bound? Measure the spectrum of <span class="math inline">\(M\)</span>.</li>
+<li>Try variants: sampling without replacement (epochs over a random permutation), sampling <span class="math inline">\(\propto\)</span> current <span class="math inline">\(\Delta_e^2/r_e\)</span> (greedy / Gauss–Southwell), block toggles of several cycles at once, and using KOSZ as a preconditioner for CG.</li>
+<li>Test on real networks (road networks, meshes, social graphs) with trees from a practical low-stretch heuristic.</li>
+</ol>
+<p><strong>First step.</strong> Reproduce the convergence figure of the lecture with <code>scripts/make_figures.py</code>, then add the epoch-based variant.</p>
+<p><strong>References.</strong> Kelner, Orecchia, Sidford &amp; Zhu (STOC 2013). · Boman, Deweese &amp; Gilbert, <em>An empirical comparison of graph Laplacian solvers</em> (ALENEX 2016). · Spielman’s <code>Laplacians.jl</code> for baselines.</p>
+</section>
+<section id="low-stretch-spanning-trees" class="level3">
+<h3 class="anchored" data-anchor-id="low-stretch-spanning-trees">3. Low-stretch spanning trees</h3>
+<p><em>Theory / expository + experimental.</em></p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Present the AKPW construction and its <span class="math inline">\(\exp(O(\sqrt{\log n\log\log n}))\)</span> bound, then the star decomposition of Elkin–Emek–Spielman–Teng, and explain what Abraham–Neiman’s petal decomposition improves.</li>
+<li>Prove the <span class="math inline">\(\Omega(\log n)\)</span> lower bound on the average stretch of any spanning tree of the grid (Alon–Karp–Peleg–West).</li>
+<li><strong>Experiment.</strong> Implement one construction and compare its total stretch with BFS, maximum-weight and random (Wilson) spanning trees. How does the stretch of a uniformly random spanning tree compare? (Its expected stretch is related to effective resistances: <span class="math inline">\(\Pr[e\in T]=w_eR_{\rm eff}(e)\)</span>.)</li>
+</ol>
+<p><strong>First step.</strong> Compute the stretch of uniformly random spanning trees on grids of increasing size and compare with the recursive tree of the lecture.</p>
+<p><strong>References.</strong> Alon, Karp, Peleg &amp; West (SIAM J. Comput. 1995). · Elkin, Emek, Spielman &amp; Teng, <em>Lower-stretch spanning trees</em> (STOC 2005). · Abraham &amp; Neiman, <em>Using petal-decompositions to build a low stretch spanning tree</em> (STOC 2012). · Wilson, <em>Generating random spanning trees more quickly than the cover time</em> (STOC 1996).</p>
+</section>
+<section id="approximate-gaussian-elimination" class="level3">
+<h3 class="anchored" data-anchor-id="approximate-gaussian-elimination">4. Approximate Gaussian elimination</h3>
+<p><em>Theory + experimental.</em></p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Prove a version of the Kyng–Sachdeva theorem: with <span class="math inline">\(\rho=O(\log^2n)\)</span> splits and a random elimination order, <span class="math inline">\(\tfrac12L\preceq\tilde L\preceq\tfrac32L\)</span> w.h.p. You may take matrix Freedman as given; state it precisely.</li>
+<li>Why is the order important? Give an order for which clique sampling produces a disconnected approximation with constant probability (hint: a star eliminated center-first).</li>
+<li><strong>Experiment.</strong> Compare random order, minimum-degree order and nested dissection on grids and random graphs, for the approximation quality and the number of nonzeros. Compare with the robust variant of Gao–Kyng–Spielman.</li>
+</ol>
+<p><strong>First step.</strong> Run <code>approx_cholesky</code> in <code>scripts/core.py</code> with different orders and plot the spectrum of <span class="math inline">\(L^{+/2}\tilde LL^{+/2}\)</span>.</p>
+<p><strong>References.</strong> Kyng &amp; Sachdeva, <em>Approximate Gaussian elimination for Laplacians: fast, sparse, and simple</em> (FOCS 2016). · Kyng, <em>Approximate Gaussian elimination</em> (PhD thesis, Yale 2017). · Gao, Kyng &amp; Spielman, <em>Robust and practical solution of Laplacian equations by approximate elimination</em> (arXiv:2303.00709). · Tropp, <em>Freedman’s inequality for matrix martingales</em> (Electron. Commun. Probab. 2011).</p>
+</section>
+<section id="primal-vs.-dual-coordinate-descent" class="level3">
+<h3 class="anchored" data-anchor-id="primal-vs.-dual-coordinate-descent">5. Primal vs.&nbsp;dual coordinate descent</h3>
+<p><em>Theory.</em></p>
+<p>KOSZ runs coordinate descent on flows (the cycle space). One can instead run it on potentials, one vertex at a time (Gauss–Seidel / randomized Kaczmarz on the dual).</p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Apply the RCD theorem of the lecture to <span class="math inline">\(\max_x\mathcal D(x)\)</span> with vertex coordinates. What is the rate, and why does it depend on <span class="math inline">\(\lambda_2\)</span>?</li>
+<li>Explain the asymmetry: why does a spanning tree give a good basis of the cycle space, but no analogous basis of the potentials?</li>
+<li>Read the “dual randomized Kaczmarz” view of KOSZ: KOSZ can be read as Kaczmarz on the KVL constraints. Make the correspondence precise.</li>
+</ol>
+<p><strong>References.</strong> Strohmer &amp; Vershynin (J. Fourier Anal. Appl. 2009). · Leventhal &amp; Lewis (Math. Oper. Res. 2010). · Gower &amp; Richtárik, <em>Randomized iterative methods for linear systems</em> (SIAM J. Matrix Anal. Appl. 2015).</p>
+</section>
+<section id="electrical-flows-as-an-algorithmic-primitive" class="level3">
+<h3 class="anchored" data-anchor-id="electrical-flows-as-an-algorithmic-primitive">6. Electrical flows as an algorithmic primitive</h3>
+<p><em>Expository.</em></p>
+<p><strong>Questions.</strong></p>
+<ol type="1">
+<li>Present the Christiano–Kelner–Mądry–Spielman–Teng algorithm for approximate maximum flow: multiplicative weights over electrical flows, and the role of the solver.</li>
+<li>Present Spielman–Srivastava’s estimation of all effective resistances with <span class="math inline">\(O(\log n/\varepsilon^2)\)</span> solves via Johnson–Lindenstrauss.</li>
+<li>Optional: survey how electrical flows enter interior-point methods for flows (Mądry 2013) and the later almost-linear-time max-flow algorithm (Chen, Kyng, Liu, Peng, Probst Gutenberg &amp; Sachdeva 2022), which replaces them by other primitives.</li>
+</ol>
+<p><strong>References.</strong> Christiano, Kelner, Mądry, Spielman &amp; Teng, <em>Electrical flows, Laplacian systems, and faster approximation of maximum flow in undirected graphs</em> (STOC 2011). · Spielman &amp; Srivastava, <em>Graph sparsification by effective resistances</em> (STOC 2008). · Mądry, <em>Navigating central path with electrical flows</em> (FOCS 2013). · Vishnoi, <em>Lx = b</em> (FnT TCS 2013).</p>
 
 
 </section>

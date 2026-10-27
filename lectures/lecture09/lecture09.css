@@ -1,0 +1,52 @@
+/* Lecture 9 styles — works with Quarto revealjs (and plain reveal.js) */
+:root { --r-main-font-size: 30px; --accent: #2a6fdb; --accent2: #e8792b; }
+
+.reveal h2 { font-size: 1.45em; margin-bottom: 0.45em; }
+.reveal .slides section { text-align: left; }
+.reveal p, .reveal li { line-height: 1.32; }
+.reveal ul { margin-left: 0.9em; }
+.reveal li + li { margin-top: 0.18em; }
+
+/* boxed environments */
+.reveal .thm, .reveal .lem, .reveal .defn, .reveal .idea, .reveal .pf, .reveal .warn {
+  border-radius: 6px; padding: 0.38em 0.7em; margin: 0.45em 0; }
+.reveal .thm  { background: #eef4ff; border-left: 6px solid var(--accent); }
+.reveal .lem  { background: #f3f7f3; border-left: 6px solid #2a9d5c; }
+.reveal .defn { background: #f6f6f6; border-left: 6px solid #888; }
+.reveal .idea { background: #fff4ea; border-left: 6px solid var(--accent2); }
+.reveal .warn { background: #fdeeee; border-left: 6px solid #c0392b; }
+.reveal .pf   { background: #fff; border: 1px dashed #bbb; }
+.reveal .thm > p:first-child, .reveal .lem > p:first-child, .reveal .defn > p:first-child,
+.reveal .idea > p:first-child, .reveal .warn > p:first-child, .reveal .pf > p:first-child { margin-top: 0.1em; }
+.reveal .thm > p:last-child, .reveal .lem > p:last-child, .reveal .defn > p:last-child,
+.reveal .idea > p:last-child, .reveal .warn > p:last-child, .reveal .pf > p:last-child { margin-bottom: 0.1em; }
+
+.reveal .small  { font-size: 0.8em; }
+.reveal .tiny   { font-size: 0.65em; }
+.reveal .muted  { color: #777; }
+.reveal .accent { color: var(--accent); font-weight: 600; }
+.reveal .accent2{ color: var(--accent2); font-weight: 600; }
+.reveal .center { text-align: center; }
+
+.reveal table { font-size: 0.8em; }
+.reveal .demo-frame { width: 100%; height: 540px; border: none; }
+
+/* hide macro block */
+.hidden { display: none; }
+
+/* scroll bars for content that does not fit:
+   long slides scroll vertically (scrollable: true in the YAML), wide slides and wide
+   display equations scroll horizontally instead of being clipped */
+.reveal .slides section.scrollable { overflow-y: auto; overflow-x: auto; }
+.reveal mjx-container[display="true"],
+.reveal .MathJax_Display,
+.reveal .MathJax_SVG_Display {
+  display: block; max-width: 100%; overflow-x: auto; overflow-y: hidden;
+  padding-bottom: 2px; }
+.reveal table { display: block; max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+.reveal img { max-width: 100%; }
+
+/* tip box (used in Lectures 7–8) */
+.reveal .tip { background: #eef8f6; border-left: 6px solid #1f9e89; border-radius: 6px; padding: 0.38em 0.7em; margin: 0.45em 0; }
+.reveal .tip > p:first-child { margin-top: 0.1em; } .reveal .tip > p:last-child { margin-bottom: 0.1em; }
+.reveal .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2em; }
