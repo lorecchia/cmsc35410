@@ -69,20 +69,30 @@ $$\min_{x\in\mathbb R^n}\ f(x)=\tfrac12x^\top Lx-b^\top x=\tfrac12\sum_ew_e\,(b_
 $$f(x)-f(x^*)=\tfrac12(x-x^*)^\top L(x-x^*)=\tfrac12\|x-x^*\|_L^2 .$$
 The $L$-norm is the norm in which $f$ measures progress.
 
-**The Fenchel–Rockafellar dual, through $B$.** Write $f(x)=g(Bx)+h(x)$ with $g(y)=\tfrac12y^\top Wy$ and $h(x)=-b^\top x$.
+::: notes
+~2 min. Setup for everything else today: the solver can be seen as unconstrained optimization over potentials (gradient descent, Krylov, preconditioning) or as constrained optimization over flows.
+:::
 
-- Conjugates: $g^*(\phi)=\tfrac12\phi^\top R\phi=\tfrac12\sum_er_e\phi_e^2$, and $h^*(z)=0$ if $z=-b$, $+\infty$ otherwise.
-- The dual is
-$$\min_x f(x)\ =\ \max_{\phi}\ -g^*(\phi)-h^*(-B^\top\phi)\ =\ -\tfrac12\min_{B^\top\phi=b}\ \sum_er_e\phi_e^2 .$$
-- **The dual is the flow problem:** route the demand $b$ with minimum energy. Strong duality holds (quadratic objective, feasible constraints).
+## The dual of Laplacian solving is the flow problem
+
+Lagrangian duality, through $B$: give the edge differences their own variable $y=Bx\in\mathbb R^E$:
+$$\min_{x,\,y}\ \tfrac12y^\top Wy-b^\top x\qquad\text{s.t.}\quad y=Bx .$$
+Attach a multiplier $\phi\in\mathbb R^E$ to the constraint:
+$$\mathcal L(x,y,\phi)=\tfrac12y^\top Wy-b^\top x+\phi^\top(Bx-y)=\Big[\tfrac12y^\top Wy-\phi^\top y\Big]+\big(B^\top\phi-b\big)^\top x .$$
+
+- **Minimize over $y$:** the bracket is minimized at $y=W^{-1}\phi=R\phi$ (**Ohm's law**), with value $-\tfrac12\phi^\top R\phi=-\mathcal E(\phi)$, where $\mathcal E(\phi)=\tfrac12\sum_er_e\phi_e^2$ is the **energy**.
+- **Minimize over $x$:** the term is linear in $x$, so the minimum is $-\infty$ unless $B^\top\phi=b$, and $0$ if $B^\top\phi=b$.
+- **Dual function** $q(\phi)=\min_{x,y}\mathcal L$, so the dual problem is
+$$\max_\phi\ q(\phi)\ =\ \max_{B^\top\phi=b}\ -\mathcal E(\phi)\ =\ -\min_{B^\top\phi=b}\ \mathcal E(\phi) .$$
+- **The dual is the flow problem:** route the demand $b$ with minimum energy. Strong duality holds (convex quadratic objective, linear constraints, feasible), so $\min_xf(x)=-\min_{B^\top\phi=b}\mathcal E(\phi)$.
 
 | | variable | constraint | objective |
 |---|---|---|---|
 | **primal** | potentials $x\in\mathbb R^V$ | none | $\tfrac12\|x\|_L^2-b^\top x$ |
-| **dual** | flows $\phi\in\mathbb R^E$ | $B^\top\phi=b$ | $\tfrac12\,\mathcal E(\phi)$ |
+| **dual** | flows $\phi\in\mathbb R^E$ | $B^\top\phi=b$ | $\mathcal E(\phi)$ |
 
 ::: notes
-~4 min. Setup for everything else today: the solver can be seen as unconstrained optimization over potentials (gradient descent, Krylov, preconditioning) or as constrained optimization over flows. KOSZ will work on the flow side (cycle toggling) while maintaining potentials. Check of the dual: at optimality both values equal −½ bᵀL⁺b; the next slide proves this directly (Thomson's principle) with an explicit duality gap. Conjugate of h: sup_x (z + b)ᵀx is 0 if z = −b and ∞ otherwise.
+~3 min. KOSZ works on the flow side (cycle toggling) while maintaining potentials. Check of the dual: at optimality both values equal −½ bᵀL⁺b; the next slide proves this directly (Thomson's principle) with an explicit duality gap. The Lagrangian multiplier φ is the flow: stationarity in y gives φ = Wy, i.e. φ_e = w_e(x_u − x_v), Ohm's law.
 :::
 
 ## The continuous analogue: the Poisson equation
@@ -94,10 +104,9 @@ $$\min_x f(x)\ =\ \max_{\phi}\ -g^*(\phi)-h^*(-B^\top\phi)\ =\ -\tfrac12\min_{B^
 | **Laplacian** | $L=B^\top WB$ | $-\operatorname{div}(\sigma\nabla\,\cdot)$, conductivity $\sigma\leftrightarrow W$ |
 | **kernel, solvability** | $\ker L=\operatorname{span}(\mathbf 1)$, $b\perp\mathbf 1$ | constants, $\int\rho=0$ (**Neumann problem**, no boundary values) |
 | **primal** | $\min_x\ \tfrac12x^\top Lx-b^\top x$ | $\min_u\ \tfrac12\int\sigma|\nabla u|^2-\int\rho u$ (**Dirichlet principle**) |
-| **dual** | $\min_{B^\top\phi=b}\ \sum_er_e\phi_e^2$ | $\min_{\operatorname{div}\phi=\rho}\ \int|\phi|^2/\sigma$ (**Thomson principle**) |
+| **dual** | $\min_{B^\top\phi=b}\ \tfrac12\sum_er_e\phi_e^2$ | $\min_{\operatorname{div}\phi=\rho}\ \tfrac12\int|\phi|^2/\sigma$ (**Thomson principle**) |
 
 - With **prescribed boundary values** the problem is the **Dirichlet problem**. On a graph, the boundary vertices are fixed and $Lx=0$ is solved on the rest.
-- The **Cauchy problem** is different: an initial-value problem for evolution equations such as the heat equation $\partial_tu=\Delta u$ (graph: $\dot x=-Lx$, Lecture 3).
 
 ::: notes
 ~2 min. Optional. Poisson, not Cauchy: the Laplacian solve is the elliptic (steady-state) problem, while heat flow is its time-dependent counterpart. The graph case with no boundary is the pure Neumann problem, which is why the solution is only defined up to a constant.
@@ -115,7 +124,7 @@ Poisson on the unit square with insulated sides (**Neumann**), one source and on
 - **Colour, level sets:** the potential $u$, solving $-\Delta u=\rho$. It is high at the source and low at the sink.
 - **Streamlines:** the flow $\phi=-\sigma\nabla u$, which is orthogonal to the level sets. It leaves the source, enters the sink, and satisfies $\operatorname{div}\phi=\rho$.
 - **Dirichlet principle:** $u$ minimizes $\tfrac12\int|\nabla u|^2-\int\rho u$.
-- **Thomson principle:** among all fields with $\operatorname{div}\phi=\rho$, this $\phi$ has least energy $\int|\phi|^2$.
+- **Thomson principle:** among all fields with $\operatorname{div}\phi=\rho$, this $\phi$ has least energy $\tfrac12\int|\phi|^2/\sigma$.
 :::
 ::::
 
@@ -125,31 +134,33 @@ Poisson on the unit square with insulated sides (**Neumann**), one source and on
 
 ## Electrical flows
 
-A **flow** $f\in\mathbb R^E$ **routes the demand** $\chi$ (with $\mathbf 1^\top\chi=0$) if $B^\top f=\chi$: net outflow $\chi_u$ at every $u$. **Energy:** $\ \mathcal E(f)=\sum_er_ef_e^2$.
+A **flow** $f\in\mathbb R^E$ **routes the demand** $\chi$ (with $\mathbf 1^\top\chi=0$) if $B^\top f=\chi$: net outflow $\chi_u$ at every $u$. **Energy:** $\ \mathcal E(f)=\tfrac12\sum_er_ef_e^2$.
 
 ::: {.thm}
-**Thomson's principle.** $\displaystyle\min_{B^\top f=\chi}\mathcal E(f)=\chi^\top L^+\chi$, attained by the **electrical flow** $f^*=WBx^*$, $\ x^*=L^+\chi$ (**Ohm's law**: $f_e=w_e(x_u-x_v)$).
+**Thomson's principle.** $\displaystyle\min_{B^\top f=\chi}\mathcal E(f)=\tfrac12\chi^\top L^+\chi$, attained by the **electrical flow** $f^*=WBx^*$, $\ x^*=L^+\chi$ (**Ohm's law**: $f_e=w_e(x_u-x_v)$).
 :::
 
 ::: {.pf}
-**Weak duality.** For any $f$ routing $\chi$ and any potentials $x$, let $\ \mathcal D(x)=2\chi^\top x-x^\top Lx$. Using $\chi^\top x=f^\top Bx=\sum_ef_e\,b_e^\top x$,
-$$\boxed{\ \mathcal E(f)-\mathcal D(x)=\sum_e\frac{\big(r_ef_e-b_e^\top x\big)^2}{r_e}\ \ge0\ }$$
+**Weak duality.** For any $f$ routing $\chi$ and any potentials $x$, let $\ \mathcal D(x)=\chi^\top x-\tfrac12x^\top Lx$. Using $\chi^\top x=f^\top Bx=\sum_ef_e\,b_e^\top x$,
+$$\boxed{\ \mathcal E(f)-\mathcal D(x)=\frac12\sum_e\frac{\big(r_ef_e-b_e^\top x\big)^2}{r_e}\ \ge0\ }$$
 Equality iff $r_ef_e=b_e^\top x$ on every edge (Ohm). The flow $WBx^*$ routes $B^\top WBx^*=Lx^*=\chi$ and has equality. $\blacksquare$
 :::
 
-- **Dual error = solver error:** $\mathcal D(x)=-2f(x)$ for the objective $f$ of the previous slide (with $b=\chi$), so $\ \mathcal D(x^*)-\mathcal D(x)=\|x-x^*\|_L^2$. We will use the boxed **duality gap** twice.
+- **Dual error = solver error:** $\mathcal D(x)=-f(x)$ for the objective $f$ of the previous slide (with $b=\chi$), so $\ \mathcal D(x^*)-\mathcal D(x)=\tfrac12\|x-x^*\|_L^2$. We will use the boxed **duality gap** twice.
 
 ::: notes
-~4 min. Physics: Kirchhoff's current law is B^T f = χ; Kirchhoff's voltage law says the potential drops r_e f_e sum to zero around every cycle (equivalently, they are b_e^T x for some x). Thomson: of all flows obeying KCL, the one also obeying KVL minimizes energy. The gap identity says: the gap is exactly how badly Ohm's law fails, edge by edge, measured in the right norm. Check: D(x*) − D(x) = x*ᵀLx* − 2x*ᵀLx + xᵀLx. Numerically checked in scripts/verify_bounds.py §1 and §6.
+~4 min. Physics: Kirchhoff's current law is B^T f = χ; Kirchhoff's voltage law says the potential drops r_e f_e sum to zero around every cycle (equivalently, they are b_e^T x for some x). Thomson: of all flows obeying KCL, the one also obeying KVL minimizes energy. The gap identity says: the gap is exactly how badly Ohm's law fails, edge by edge, measured in the right norm. Check: 2(D(x*) − D(x)) = x*ᵀLx* − 2x*ᵀLx + xᵀLx. Numerically checked in scripts/verify_bounds.py §1 and §6.
 :::
 
 ## Effective resistance
 
-$$R_{\rm eff}(s,t)=(\mathbf 1_s-\mathbf 1_t)^\top L^+(\mathbf 1_s-\mathbf 1_t)=\text{energy of the unit }s\text{–}t\text{ electrical flow}=x^*_s-x^*_t,\quad x^*=L^+(\mathbf 1_s-\mathbf 1_t).$$
+$$R_{\rm eff}(s,t)=(\mathbf 1_s-\mathbf 1_t)^\top L^+(\mathbf 1_s-\mathbf 1_t)=\text{twice the energy }\mathcal E\text{ of the unit }s\text{–}t\text{ electrical flow}=x^*_s-x^*_t,\quad x^*=L^+(\mathbf 1_s-\mathbf 1_t).$$
 
 - **A metric**, and in fact an $\ell_2^2$ metric: $\ R_{\rm eff}(s,t)=\big\|L^{+/2}(\mathbf 1_s-\mathbf 1_t)\big\|^2$ (compare the cut-cone and ARV in Lecture 6).
 - **Rayleigh monotonicity:** increasing any $w_e$ can only decrease every $R_{\rm eff}$ (Thomson: the same flows, cheaper energy).
 - Series: $R_{\rm eff}=\sum r_e$ on a path. Parallel: $1/R_{\rm eff}=\sum w_e$ on parallel edges.
+
+![Unit conductances, six edges each; edge width = current in the unit $s$–$t$ flow. Many parallel routes share the current and give low $R_{\rm eff}$. Series links add up, and doubling one link only saves $\tfrac12$.](figures/reff-series-parallel.svg){width="100%"}
 
 ::: {.thm}
 **Foster's theorem.** $\displaystyle\sum_{e\in E}w_e\,R_{\rm eff}(e)=n-1.$
@@ -162,7 +173,7 @@ $\sum_ew_e\,b_e^\top L^+b_e=\operatorname{tr}\big(L^+\sum_ew_eb_eb_e^\top\big)=\
 $w_eR_{\rm eff}(e)\in(0,1]$ is the **leverage score** of $e$: the fraction of the unit $u$–$v$ flow that uses the edge $e$ itself. Next lecture: sampling edges with probability $\propto w_eR_{\rm eff}(e)$ gives spectral sparsifiers.
 
 ::: notes
-~4 min. Leverage: the electrical u–v flow through e itself is w_e (x_u − x_v) = w_e R_eff(e). So w_e R_eff(e) = 1 iff e is a bridge. Foster checked numerically on a weighted random 3-regular graph (scripts §1).
+~4 min. Leverage: the electrical u–v flow through e itself is w_e (x_u − x_v) = w_e R_eff(e). So w_e R_eff(e) = 1 iff e is a bridge. Figure: three parallel two-edge paths give 2/3 (two in series, divided by three in parallel); five series links plus one doubled link give 4 + 1/2. Foster checked numerically on a weighted random 3-regular graph (scripts §1).
 :::
 
 ## Random walks: hitting and commute times
@@ -421,7 +432,7 @@ $f-f_0$ is a circulation. Subtract $\sum_{e\notin T}f_ec_e$: what is left is a c
 
 ## Energy in cycle coordinates
 
-$$F(y)=\tfrac12\,\mathcal E(f_0+Cy),\qquad \nabla^2F=C^\top RC .$$
+$$F(y)=\mathcal E(f_0+Cy),\qquad \nabla^2F=C^\top RC .$$
 
 - **Gradient = Kirchhoff's voltage law violation.**
 $$\frac{\partial F}{\partial y_e}=c_e^\top Rf=\sum_{t\in C_e}c_e(t)\,r_tf_t=:\Delta_e(f),$$
@@ -491,8 +502,8 @@ And one thing remains to build:
 :::
 
 ::: {.pf}
-$f_0$ is the only flow on $T$ routing $\chi$, so it is the electrical flow of the tree, and by Thomson $\mathcal E(f_0)=\chi^\top L_T^+\chi$. By Boman–Hendrickson, $L_G\preceq\mathrm{st}_T(G)\,L_T$, and both have kernel $\mathbf 1$, so $L_T^+\preceq\mathrm{st}_T(G)\,L_G^+$:
-$$\mathcal E(f_0)=\chi^\top L_T^+\chi\ \le\ \mathrm{st}_T(G)\;\chi^\top L_G^+\chi=\mathrm{st}_T(G)\,\mathcal E^*.\ \blacksquare$$
+$f_0$ is the only flow on $T$ routing $\chi$, so it is the electrical flow of the tree, and by Thomson $\mathcal E(f_0)=\tfrac12\chi^\top L_T^+\chi$. By Boman–Hendrickson, $L_G\preceq\mathrm{st}_T(G)\,L_T$, and both have kernel $\mathbf 1$, so $L_T^+\preceq\mathrm{st}_T(G)\,L_G^+$:
+$$\mathcal E(f_0)=\tfrac12\chi^\top L_T^+\chi\ \le\ \mathrm{st}_T(G)\;\tfrac12\chi^\top L_G^+\chi=\mathrm{st}_T(G)\,\mathcal E^*.\ \blacksquare$$
 :::
 
 - The same lemma that made $T$ a preconditioner now bounds the starting error. It enters only through a logarithm.
@@ -506,17 +517,17 @@ $$\mathcal E(f_0)=\chi^\top L_T^+\chi\ \le\ \mathrm{st}_T(G)\;\chi^\top L_G^+\ch
 
 ::: {.lem}
 **Lemma.** Let $x_T=x_T(f)$ be the tree-induced potentials of a flow $f$ routing $\chi$. Then
-$$\|x_T-x^*\|_L^2\ \le\ \mathcal E(f)-\mathcal D(x_T)\ =\ \sum_{e\notin T}\frac{\Delta_e(f)^2}{r_e}\ =\ \|\nabla_zF\|^2\ \le\ \tau(T)\,\big(\mathcal E(f)-\mathcal E^*\big).$$
+$$\|x_T-x^*\|_L^2\ \le\ 2\big(\mathcal E(f)-\mathcal D(x_T)\big)\ =\ \sum_{e\notin T}\frac{\Delta_e(f)^2}{r_e}\ =\ \|\nabla_zF\|^2\ \le\ 2\tau(T)\,\big(\mathcal E(f)-\mathcal E^*\big).$$
 :::
 
 ::: {.pf}
-**First inequality:** $\ \|x_T-x^*\|_L^2=\mathcal D(x^*)-\mathcal D(x_T)=\mathcal E^*-\mathcal D(x_T)\le\mathcal E(f)-\mathcal D(x_T)$.
+**First inequality:** $\ \|x_T-x^*\|_L^2=2\big(\mathcal D(x^*)-\mathcal D(x_T)\big)=2\big(\mathcal E^*-\mathcal D(x_T)\big)\le2\big(\mathcal E(f)-\mathcal D(x_T)\big)$.
 
-**Equality:** the boxed duality gap. On tree edges $r_tf_t=b_t^\top x_T$, so those terms vanish. On $e=(a,b)\notin T$, $\ r_ef_e-b_e^\top x_T=r_ef_e+\big(x_T(b)-x_T(a)\big)=\Delta_e(f)$, the drop around $C_e$.
+**Equality:** the boxed duality gap, times $2$. On tree edges $r_tf_t=b_t^\top x_T$, so those terms vanish. On $e=(a,b)\notin T$, $\ r_ef_e-b_e^\top x_T=r_ef_e+\big(x_T(b)-x_T(a)\big)=\Delta_e(f)$, the drop around $C_e$.
 
 **Gradient:** $\ \partial F/\partial z_e=\Delta_e/\sqrt{r_e}$.
 
-**Last inequality:** for a quadratic, $\ \|\nabla F\|^2=\|M(z-z^*)\|^2\le2\lambda_{\max}(M)(F-F^*)$, with $\lambda_{\max}(M)\le\operatorname{tr}M=\tau(T)$ and $F=\tfrac12\mathcal E$. $\blacksquare$
+**Last inequality:** for a quadratic, $\ \|\nabla F\|^2=\|M(z-z^*)\|^2\le2\lambda_{\max}(M)(F-F^*)$, with $\lambda_{\max}(M)\le\operatorname{tr}M=\tau(T)$ and $F=\mathcal E$. $\blacksquare$
 :::
 
 ::: {.idea}
@@ -524,7 +535,7 @@ The duality gap of the tree potentials **is** the squared gradient in the rescal
 :::
 
 ::: notes
-~4 min. Checked: on a weighted 10×10 grid after 300 toggles, E(f) − D(x_T) = Σ Δ_e²/r_e = 10.7939 to 12 digits, and ‖x_T − x*‖²_L = 9.37 (scripts §6). The τ in the last inequality is a trace bound for λ_max; it only costs a log τ in the iteration count.
+~4 min. Checked: on a weighted 10×10 grid after 300 toggles, 2(E(f) − D(x_T)) = Σ Δ_e²/r_e = 10.7939 to 12 digits, and ‖x_T − x*‖²_L = 9.37 (scripts §6). The τ in the last inequality is a trace bound for λ_max; it only costs a log τ in the iteration count.
 :::
 
 ## The main theorem
@@ -534,8 +545,8 @@ The duality gap of the tree potentials **is** the squared gradient in the rescal
 :::
 
 ::: {.pf}
-Chain the three lemmas, with $\mathcal E^*=\chi^\top L^+\chi=\|x^*\|_L^2$:
-$$\mathbb E\|x_T-x^*\|_L^2\ \overset{\rm stop}\le\ \tau\,\mathbb E[\mathcal E(f_K)-\mathcal E^*]\ \overset{\rm RCD}\le\ \tau\,e^{-K/\tau}\big(\mathcal E(f_0)-\mathcal E^*\big)\ \overset{\rm start}\le\ \tau\,e^{-K/\tau}\,\mathrm{st}_T(G)\,\mathcal E^*\le\varepsilon\,\mathcal E^*.\ \blacksquare$$
+Chain the three lemmas, with $\mathcal E^*=\tfrac12\chi^\top L^+\chi=\tfrac12\|x^*\|_L^2$:
+$$\mathbb E\|x_T-x^*\|_L^2\ \overset{\rm stop}\le\ 2\tau\,\mathbb E[\mathcal E(f_K)-\mathcal E^*]\ \overset{\rm RCD}\le\ 2\tau\,e^{-K/\tau}\big(\mathcal E(f_0)-\mathcal E^*\big)\ \overset{\rm start}\le\ \tau\,e^{-K/\tau}\,\mathrm{st}_T(G)\,\|x^*\|_L^2\le\varepsilon\,\|x^*\|_L^2.\ \blacksquare$$
 :::
 
 **Running time.** With Abraham–Neiman, $\tau(T)\le m+\mathrm{st}_T(G)=O(m\log n\log\log n)$, and $\log(\tau\,\mathrm{st}_T(G)/\varepsilon)=O(\log(n/\varepsilon))$. With $O(\log n)$ per toggle:

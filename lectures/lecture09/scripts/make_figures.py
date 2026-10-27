@@ -10,7 +10,7 @@ os.makedirs(OUT, exist_ok=True)
 plt.rcParams.update({'font.size': 13, 'axes.spines.top': False, 'axes.spines.right': False,
                      'savefig.transparent': True, 'svg.fonttype': 'path', 'font.family': 'DejaVu Sans'})
 BLUE, ORANGE, GREY, GREEN, PURPLE, RED = '#2a6fdb', '#e8792b', '#888', '#2a9d5c', '#8e44ad', '#c0392b'
-FIGS = os.environ.get('FIGS', '12345').strip()
+FIGS = os.environ.get('FIGS', '123456').strip()
 
 def xy(k, u): return np.array([u % k, -(u // k)], float)
 
@@ -158,3 +158,36 @@ if '5' in FIGS:
     ax.set_title(r'potential $u$ (colour, level sets) and flow $\phi=-\sigma\nabla u$ (streamlines)', fontsize=11.5)
     plt.tight_layout(); plt.savefig(OUT + 'poisson-square.svg'); plt.close()
     print('fig5: poisson-square written')
+
+# ---------------------------------------------------------------- Fig 6: effective resistance in series-parallel graphs
+if '6' in FIGS:
+    def reff_flow(pos, edges, s_, t_):
+        """Unit s-t electrical flow with unit conductances: returns R_eff and the current on each edge."""
+        n = len(pos); L = np.zeros((n, n))
+        for u, v in edges: L[u, u] += 1; L[v, v] += 1; L[u, v] -= 1; L[v, u] -= 1
+        chi = np.zeros(n); chi[s_], chi[t_] = 1, -1
+        x = np.linalg.pinv(L) @ chi
+        return x[s_] - x[t_], np.array([x[u] - x[v] for u, v in edges])
+    # low: three parallel two-edge paths.  high: a path of 5 links, one of them doubled.
+    low_pos = [(0, 0), (3, 0), (1.5, 1.2), (1.5, 0), (1.5, -1.2)]
+    low_edges = [(0, 2), (2, 1), (0, 3), (3, 1), (0, 4), (4, 1)]
+    high_pos = [(i * 1.2, 0) for i in range(6)]
+    high_edges = [(0, 1), (1, 2), (2, 3), (2, 3), (3, 4), (4, 5)]
+    fig, axes = plt.subplots(1, 2, figsize=(12, 3.2), gridspec_kw={'width_ratios': [1, 1.7]})
+    for ax, pos, edges, name in [(axes[0], low_pos, low_edges, 'low'), (axes[1], high_pos, high_edges, 'high')]:
+        s_, t_ = (0, 1) if name == 'low' else (0, 5)
+        R, cur = reff_flow(pos, edges, s_, t_); P = np.array(pos, float)
+        seen = {}
+        for (u, v), c in zip(edges, cur):
+            k = seen.get((u, v), 0); seen[(u, v)] = k + 1
+            a, b = P[u], P[v]; mid = (a + b) / 2
+            bend = 0 if (edges.count((u, v)) == 1) else (.28 if k == 0 else -.28)
+            tt = np.linspace(0, 1, 40)[:, None]; pts = a + tt * (b - a) + bend * np.sin(np.pi * tt) * np.array([0, 1])
+            ax.plot(pts[:, 0], pts[:, 1], color=ORANGE, lw=1.5 + 9 * abs(c), alpha=.8, solid_capstyle='round', zorder=1)
+        ax.scatter(P[:, 0], P[:, 1], s=120, color='#333', zorder=3)
+        ax.scatter(*P[s_], s=240, color=RED, zorder=4); ax.scatter(*P[t_], s=240, color=BLUE, zorder=4)
+        ax.annotate('$s$', P[s_] + [-.05, .32], ha='center', color=RED, fontsize=15); ax.annotate('$t$', P[t_] + [.05, .32], ha='center', color=BLUE, fontsize=15)
+        ax.set_aspect('equal'); ax.axis('off'); ax.margins(.08)
+        ax.set_title(f'{"many parallel routes" if name == "low" else "a path with one doubled link"}:  $R_{{\\rm eff}}(s,t)={R:.2f}$', fontsize=13)
+        print(f'fig6: {name} R_eff = {R:.4f}')
+    plt.tight_layout(); plt.savefig(OUT + 'reff-series-parallel.svg'); plt.close()
