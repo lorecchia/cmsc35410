@@ -10,7 +10,7 @@ os.makedirs(OUT, exist_ok=True)
 plt.rcParams.update({'font.size': 13, 'axes.spines.top': False, 'axes.spines.right': False,
                      'savefig.transparent': True, 'svg.fonttype': 'path', 'font.family': 'DejaVu Sans'})
 BLUE, ORANGE, GREY, GREEN, PURPLE, RED = '#2a6fdb', '#e8792b', '#888', '#2a9d5c', '#8e44ad', '#c0392b'
-FIGS = os.environ.get('FIGS', '123456').strip()
+FIGS = os.environ.get('FIGS', '123456789').strip()
 
 def xy(k, u): return np.array([u % k, -(u // k)], float)
 
@@ -97,7 +97,7 @@ if '3' in FIGS:
             j = np.argmax(e_ < 1e-3) if (e_ < 1e-3).any() else len(e_) - 1
             print(f'   KOSZ {name}: tau={tau:.0f} = {tau/m:.2f} m; error {e_[-1]:.1e} after {s_[-1]/tau:.1f} tau = {w_[-1]/m:.0f} m work; '
                   f'1e-3 at {w_[j]/m:.0f} m work ({s_[j]/tau:.1f} tau)')
-        ax.set_xlim(0, xmax); ax.set_ylim(1e-6, 30); ax.set_xlabel('work / $m$   (matvec $= m$; KOSZ: data-structure touches)', fontsize=11)
+        ax.set_xlim(0, xmax); ax.set_ylim(1e-6, 30); ax.set_xlabel('work, in units of one product with $L$ ($m$ operations);\na toggle costs $\\approx4\\cdot$(centroid depth) operations', fontsize=10.5)
         if col == 0: ax.set_ylabel(r'$\|x-x^*\|_L/\|x^*\|_L$')
         ax.legend(fontsize=9.5, frameon=False, loc='lower right' if col == 0 else 'upper right'); ax.set_title(title, fontsize=12)
     ax = axes[2]
@@ -191,3 +191,108 @@ if '6' in FIGS:
         ax.set_title(f'{"many parallel routes" if name == "low" else "a path with one doubled link"}:  $R_{{\\rm eff}}(s,t)={R:.2f}$', fontsize=13)
         print(f'fig6: {name} R_eff = {R:.4f}')
     plt.tight_layout(); plt.savefig(OUT + 'reff-series-parallel.svg'); plt.close()
+
+# ---------------------------------------------------------------- Fig 7: inverse power iteration vs power iteration vs Lanczos
+if '7' in FIGS:
+    n = 300; Lp = np.diag(np.r_[1, 2 * np.ones(n - 2), 1].astype(float)) - np.diag(np.ones(n - 1), 1) - np.diag(np.ones(n - 1), -1)
+    ev, V = np.linalg.eigh(Lp); lam2 = ev[1]; Lplus = (V[:, 1:] / ev[1:]) @ V[:, 1:].T
+    rng = np.random.default_rng(0); x0 = rng.standard_normal(n); x0 -= x0.mean(); x0 /= np.linalg.norm(x0)
+    rq = lambda x: x @ Lp @ x / (x @ x)
+    K = 3000
+    # power iteration on I - L/4 (matvecs)
+    x = x0.copy(); pw = [rq(x)]
+    for _ in range(K): x = x - Lp @ x / 4; x /= np.linalg.norm(x); pw.append(rq(x))
+    # Lanczos: best Ritz value of L over the Krylov space (full reorthogonalisation), matvecs
+    Q = [x0]; la = []
+    for k in range(1, 290):
+        w = Lp @ Q[-1]
+        for q in Q: w -= (q @ w) * q
+        for q in Q: w -= (q @ w) * q
+        nb = np.linalg.norm(w)
+        Qm = np.array(Q); T = Qm @ Lp @ Qm.T
+        th = np.linalg.eigvalsh(T); la.append(th[0])
+        if nb < 1e-12: break
+        Q.append(w / nb)
+    # inverse power iteration (exact solves)
+    x = x0.copy(); ip = [rq(x)]
+    for _ in range(60): x = Lplus @ x; x /= np.linalg.norm(x); ip.append(rq(x))
+    err = lambda r: np.maximum(np.array(r) / lam2 - 1, 1e-16)
+    fig, ax = plt.subplots(figsize=(7.4, 4.4))
+    ax.loglog(np.arange(len(pw)) + 1, err(pw), color=GREY, lw=2.2, label='power iteration (matvecs)')
+    ax.loglog(np.arange(len(la)) + 1, err(la), color=ORANGE, lw=2.2, label='Lanczos (matvecs)')
+    ax.loglog(np.arange(len(ip)) + 1, err(ip), color=BLUE, lw=2.6, label='inverse power iteration (solves)')
+    ax.axhline(1e-2, color='#bbb', lw=1, ls=':')
+    ax.set_xlabel('iterations'); ax.set_ylabel(r'$R(x_k)/\lambda_2-1$'); ax.set_ylim(1e-10, 1e2)
+    ax.set_title(f'path on $n={n}$ vertices: $\\lambda_2\\approx{lam2:.1g}$, $\\lambda_n\\approx{ev[-1]:.1f}$', fontsize=12)
+    ax.legend(frameon=False, fontsize=11); plt.tight_layout(); plt.savefig(OUT + 'inverse-power.svg'); plt.close()
+    first = lambda r: int(np.argmax(err(r) < 1e-2)) + 1 if (err(r) < 1e-2).any() else None
+    print('fig7: iterations to reach 1% :', 'power', first(pw), 'lanczos', first(la), 'inverse', first(ip))
+
+# ---------------------------------------------------------------- Fig 8: what the data structure stores (off-tree flows and the charges q)
+if '8' in FIGS:
+    from matplotlib.patches import FancyArrowPatch
+    C, Rw = 4, 3; pos = lambda c, r: np.array([1.6 * c, -1.3 * r])
+    tree = [((c, 0), (c + 1, 0)) for c in range(C - 1)] + [((c, r), (c, r + 1)) for c in range(C) for r in range(Rw - 1)]
+    off_nz = [((0, 1), (1, 1), r'$f_1$'), ((1, 1), (2, 1), r'$f_2$'), ((2, 2), (3, 2), r'$f_3$')]
+    off_z = [((2, 1), (3, 1)), ((0, 2), (1, 2)), ((1, 2), (2, 2))]
+    q = {(0, 1): r'$-f_1$', (1, 1): r'$+f_1-f_2$', (2, 1): r'$+f_2$', (2, 2): r'$-f_3$', (3, 2): r'$+f_3$'}
+    fig, ax = plt.subplots(figsize=(8.4, 6.0))
+    for a, b in tree:
+        ax.plot(*zip(pos(*a), pos(*b)), color=BLUE, lw=3.2, zorder=1, solid_capstyle='round')
+    for a, b in off_z:
+        ax.plot(*zip(pos(*a), pos(*b)), color='#aaa', lw=1.6, ls=(0, (4, 3)), zorder=1)
+    for a, b, lab in off_nz:
+        A, B = pos(*a), pos(*b)
+        ax.add_patch(FancyArrowPatch(A, B, arrowstyle='-|>', mutation_scale=22, lw=4.5, color=ORANGE, shrinkA=9, shrinkB=9, zorder=2))
+        ax.annotate(lab, (A + B) / 2 + [0, -.3], ha='center', va='top', color=ORANGE, fontsize=15)
+    for c in range(C):
+        for r in range(Rw): ax.scatter(*pos(c, r), s=130, color='#333', zorder=3)
+    for v, lab in q.items():
+        P = pos(*v); ax.scatter(*P, s=420, facecolor='white', edgecolor=PURPLE, lw=2, zorder=4)
+        ax.annotate(lab, P + [0, .32], ha='center', va='bottom', fontsize=13, color='#222',
+                    bbox=dict(boxstyle='round,pad=.15', fc='#fff4f4', ec=PURPLE, lw=1))
+    ax.annotate(r'tree $T$ (blue): flow $f_t$ is not stored', (-.3, -3.45), fontsize=12.5, color=BLUE, annotation_clip=False)
+    ax.annotate(r'off-tree flows $f_e$ (orange arrows) are stored', (-.3, -3.95), fontsize=12.5, color=ORANGE, annotation_clip=False)
+    ax.annotate(r'off-tree edges with $f_e=0$ (dashed grey)', (-.3, -4.45), fontsize=12.5, color='#777', annotation_clip=False)
+    ax.annotate(r'charges $q_v$ (boxes): demand the off-tree flows inject into $T$', (-.3, -4.95), fontsize=12.5, color=PURPLE, annotation_clip=False)
+    ax.set_aspect('equal'); ax.axis('off'); ax.set_xlim(-.5, 5.3); ax.set_ylim(-5.2, 1.0)
+    plt.tight_layout(); plt.savefig(OUT + 'toggle-state.svg'); plt.close()
+    print('fig8: toggle-state written')
+
+# ---------------------------------------------------------------- Fig 9: centroid chain of a query vertex on a path
+if '9' in FIGS:
+    from matplotlib.patches import FancyArrowPatch
+    N = 15; u, v = 4, 11
+    cols = [PURPLE, GREEN, ORANGE, BLUE]
+    # centroid ancestors of u (bottom-up) and the sets K_{c_i}
+    chain = [(4, (4, 4)), (5, (4, 6)), (3, (0, 6)), (7, (0, 14))]
+    group = {}
+    prev = set()
+    for i, (c, (lo, hi)) in enumerate(chain):
+        K = set(range(lo, hi + 1))
+        for w in K - prev: group[w] = i
+        prev = K
+    fig, ax = plt.subplots(figsize=(11, 5.4))
+    ax.plot([0, N - 1], [0, 0], color='#999', lw=3, zorder=1)
+    for w in range(N):
+        ax.scatter(w, 0, s=330 if w in [c for c, _ in chain] else 170, color=cols[group[w]], zorder=3,
+                   edgecolor='black' if w in [c for c, _ in chain] else 'none', linewidth=2.2)
+    for i, (c, _) in enumerate(chain):
+        ax.annotate(f'$c_{i}$' + (r'$=u$' if i == 0 else ''), (c, -.42), ha='center', va='top', fontsize=15, color=cols[i])
+    ax.annotate(r'$v$', (v, .42), ha='center', fontsize=15, color=cols[group[v]])
+    # nested sets K_{c_i}
+    for i, (c, (lo, hi)) in enumerate(chain):
+        y = -1.25 - .6 * i
+        ax.plot([lo - .35, hi + .35], [y, y], color=cols[i], lw=4, solid_capstyle='round')
+        ax.plot([lo - .35] * 2, [y, y + .18], color=cols[i], lw=4); ax.plot([hi + .35] * 2, [y, y + .18], color=cols[i], lw=4)
+        ax.annotate(f'$K_{{c_{i}}}$', (hi + .6, y), va='center', fontsize=14, color=cols[i])
+    # the path u -> c_3 -> v
+    c3 = 7
+    ax.add_patch(FancyArrowPatch((u, .3), (c3, .3), connectionstyle='arc3,rad=-.45', arrowstyle='-', lw=2.6, color=BLUE, zorder=2))
+    ax.add_patch(FancyArrowPatch((c3, .3), (v, .3), connectionstyle='arc3,rad=-.45', arrowstyle='-', lw=2.6, color=BLUE, zorder=2))
+    ax.annotate(r'$R_T(u,c_3)$', ((u + c3) / 2, 1.35), ha='center', fontsize=14, color=BLUE)
+    ax.annotate(r'$R_T(c_3,v)$', ((c3 + v) / 2, 1.35), ha='center', fontsize=14, color=BLUE)
+    ax.annotate(r'$v\in K_{c_3}\setminus K_{c_2}$, so $\ R_T(u,v)=R_T(u,c_3)+R_T(c_3,v)$', (N / 2 - .5, 2.45), ha='center', fontsize=14.5)
+    ax.set_xlim(-1, N + 1.6); ax.set_ylim(-3.9, 2.9); ax.axis('off')
+    plt.tight_layout(); plt.savefig(OUT + 'centroid-chain.svg'); plt.close()
+    print('fig9: groups', {i: sorted(w for w in group if group[w] == i) for i in range(4)})

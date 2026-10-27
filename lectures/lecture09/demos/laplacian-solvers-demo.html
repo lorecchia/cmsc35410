@@ -68,7 +68,7 @@
           <span><span class="sw" style="background:var(--green)"></span>PCG, tree preconditioner</span>
           <span><span class="sw" style="background:var(--orange)"></span>KOSZ, cycle toggling</span>
         </div>
-        <div class="note">Work: one product with L costs m; a PCG iteration costs m + n; a toggle costs the number of centroid-tree entries it touches (≈ 4·depth). Demand χ = 1<sub>s</sub> − 1<sub>t</sub> between two far-apart vertices.</div>
+        <div class="note">Work is in units of one product with L (m operations): GD and CG cost 1 per iteration, PCG (m + n)/m, and a KOSZ toggle (its centroid-tree entries touched, ≈ 4·depth)/m. Computing the error for the plot is not charged. Demand χ = 1<sub>s</sub> − 1<sub>t</sub> between two far-apart vertices.</div>
       </div>
       <div class="panel">
         <h4>Numbers</h4>
@@ -228,8 +228,8 @@ const Core = (function () {
         const delta = G.r[e] * foff[i] + pot(b) - pot(a), alpha = -delta / Rc[i];
         foff[i] += alpha; q[b] += alpha; q[a] -= alpha; ds.add(b, alpha); ds.add(a, -alpha); S.steps++;
         return { i, e, a, b, delta, alpha }; },
-      potentials() { const x = new Float64Array(G.n); let mu = 0; for (let u = 0; u < G.n; u++) { x[u] = pot(u); mu += x[u]; } mu /= G.n;
-        for (let u = 0; u < G.n; u++) x[u] -= mu; return x; },
+      potentials() { const t0 = ds.touches, x = new Float64Array(G.n); let mu = 0; for (let u = 0; u < G.n; u++) { x[u] = pot(u); mu += x[u]; } mu /= G.n;
+        for (let u = 0; u < G.n; u++) x[u] -= mu; ds.touches = t0; return x; },     // measurement only: not charged as work
       flow() { const f = new Float64Array(G.m), dem = Float64Array.from(chi);
         for (let i = 0; i < K; i++) { const e = off[i]; f[e] = foff[i]; dem[G.U[e]] -= foff[i]; dem[G.V[e]] += foff[i]; }
         const s = dem, fup = new Float64Array(G.n);

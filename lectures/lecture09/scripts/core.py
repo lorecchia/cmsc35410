@@ -272,7 +272,11 @@ class KOSZ:
         return f
 
     def potentials(self):
-        x = np.array([self.potential(u) for u in range(self.n)]); return x - x.mean()
+        """All tree potentials (for measuring the error). Not charged to the solver's work counter."""
+        t0 = self.ds.touches if self.use_ds else 0
+        x = np.array([self.potential(u) for u in range(self.n)])
+        if self.use_ds: self.ds.touches = t0
+        return x - x.mean()
 
     def energy(self):
         f = self.flow(); return f @ (self.r * f)

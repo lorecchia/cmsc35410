@@ -160,7 +160,13 @@ $$R_{\rm eff}(s,t)=(\mathbf 1_s-\mathbf 1_t)^\top L^+(\mathbf 1_s-\mathbf 1_t)=\
 - **Rayleigh monotonicity:** increasing any $w_e$ can only decrease every $R_{\rm eff}$ (Thomson: the same flows, cheaper energy).
 - Series: $R_{\rm eff}=\sum r_e$ on a path. Parallel: $1/R_{\rm eff}=\sum w_e$ on parallel edges.
 
-![Unit conductances, six edges each; edge width = current in the unit $s$–$t$ flow. Many parallel routes share the current and give low $R_{\rm eff}$. Series links add up, and doubling one link only saves $\tfrac12$.](figures/reff-series-parallel.svg){width="100%"}
+![Unit conductances, six edges each; edge width = current in the unit $s$–$t$ flow. Many parallel routes share the current and give low $R_{\rm eff}$. Series links add up, and doubling one link only saves $\tfrac12$.](figures/reff-series-parallel.svg){.nostretch fig-align="center" width="100%"}
+
+::: notes
+~2 min. Series and parallel rules, and the figure: three parallel two-edge paths give 2/3 (two in series, divided by three in parallel); five series links plus one doubled link give 4 + 1/2.
+:::
+
+## Foster's theorem and leverage scores
 
 ::: {.thm}
 **Foster's theorem.** $\displaystyle\sum_{e\in E}w_e\,R_{\rm eff}(e)=n-1.$
@@ -170,13 +176,15 @@ $$R_{\rm eff}(s,t)=(\mathbf 1_s-\mathbf 1_t)^\top L^+(\mathbf 1_s-\mathbf 1_t)=\
 $\sum_ew_e\,b_e^\top L^+b_e=\operatorname{tr}\big(L^+\sum_ew_eb_eb_e^\top\big)=\operatorname{tr}(L^+L)=\operatorname{rank}L=n-1$. $\blacksquare$
 :::
 
-$w_eR_{\rm eff}(e)\in(0,1]$ is the **leverage score** of $e$: the fraction of the unit $u$–$v$ flow that uses the edge $e$ itself. Next lecture: sampling edges with probability $\propto w_eR_{\rm eff}(e)$ gives spectral sparsifiers.
+$w_eR_{\rm eff}(e)\in(0,1]$ is the **leverage score** of $e$: the fraction of the unit $u$–$v$ flow that uses the edge $e$ itself. 
+
+Next lecture: sampling edges with probability $\propto w_eR_{\rm eff}(e)$ gives spectral sparsifiers.
 
 ::: notes
-~4 min. Leverage: the electrical u–v flow through e itself is w_e (x_u − x_v) = w_e R_eff(e). So w_e R_eff(e) = 1 iff e is a bridge. Figure: three parallel two-edge paths give 2/3 (two in series, divided by three in parallel); five series links plus one doubled link give 4 + 1/2. Foster checked numerically on a weighted random 3-regular graph (scripts §1).
+~4 min. Leverage: the electrical u–v flow through e itself is w_e (x_u − x_v) = w_e R_eff(e). So w_e R_eff(e) = 1 iff e is a bridge. Foster checked numerically on a weighted random 3-regular graph (scripts §1).
 :::
 
-## Random walks: hitting and commute times
+## Random walks: hitting times
 
 Random walk $P=D^{-1}A$; $\ h(u,t)$ = expected time to hit $t$ from $u$; $\ \mathrm{vol}(G)=\sum_ud_u=2\sum_ew_e$.
 
@@ -189,6 +197,14 @@ $$Lh=d-\mathrm{vol}(G)\,\mathbf 1_t .$$
 First-step analysis: $h(u)=1+\sum_vP_{uv}h(v)$ for $u\neq t$, i.e. $(Lh)(u)=d_u$. Since $\mathbf 1^\top Lh=0$, $(Lh)(t)=-\sum_{u\ne t}d_u=d_t-\mathrm{vol}(G)$. $\blacksquare$
 :::
 
+::: notes
+~2 min. First-step analysis; the right-hand side d − vol·1_t has zero sum, as it must.
+:::
+
+## Commute times
+
+Recall $h(\cdot,t)$ solves $Lh=d-\mathrm{vol}(G)\,\mathbf 1_t$, and $\mathrm{vol}(G)=\sum_ud_u$.
+
 ::: {.thm}
 **Commute time identity** (Chandra–Raghavan–Ruzzo–Smolensky–Tiwari 1989). $\ h(s,t)+h(t,s)=\mathrm{vol}(G)\,R_{\rm eff}(s,t).$
 :::
@@ -200,7 +216,7 @@ $h(s,t)+h(t,s)=(\mathbf 1_s-\mathbf 1_t)^\top L^+\big[(d-\mathrm{vol}\,\mathbf 1
 - Path: $R_{\rm eff}(1,n)=n-1$, so the commute time is $2(n-1)^2$: diffusive, as in Lecture 3.
 
 ::: notes
-~4 min. The two solves differ by vol·(1_s − 1_t), so the d terms cancel. Checked: weighted random 3-regular graph on 40 vertices, h(s,t)+h(t,s) = vol·R_eff = 236.554 (scripts §1). Consequence (CRRST): cover time ≤ 2m·n for unweighted graphs via a spanning tree, and ≥ m·max R_eff.
+~2 min. The two solves differ by vol·(1_s − 1_t), so the d terms cancel. Checked: weighted random 3-regular graph on 40 vertices, h(s,t)+h(t,s) = vol·R_eff = 236.554 (scripts §1). Consequence (CRRST): cover time ≤ 2m·n for unweighted graphs via a spanning tree, and ≥ m·max R_eff.
 :::
 
 ## Why a fast solver matters
@@ -221,15 +237,64 @@ One Laplacian solve is a primitive inside many algorithms:
 ~2 min. Keep this quick; it's a list. The inverse power iteration point closes the loop with Lecture 6: with a λ-independent solver, the cost of a Fiedler vector is no longer tied to the cut it reveals.
 :::
 
+## Inverse power iteration: the Fiedler vector in $O(\log n/\varepsilon)$ solves
+
+Work on $\mathbf 1^\perp$, where $L$ is invertible with eigenpairs $(\lambda_i,v_i)$, $0<\lambda_2\le\dots\le\lambda_n$. Pick a random $x_0\perp\mathbf 1$ and iterate
+$$x_k=L^+x_{k-1}=L^{+k}x_0 .$$
+
+- Component along $v_i$ is multiplied by $\lambda_i^{-1}$ per step: **the slow modes of $L$ are the fast modes of $L^+$.**
+- Power iteration needs $\approx\lambda_n/\lambda_2$ matvecs; here the number of steps does **not depend on $\lambda_n/\lambda_2$**, and each step is one solve.
+
+::: {.thm}
+**Theorem.** With $x_0$ random, $R(x_k)=\dfrac{x_k^\top Lx_k}{x_k^\top x_k}\le(1+\varepsilon)\lambda_2$ after $k=O(\log n/\varepsilon)$ solves.
+:::
+
+::: {.pf}
+Let $a_i=\langle x_0,v_i\rangle$ and $N_s=\sum_ia_i^2\lambda_i^{-s}$, so $R(x_k)=N_{2k-1}/N_{2k}$. By Cauchy–Schwarz, $s\mapsto\log N_s$ is convex, so the ratios $N_{s-1}/N_s$ are nonincreasing in $s$. The last of the $2k$ ratios is at most their geometric mean:
+$$R(x_k)\le\Big(\frac{N_0}{N_{2k}}\Big)^{1/2k}\le\lambda_2\Big(\frac{\|x_0\|^2}{a_2^2}\Big)^{1/2k}\le\lambda_2\,n^{1/2k}\quad\text{when }a_2^2\ge\|x_0\|^2/n .$$
+This holds with constant probability for a random $x_0$, and $n^{1/2k}\le1+\varepsilon$ once $k\ge\ln n/(2\ln(1+\varepsilon))$. $\blacksquare$
+:::
+
+::: notes
+~4 min. The solves are approximate: an ε'-approximate solve at each step with ε' = 1/poly(n) suffices, which costs an extra log n factor inside the solver, not in the number of solves. The proof: the Rayleigh quotient is a weighted average of eigenvalues, and the weights concentrate geometrically on small ones. Random x_0 = Gaussian projected onto 1^⊥; a_2² ≥ ‖x_0‖²/n with constant probability (anti-concentration of a Gaussian in one coordinate).
+:::
+
+## Inverse power iteration: the improved convergence
+
+![Rayleigh quotient error of the Fiedler-vector iterations on the path, same random start. Power iteration uses $I-L/4$.](figures/inverse-power.svg){.nostretch fig-align="center" width="70%"}
+
+- **Path on $n=300$ vertices:** $\lambda_2\approx10^{-4}$, $\lambda_n\approx4$.
+- **Reaching $1\%$ error:** inverse power iteration takes **3 solves**, Lanczos about **190 matvecs**, and power iteration **over $3000$ matvecs** (still unfinished).
+- A solve costs $\tilde O(m)$ regardless of $\lambda_2$, so the total cost no longer depends on how good the cut is.
+
+::: notes
+~2 min. Numbers from scripts/make_figures.py, Fig. 7: path graph, exact solves via the pseudoinverse, Lanczos with full reorthogonalization (best Ritz value of L over the Krylov space), power iteration on I − L/4. The theorem guarantees O(log n/ε) solves for any graph; on the path the observed convergence is faster than the worst case.
+:::
+
 # Classical methods
 
 ## Gradient descent is diffusion
 
-Minimize $f(x)=\tfrac12x^\top Lx-b^\top x$ (gradient $Lx-b$):
-$$x_{k+1}=x_k-\eta\,(Lx_k-b)\qquad\Longrightarrow\qquad x_{k+1}-x^*=(I-\eta L)(x_k-x^*).$$
+Minimize $f(x)=\tfrac12x^\top Lx-b^\top x$. Let $D=\operatorname{diag}(d_u)$ be the degree matrix and $P=D^{-1}A$, so $D^{-1}L=I-P$.
 
-- With $\eta=1/\lambda_n$: $\ \|x_k-x^*\|_L\le(1-1/\kappa)^k\,\|x_0-x^*\|_L$, where $\kappa=\lambda_n/\lambda_2$. So $\kappa\ln(1/\varepsilon)$ iterations, each one product with $L$: $O(m)$.
-- On a $d$-regular graph with $\eta=1/(2d)$: $I-\eta L=\tfrac12(I+P)$, the **lazy random walk**. GD on $Lx=b$ *is* heat diffusion of the error, and the iteration count is the relaxation time of Lectures 3–4.
+- **Steepest descent in the $D$-norm** $\|x\|_D^2=\sum_ud_ux_u^2$: the gradient is $\nabla_Df(x)=D^{-1}\nabla f(x)=D^{-1}(Lx-b)$. Since $L\preceq2D$, the step size $\eta=\tfrac12$ is safe:
+$$x_{k+1}=x_k-\tfrac12D^{-1}(Lx_k-b)=\underbrace{\tfrac12(I+P)\,x_k}_{\text{lazy walk step}}+\underbrace{\tfrac12D^{-1}b}_{\text{input charge}} .$$
+- **Vertex by vertex:** $\ x_{k+1}(u)=\tfrac12x_k(u)+\tfrac12\,\mathrm{avg}_{v\sim u}\,x_k(v)+\dfrac{b_u}{2d_u}$. Each step diffuses the heat $x_k$ one lazy step and injects heat $b_u/2d_u$ at every vertex ($b_u<0$: a sink).
+- **Fixed point:** $x=Px+D^{-1}b\iff Lx=b$. The steady state of diffusion with a constant source is the solution.
+
+::: {.idea}
+The error $x_k-x^*$ obeys $x_{k+1}-x^*=\tfrac12(I+P)(x_k-x^*)$: **pure heat diffusion, with no source**. Gradient descent on $Lx=b$ is the diffusion of Lectures 3–4 with the charge $b$ pumped in at every step.
+:::
+
+- **Rate:** $\tfrac12(I+P)$ has eigenvalues $1-\tilde\lambda_i/2$, with $\tilde\lambda_i$ those of the normalized Laplacian, so $\ \|x_k-x^*\|_L\le(1-\tilde\lambda_2/2)^k\|x_0-x^*\|_L$. The iteration count is the **relaxation time** $2/\tilde\lambda_2$ times $\ln(1/\varepsilon)$, one product with $L$ ($O(m)$) per step.
+
+::: notes
+~4 min. Heat equation picture: x is temperature, ẋ = −D^{-1}Lx + D^{-1}b is the continuous-time version. Self-adjointness: (I+P)/2 is self-adjoint for both the D-inner product and the L-inner product, which is why the contraction holds in the L-norm on 1^⊥. On a d-regular graph D = dI, so the D-gradient step with η = 1/2 is the Euclidean step with η = 1/(2d); the Euclidean step with η = 1/λ_n is at least as good, since λ_n ≤ 2d.
+:::
+
+## How many iterations does gradient descent need?
+
+Gradient descent with the Euclidean gradient and $\eta=1/\lambda_n$ contracts by $1-1/\kappa$ per step, $\kappa=\lambda_n/\lambda_2$; on a $d$-regular graph $\kappa\le2d/\lambda_2=2/\tilde\lambda_2$, so it is at least as fast as the diffusion above. So $\kappa\ln(1/\varepsilon)$ iterations, each one product with $L$: $O(m)$.
 
 | graph | $\kappa=\lambda_n/\lambda_2$ | GD iterations to $10^{-6}$ | $\kappa\ln10^6$ |
 |:--|--:|--:|--:|
@@ -277,11 +342,16 @@ $L$ is local: if $b$ is supported on $S$, then $L^jb$ is supported on the $j$-ne
 :::
 
 ::: {.idea}
-To beat $\sqrt\kappa$ we need **non-local** operations: information has to travel far in one step. A **spanning tree** does exactly this: solving a tree system moves information across the whole graph in $O(n)$ time.
+**The bad case for locality is a path, but a path can be solved directly in $O(n)$ time** by a forward–backward iteration:
+
+- **Forward sweep** (eliminate from one end): the flow on edge $i$ is the partial sum $f_i=\sum_{j\le i}b_j$.
+- **Backward sweep** (Ohm's law): $x_{i+1}=x_i-r_if_i$, then subtract the mean.
+
+No fill-in, no dependence on $\kappa$: information crosses the whole path in two passes. The same idea works on any **spanning tree**.
 :::
 
 ::: notes
-~3 min. The lower bound is information-theoretic, not about CG specifically. The way out on the next slides: preconditioners that can be inverted cheaply but are global. The tree solve is Gaussian elimination from the leaves: O(n), no fill.
+~3 min. The lower bound is information-theoretic, not about CG specifically. The way out on the next slides: preconditioners that can be inverted cheaply but are global. The path solve is the Thomas algorithm for a tridiagonal system; the tree solve is the same Gaussian elimination from the leaves: O(n), no fill.
 :::
 
 ## Preconditioning
@@ -352,7 +422,7 @@ Sum over $e$. $\blacksquare$
 | grid $32\times32$, weights $e^{U(-5,5)}$, max-weight tree / plain CG | 0.78 | — | **28** / 1 034 |
 
 - On **unit-weight** grids, a tree alone is a worse preconditioner than nothing. On **weighted** graphs, where $\kappa$ comes from the weights ($\kappa\approx6.4\cdot10^4$ in the last row), it is spectacular.
-- Spielman–Teng: add $\tilde O(m/k)$ well-chosen edges to the tree (**ultra-sparsifier**), so that $\kappa\le k$ while the system shrinks. End of the lecture.
+- Spielman–Teng: add $\tilde O(m/k)$ well-chosen edges to the tree (**ultra-sparsifier**), so that $\kappa\le k$ while the system shrinks.
 
 ::: {.idea}
 **KOSZ uses the tree differently:** not to precondition, but as a **coordinate system** for the space of flows.
@@ -472,6 +542,41 @@ $$\mathbb E\big[\mathcal E(f_{k})-\mathcal E^*\big]\ \le\ \Big(1-\frac1{\tau(T)}
 ~4 min. Here st_T(e) = R_T(a,b)/r_e: for unit weights y = z and nothing changes. (3): the tree edges each have stretch 1 and are not coordinates, so τ(T) = st_T(G) + m − 2(n − 1) exactly; we only need the upper bound. The rescaling is "measure the flow on e in units of √r_e", i.e. use the energy norm restricted to the off-tree edges; λ_min ≥ 1 says the full energy dominates the off-tree energy.
 :::
 
+## Optimality conditions and the geometry of a toggle
+
+**Optimality conditions** for $\min\{\mathcal E(f):B^\top f=\chi\}$:
+
+- **KCL** (feasibility) $\ B^\top f=\chi$: every iterate satisfies it.
+- **KVL / Ohm** (stationarity) $\ Rf=Bx$ for some $x$ $\iff$ $Rf\perp\ker B^\top=$ cycle space $\iff$ $\Delta_e(f)=\langle c_e,f\rangle_R=0$ for all $e\notin T$.
+
+::: {.lem}
+**The gap is the violation.** The tree potentials satisfy Ohm exactly on $T$, and the Ohm residual $r_ef_e-b_e^\top x_T$ equals $\Delta_e(f)$ on $e\notin T$. By the duality gap identity (Electrical flows slide),
+$$\mathcal E(f)-\mathcal D(x_T)=\frac12\sum_{e\notin T}\frac{\Delta_e(f)^2}{r_e}.$$
+:::
+
+**Geometry**, in the energy inner product $\langle f,g\rangle_R=\sum_er_ef_eg_e$ (so $\|c_e\|_R^2=R_e$):
+
+- $f^*$ is the minimum-norm point of the affine space $f_0+\mathrm{Cyc}$, so $f^*\perp_R\mathrm{Cyc}$ and $\ \mathcal E(f)-\mathcal E^*=\tfrac12\|f-f^*\|_R^2$.
+- The **KVL hyperplanes** $H_e=\{g:\langle c_e,g\rangle_R=0\}$ all contain $f^*$, and $\Delta_e(f)=\langle c_e,f-f^*\rangle_R$.
+- **A toggle is the $R$-orthogonal projection onto $H_e$.** By Pythagoras, $\ \tfrac12\|f'-f^*\|_R^2=\tfrac12\|f-f^*\|_R^2-\dfrac{\Delta_e^2}{2R_e}$: randomized Kaczmarz in the energy geometry.
+
+::: {.thm}
+**Expected progress = gap / $\tau$.** With $p_e=\dfrac{R_e/r_e}{\tau(T)}$,
+$$\mathbb E\big[\mathcal E(f)-\mathcal E(f')\big]=\sum_{e\notin T}\frac{R_e}{r_e\tau}\cdot\frac{\Delta_e^2}{2R_e}=\frac{\mathcal E(f)-\mathcal D(x_T)}{\tau}.$$
+The gap is sandwiched: $\quad\mathcal E(f)-\mathcal E^*\ \le\ \mathcal E(f)-\mathcal D(x_T)\ \le\ \tau\,\big(\mathcal E(f)-\mathcal E^*\big)$.
+:::
+
+- **Lower half** = weak duality, $\mathcal D(x_T)\le\mathcal D(x^*)=\mathcal E^*$. With the progress identity it gives $\mathbb E[\mathcal E(f')-\mathcal E^*]\le(1-\frac1\tau)(\mathcal E(f)-\mathcal E^*)$: **a second proof of the corollary**, with no eigenvalues.
+- **Upper half** = smoothness, $\lambda_{\max}(M)\le\tau$ (proved in the Stop lemma below).
+
+::: {.idea}
+The two halves are exactly $\lambda_{\min}(M)\ge1$ and $\lambda_{\max}(M)\le\operatorname{tr}M=\tau$. Equivalently, the rescaled cycles $c_e/\sqrt{r_e}$ form a **frame** for the cycle space with frame bounds $[1,\tau]$. The tree supplies a dual certificate whose gap is the squared gradient, so weak duality *is* the strong-convexity (Polyak–Łojasiewicz) inequality.
+:::
+
+::: notes
+~5 min. Optional but recommended: it explains why the sampling distribution is what it is. p_e ∝ R_e/r_e cancels the R_e in the projection's decrease and leaves each violation weighted by its share of the gap. Equivalence with the eigenvalue statement: with d = z − z*, F − F* = ½ dᵀMd and the gap is ½‖∇F‖² = ½ dᵀM²d. So "gap ≥ F − F* for all d" ⟺ dᵀM²d ≥ dᵀMd ⟺ every eigenvalue λ > 0 of M has λ² ≥ λ ⟺ λ_min ≥ 1. This progress-vs-gap argument is essentially KOSZ's original analysis; the coordinate-descent and Kaczmarz views (Lee–Sidford; Strohmer–Vershynin with frame bounds) prove the same two inequalities. Note x_T is not the best dual for f: minimizing the Ohm residual over x gives x*. It is the cheapest certificate, and it is enough.
+:::
+
 ## The algorithm
 
 ::: {.defn}
@@ -502,15 +607,19 @@ And one thing remains to build:
 :::
 
 ::: {.pf}
-$f_0$ is the only flow on $T$ routing $\chi$, so it is the electrical flow of the tree, and by Thomson $\mathcal E(f_0)=\tfrac12\chi^\top L_T^+\chi$. By Boman–Hendrickson, $L_G\preceq\mathrm{st}_T(G)\,L_T$, and both have kernel $\mathbf 1$, so $L_T^+\preceq\mathrm{st}_T(G)\,L_G^+$:
-$$\mathcal E(f_0)=\tfrac12\chi^\top L_T^+\chi\ \le\ \mathrm{st}_T(G)\;\tfrac12\chi^\top L_G^+\chi=\mathrm{st}_T(G)\,\mathcal E^*.\ \blacksquare$$
+$f_0$ is the only flow on $T$ routing $\chi$, so it is the electrical flow of the tree, and by Thomson $\mathcal E(f_0)=\tfrac12\chi^\top L_T^+\chi$. By Boman–Hendrickson, $L_G\preceq s\,L_T$ with $s=\mathrm{st}_T(G)$, and both have kernel $\mathbf 1$, so $L_T^+\preceq s\,L_G^+$.
+
+**Why inversion reverses $\preceq$: convex conjugates.** For $A\succeq0$ with kernel $\mathbf 1$ and $\chi\perp\mathbf 1$, the conjugate of $\phi_A(x)=\tfrac12x^\top Ax$ is
+$$\phi_A^*(\chi)=\sup_x\big(\chi^\top x-\tfrac12x^\top Ax\big)=\tfrac12\chi^\top A^+\chi\qquad(\text{attained at }x=A^+\chi).$$
+Conjugation reverses pointwise order: $\phi_{L_G}\le\phi_{sL_T}$ gives $\phi_{L_G}^*\ge\phi_{sL_T}^*$, i.e.
+$$\mathcal E^*=\tfrac12\chi^\top L_G^+\chi\ \ge\ \tfrac12\chi^\top(sL_T)^+\chi=\frac1s\,\tfrac12\chi^\top L_T^+\chi=\frac{\mathcal E(f_0)}{s}.\ \blacksquare$$
 :::
 
 - The same lemma that made $T$ a preconditioner now bounds the starting error. It enters only through a logarithm.
 - Measured ($10\times10$ grid, random weights, BFS tree): $\mathcal E(f_0)/\mathcal E^*=8.2$, against $\mathrm{st}_T(G)=1\,777$.
 
 ::: notes
-~2 min. Inversion reverses ⪯ for PSD matrices with the same kernel: A ⪯ B ⇒ B⁺ ⪯ A⁺ on the common range. Numbers: scripts §6.
+~3 min. The conjugate here is exactly the dual objective of Thomson's principle: φ*_L(χ) = max_x D(x) = E*. So the step reads physically: more conductance (L_G ⪰ L_T/s) lowers the dual objective at every set of potentials, hence lowers its maximum, the energy. The same-kernel hypothesis is needed: for χ ⊥ 1 the sup is finite and attained, and constants in x do not matter. Without it the claim fails (A = diag(1,0) ⪯ B = diag(1,ε), but B⁺ ⋠ A⁺). Numbers: scripts §6.
 :::
 
 ## Stop: from flows to potentials
@@ -531,7 +640,7 @@ $$\|x_T-x^*\|_L^2\ \le\ 2\big(\mathcal E(f)-\mathcal D(x_T)\big)\ =\ \sum_{e\not
 :::
 
 ::: {.idea}
-The duality gap of the tree potentials **is** the squared gradient in the rescaled coordinates. Primal progress (energy) and dual quality (potentials) are tied by smoothness.
+The duality gap of the tree potentials is (half) the squared gradient. **Smoothness** ($\lambda_{\max}(M)\le\tau$, the upper half of the sandwich) turns small energy suboptimality into small KVL violations, and **weak duality** turns small violations into accurate potentials.
 :::
 
 ::: notes
@@ -540,12 +649,26 @@ The duality gap of the tree potentials **is** the squared gradient in the rescal
 
 ## The main theorem
 
+Three ingredients, with $\tau=\tau(T)$ and $\mathcal E^*=\tfrac12\|x^*\|_L^2$ the optimal energy:
+
+::: {.lem}
+**Start.** $\ \mathcal E(f_0)\le\mathrm{st}_T(G)\cdot\mathcal E^*$.
+:::
+
+::: {.lem}
+**RCD.** Toggling a cycle $C_e$ sampled with probability $\propto R_e/r_e$ gives $\ \mathbb E[\mathcal E(f_k)-\mathcal E^*]\le\big(1-\tfrac1\tau\big)^k\big(\mathcal E(f_0)-\mathcal E^*\big)$.
+:::
+
+::: {.lem}
+**Stop.** For the tree-induced potentials $x_T$ of any flow $f$ routing $\chi$: $\ \|x_T-x^*\|_L^2\le2\tau\,\big(\mathcal E(f)-\mathcal E^*\big)$.
+:::
+
 ::: {.thm}
 **Theorem (KOSZ 2013).** After $K\ge\tau(T)\ln\dfrac{\tau(T)\,\mathrm{st}_T(G)}{\varepsilon}$ toggles, $\ \mathbb E\,\|x_T(f_K)-x^*\|_L^2\le\varepsilon\,\|x^*\|_L^2$. (For an $\varepsilon$-approximate solution in the sense of the definition, replace $\varepsilon$ by $\varepsilon^2$: same order of $K$.)
 :::
 
 ::: {.pf}
-Chain the three lemmas, with $\mathcal E^*=\tfrac12\chi^\top L^+\chi=\tfrac12\|x^*\|_L^2$:
+Chain the three lemmas (stop, then RCD, then start):
 $$\mathbb E\|x_T-x^*\|_L^2\ \overset{\rm stop}\le\ 2\tau\,\mathbb E[\mathcal E(f_K)-\mathcal E^*]\ \overset{\rm RCD}\le\ 2\tau\,e^{-K/\tau}\big(\mathcal E(f_0)-\mathcal E^*\big)\ \overset{\rm start}\le\ \tau\,e^{-K/\tau}\,\mathrm{st}_T(G)\,\|x^*\|_L^2\le\varepsilon\,\|x^*\|_L^2.\ \blacksquare$$
 :::
 
@@ -563,10 +686,40 @@ $$O\big(m\log^2n\,\log\log n\,\log(n/\varepsilon)\big).$$
 
 ## What a toggle needs
 
-Toggle $e=(a,b)$: compute $\Delta_e=r_ef_e+x_T(b)-x_T(a)$, then push $\alpha=-\Delta_e/R_e$ around $C_e$:
+A toggle of $e=(a,b)$ **reads** one number and **writes** one push:
 
-- $f_e\leftarrow f_e+\alpha$: $O(1)$, off-tree flows are stored explicitly.
-- push $\alpha$ through $T$ from $b$ to $a$: this changes $f_t$ on **every edge of the tree path**. Naively $O(|P_T(e)|)$.
+- **read** $\ \Delta_e=r_ef_e+x_T(b)-x_T(a)$: only the potentials of the **two endpoints** of $e$;
+- **write** $\ f_e\leftarrow f_e+\alpha$ and push $\alpha$ through $T$ from $b$ to $a$. Stored naively, this changes $f_t$ on every edge of the tree path: $O(|P_T(e)|)$.
+
+::: {.idea}
+**Never store the tree flows.** The off-tree flows determine the tree flow: it is the unique tree flow routing $\chi+q$, where $q$ is the net demand the off-tree flows inject into $T$. Pushing $\alpha$ from $b$ to $a$ changes $q$ at **two vertices only**: $\ q_b\mathrel{+}=\alpha,\ q_a\mathrel{-}=\alpha$. The cost moves from the write to the read: we must recover $x_T(b)-x_T(a)$ from $q$.
+:::
+
+::: notes
+~2 min. The write is the expensive part if we store tree flows; the idea box says how to avoid it. The next slide draws the state we keep.
+:::
+
+## What we store: off-tree flows and charges
+
+:::: {.columns}
+::: {.column width="58%"}
+![](figures/toggle-state.svg){.nostretch fig-align="center" width="100%"}
+:::
+::: {.column width="42%"}
+**State of the data structure** (a $3\times4$ grid, spanning tree $T$):
+
+- **Stored:** the off-tree flows $f_e$ (most are $0$) and the charges $q\in\mathbb R^V$.
+- **Not stored:** the tree flow. It is the tree flow routing $\chi+q$.
+- **A toggle of $e=(a,b)$:** change $f_e$ by $\alpha$ and $q_b\mathrel{+}=\alpha$, $q_a\mathrel{-}=\alpha$. Two point updates, no path.
+- **A read** needs $x_T(a),x_T(b)$: potentials of the tree flow routing $\chi+q$.
+:::
+::::
+
+::: notes
+~2 min. The picture to keep in mind for the rest of this section. Orange arrows are the only flows we remember; each one leaves a +f at its head and a −f at its tail, and q_v is the sum of what lands at v (the vertex with f_1 − f_2 receives from one edge and sends along another). The tree edges carry whatever is needed to route χ + q; we never write them.
+:::
+
+## Potentials from charges
 
 ::: {.lem}
 **Lemma (potentials from charges).** Let $q=\sum_{e=(a,b)\notin T}f_e(\mathbf 1_b-\mathbf 1_a)$, the net demand that off-tree flows inject into $T$. Then, up to an additive constant,
@@ -579,7 +732,7 @@ The tree flow routes $\chi+q$, so $x_T=L_T^+(\chi+q)=x_0+L_T^+q$. For any connec
 $$\Psi(u)=\sum_vq_vL^+_{T,vv}-2\,(L_T^+q)(u)=\text{const}-2(L_T^+q)(u).\ \blacksquare$$
 :::
 
-So a toggle is: **two queries** $\Psi(a),\Psi(b)$ and **two point updates** $q_b\mathrel{+}=\alpha$, $q_a\mathrel{-}=\alpha$.
+So a toggle is: **two queries** $\Psi(a),\Psi(b)$ (the read needs $x_T$ only at $a$ and $b$; the constant cancels in $x_T(b)-x_T(a)$, and every push keeps $\sum_vq_v=0$) and **two point updates** $q_b\mathrel{+}=\alpha$, $q_a\mathrel{-}=\alpha$. The next two slides do both in $O(\log n)$.
 
 ::: notes
 ~4 min. This is where effective resistance comes back: L⁺ of the tree is determined by the tree's resistance metric, R_T. The reduction turns "path update + path query" into "point update + sum of weighted distances", which is a classical data-structure problem on a static tree. (Equivalently, the four-point identity: the signed overlap of the tree paths x→y and a→b is ½[R(x,b) + R(y,a) − R(x,a) − R(y,b)].)
@@ -606,6 +759,18 @@ $$c\in P_T(u,v)\qquad\text{and}\qquad R_T(u,v)=R_T(u,c)+R_T(c,v).$$
 ~3 min. The components K_c are subtrees, so the tree path from u to v stays inside K_c, and it must pass through c because u and v lie in different components of K_c − c. Measured depth: 7 for n = 64, 12 for n = 4096 (log₂ n = 6, 12).
 :::
 
+## A query along the centroid chain
+
+![A path on $15$ vertices, query vertex $u=c_0$. Its centroid ancestors are $c_0,c_1,c_2,c_3$, the sets $K_{c_i}$ are nested, and each vertex is coloured by the first $K_{c_i}$ that contains it.](figures/centroid-chain.svg){.nostretch fig-align="center" width="92%"}
+
+- **Colours** = the sets $K_{c_i}\setminus K_{c_{i-1}}$: exactly the vertices $v$ whose centroid-tree LCA with $u$ is $c_i$.
+- For $v$ in the $i$-th colour, the tree path from $u$ to $v$ passes through $c_i$, so $R_T(u,v)=R_T(u,c_i)+R_T(c_i,v)$.
+- The query sums $q_v\,R_T(u,v)$ **one colour at a time**, using only the sums stored at the $\le\log_2n+1$ centroids on the chain (defined on the next slide).
+
+::: notes
+~2 min. Path of 15 vertices, centroids 7, then 3 and 11, then 1, 5, 9, 13. For u = 4 the chain is 4, 5, 3, 7 (4 is the centroid of its own singleton component). A path is the worst case for locality and the easiest to draw; in a general tree the same picture holds, with c_i separating u from K_{c_i} minus K_{c_{i-1}}. Made by scripts/make_figures.py, Fig. 9.
+:::
+
 ## Sum of weighted distances in $O(\log n)$
 
 For each centroid $c$ with parent $\hat c$ in the centroid tree ($D^\uparrow$ only for $c\ne$ root), store
@@ -622,7 +787,7 @@ $$\Psi(u)=\sum_{i=0}^{\ell}\Big[\big(D_{c_i}-D^\uparrow_{c_{i-1}}\big)+R_T(u,c_i
 The vertices $v\in K_{c_i}\setminus K_{c_{i-1}}$ are exactly those whose centroid-tree LCA with $u$ is $c_i$. For them $R_T(u,v)=R_T(u,c_i)+R_T(c_i,v)$. Summing $q_v$ times this over the set gives the $i$-th term, because $\hat c_{i-1}=c_i$. $\blacksquare$
 :::
 
-- Both operations touch $\le\log_2n+1$ centroids: **$O(\log n)$ per toggle**. Measured on the $64\times64$ grid: about 40 array touches per toggle.
+- Both operations touch $\le\log_2n+1$ centroids: **$O(\log n)$ per toggle**. Measured on the $64\times64$ grid: about 35 array entries per toggle (recursive tree; 39 with the BFS tree).
 - Preprocessing $O(n\log n)$. The same structure gives each $R_T(a,b)$, hence $R_e$ and $p_e$, in $O(\log n)$.
 
 ::: notes
@@ -631,14 +796,14 @@ The vertices $v\in K_{c_i}\setminus K_{c_{i-1}}$ are exactly those whose centroi
 
 ## Does it work?
 
-![](figures/grid-convergence.svg){width="100%"}
+![](figures/grid-convergence.svg){.nostretch width="100%"}
 
-- **Unit-weight $64\times64$ grid** ($n=4\,096$, $m=8\,064$): recursive tree $\tau=6.3m$, BFS tree $\tau=32m$. To reach $10^{-3}$: KOSZ $1\,700m$ work, CG $112$ products ($146$ for $10^{-6}$). **Here CG wins easily**: $\kappa\approx3\,300$ is mild, and constants matter.
-- **Weighted $32\times32$ grid**, $\kappa\approx6.4\cdot10^4$: max-weight tree $\tau=0.75m$; after a short start KOSZ is ahead of CG (to $10^{-3}$: $420m$ work vs. $620$ products), and PCG with the same tree needs 28 iterations. A weight-oblivious tree (BFS: $\tau=3\,535m$) is useless.
+- **Unit-weight $64\times64$ grid** ($n=4\,096$, $m=8\,064$): recursive tree $\tau=6.3m$, BFS tree $\tau=32m$. To reach $10^{-3}$: KOSZ $1\,500m$ work (the cost of $1\,500$ products), CG $112$ products ($146$ for $10^{-6}$). **Here CG wins easily**: $\kappa\approx3\,300$ is mild, and constants matter.
+- **Weighted $32\times32$ grid**, $\kappa\approx6.4\cdot10^4$: max-weight tree $\tau=0.75m$; after a short start KOSZ is ahead of CG (to $10^{-3}$: $180m$ work vs. $620$ products; KOSZ is at $3.5\cdot10^{-6}$ after $330m$), and PCG with the same tree needs 28 iterations. A weight-oblivious tree (BFS: $\tau=3\,535m$) is useless.
 - **Rate:** the observed decay is faster than the guarantee's slope $e^{-k/2\tau}$ (right).
 
 ::: notes
-~3 min. Work is measured in "edge visits": a matvec costs m, a toggle costs its data-structure touches. The honest message: KOSZ is a theorem about worst-case asymptotics and a beautiful proof; production solvers are PCG with combinatorial preconditioners or approximate Cholesky (next). In the right panel the L-norm error, not the energy, is plotted; the guarantee for the energy is e^{−k/τ}, for the L-norm its square root.
+~3 min. The x-axis is work in units of one product with L, i.e. total operations / m. A matvec costs m operations (one per edge), a PCG iteration m + n, a toggle the number of centroid-tree entries it reads or writes (≈ 4·average chain length ≈ 35 here). Computing the plotted error is not charged. The honest message: KOSZ is a theorem about worst-case asymptotics and a beautiful proof; production solvers are PCG with combinatorial preconditioners or approximate Cholesky (next). In the right panel the L-norm error, not the energy, is plotted; the guarantee for the energy is e^{−k/τ}, for the L-norm its square root.
 :::
 
 # Other routes to nearly-linear time
@@ -715,7 +880,7 @@ Things to show live. (1) Convergence tab, unit-weight grid: CG wins; switch to l
 
 ## Takeaways
 
-1. **Electrical flows** are the primal, **potentials** the dual; the gap is $\sum_e(r_ef_e-b_e^\top x)^2/r_e$. Effective resistance, hitting and commute times are Laplacian solves.
+1. **Electrical flows** are the primal, **potentials** the dual; the gap is $\tfrac12\sum_e(r_ef_e-b_e^\top x)^2/r_e$. Effective resistance, hitting and commute times are Laplacian solves.
 2. **Matrix–vector methods** need $\Omega(\text{diameter})$ products for a worst-case $b$, which is $\Omega(\sqrt\kappa)$ on paths and grids: GD is diffusion, Krylov is local.
 3. **Trees** are global: $L_T\preceq L_G\preceq\mathrm{st}_T(G)L_T$, and low-stretch trees have $\mathrm{st}_T(G)=\tilde O(m)$.
 4. **RCD on a quadratic:** sample $\propto M_{ii}$, rate $1-\lambda_{\min}/\operatorname{tr}M$. Three lines.
