@@ -1,0 +1,132 @@
+---
+title: "Online Learning over Density Matrices"
+subtitle: "FTRL, the matrix multiplicative weights update, and strong convexity of von Neumann entropy"
+description: "Notes for Lecture 10 (10/29), with full proofs."
+order: 6
+---
+
+These notes accompany the second half of Lecture 10. They set up online linear optimization over density matrices, derive the matrix multiplicative weights update (MMWU) as follow-the-regularized-leader (FTRL) with von Neumann entropy, and prove its regret bound through the principle "strong convexity of the regularizer implies smoothness of the maximum". §3 contains the full proof that von Neumann entropy is $1$-strongly convex with respect to the trace norm, which the slides state without proof. §6 records the balanced-separator relaxation.
+
+**Notation.** $\mathbb S^n$ is the space of real symmetric $n\times n$ matrices with $\langle A,B\rangle=\operatorname{tr}(AB)$. For $X=\sum_kx_ku_ku_k^\top\in\mathbb S^n$ and a function $f$ defined on the spectrum, $f(X)=\sum_kf(x_k)u_ku_k^\top$. The **trace norm** is $\|H\|_1=\sum_k|\lambda_k(H)|$ and the **operator norm** is $\|M\|=\max_k|\lambda_k(M)|$. They are dual: $\|M\|=\max_{\|H\|_1\le1}\langle M,H\rangle$ and $\|H\|_1=\max_{\|M\|\le1}\langle M,H\rangle$, the latter attained at $M=\operatorname{sgn}(H)$. The **spectraplex** is $\Delta_n=\{X\in\mathbb S^n:X\succeq0,\ \operatorname{tr}X=1\}$, and we use $0\log0=0$.
+
+---
+
+## 1. The game
+
+For $t=1,\dots,T$ the player chooses $X_t\in\Delta_n$, then an adversary reveals $M_t\in\mathbb S^n$ (possibly depending on $X_1,\dots,X_t$), and the player gains $\langle M_t,X_t\rangle$. With $S_t=\sum_{s\le t}M_s$, the regret is
+$$\mathrm{Regret}_T=\max_{X\in\Delta_n}\langle S_T,X\rangle-\sum_t\langle M_t,X_t\rangle=\lambda_{\max}(S_T)-\sum_t\langle M_t,X_t\rangle .$$
+The second equality is Courant–Fischer: a linear function on the compact convex set $\Delta_n$ is maximized at an extreme point $uu^\top$, and $\langle S,uu^\top\rangle=u^\top Su$.
+
+**A regret bound is an eigenvalue bound.** Rearranged, $\lambda_{\max}(\sum_tM_t)\le\sum_t\langle M_t,X_t\rangle+\mathrm{Regret}_T$. In applications we choose $M_t$ in response to $X_t$ so that $\langle M_t,X_t\rangle$ is small, and the regret bound controls the top eigenvalue of the sum.
+
+**Follow the leader fails.** FTL plays $X_t\in\arg\max_X\langle S_{t-1},X\rangle$, a top eigenvector of $S_{t-1}$. With two experts (diagonal $M_t$) and gains $g_1=(\frac12,0)$, then alternately $(0,1)$ and $(1,0)$, the leader after round $t$ is always the expert that gains $0$ in round $t+1$. FTL gains at most $\frac12$, while each expert gains at least $\frac{T-1}2$.
+
+## 2. FTRL and the Gibbs variational principle
+
+FTRL with regularizer $R$ and step size $\eta>0$ plays $X_t=\arg\max_{X\in\Delta_n}\{\langle S_{t-1},X\rangle-\frac1\eta R(X)\}$. We take the **von Neumann negative entropy** $R(X)=\operatorname{tr}X\log X=\sum_kx_k\log x_k$. Since the eigenvalues of $X\in\Delta_n$ form a probability vector, $-\log n\le R(X)\le0$, with the minimum at $I/n$ and the maximum at rank-one $X$. The **quantum relative entropy** is $D(Y\Vert X)=\operatorname{tr}Y(\log Y-\log X)$ for $X$ of full rank.
+
+**Lemma 2.1 (Gibbs).** For $A\in\mathbb S^n$, $\ \max_{X\in\Delta_n}\{\langle A,X\rangle-\operatorname{tr}X\log X\}=\log\operatorname{tr}e^A$, attained only at $\rho_A=e^A/\operatorname{tr}e^A$.
+
+*Proof.* With $Z=\operatorname{tr}e^A$ we have $\log\rho_A=A-(\log Z)I$, so $\langle A,X\rangle=\operatorname{tr}X\log\rho_A+\log Z$ for $X\in\Delta_n$, and
+$\langle A,X\rangle-\operatorname{tr}X\log X=\log Z-D(X\Vert\rho_A)$. By Klein's inequality (Corollary 3.4 below), $D(X\Vert\rho_A)\ge0$ with equality iff $X=\rho_A$. $\square$
+
+Applying the lemma to $A=\eta S$ gives the MMWU and its value function:
+$$X(S)=\frac{e^{\eta S}}{\operatorname{tr}e^{\eta S}},\qquad\Psi(S):=\max_{X\in\Delta_n}\Big\{\langle S,X\rangle-\tfrac1\eta\operatorname{tr}X\log X\Big\}=\frac1\eta\log\operatorname{tr}e^{\eta S},\qquad X_t=X(S_{t-1}).$$
+Two facts follow at once: $\Psi(0)=\frac{\log n}\eta$, and $\lambda_{\max}(S)\le\Psi(S)\le\lambda_{\max}(S)+\frac{\log n}\eta$ (compare with $X=uu^\top$ and use the range of $R$). For diagonal $S=\operatorname{diag}(s)$, $X(S)=\operatorname{diag}(p)$ with $p_i\propto e^{\eta s_i}$: the Hedge algorithm.
+
+## 3. Strong convexity of von Neumann entropy
+
+**Theorem 3.1.** For $X\in\Delta_n$ of full rank and every $Y\in\Delta_n$,
+$$\operatorname{tr}Y\log Y\ \ge\ \operatorname{tr}X\log X+\langle\log X+I,\,Y-X\rangle+\tfrac12\|Y-X\|_1^2 .$$
+That is, $R$ is $1$-strongly convex on $\Delta_n$ with respect to $\|\cdot\|_1$.
+
+We need two facts about derivatives of matrix functions. For a function $f$ and reals $a,b$ in its domain, write $f^{[1]}(a,b)=\frac{f(a)-f(b)}{a-b}$ if $a\ne b$ and $f^{[1]}(a,a)=f'(a)$.
+
+**Lemma 3.2.** Let $f$ be $C^1$ on an open interval $J$, let $X(t)=X+tH$ with $X,H\in\mathbb S^n$, and suppose the spectrum of $X(t_0)$ lies in $J$. Then at $t=t_0$:
+
+(a) $\ \frac{d}{dt}\operatorname{tr}F(X(t))=\operatorname{tr}\big(f(X(t))\,H\big)$, where $F$ is an antiderivative of $f$;
+
+(b) **(Daleckii–Krein)** in an orthonormal eigenbasis of $X(t_0)$ with eigenvalues $x_1,\dots,x_n$, $\ \big[\tfrac{d}{dt}f(X(t))\big]_{ij}=f^{[1]}(x_i,x_j)\,H_{ij}$.
+
+*Proof.* For $f(x)=x^k$: $\frac d{dt}X(t)^k=\sum_{a+b=k-1}X^aHX^b$. In the eigenbasis its $(i,j)$ entry is $H_{ij}\sum_{a+b=k-1}x_i^ax_j^b=H_{ij}\,f^{[1]}(x_i,x_j)$, which is (b). Taking the trace and using cyclicity gives $\frac d{dt}\operatorname{tr}X(t)^{k+1}=(k+1)\operatorname{tr}(X^kH)$, which is (a) for $F(x)=x^{k+1}/(k+1)$. Both statements are linear in $f$, so they hold for polynomials. For general $C^1$ $f$, choose a compact interval $J'\subset J$ containing the spectra of $X(t)$ for $t$ near $t_0$, and polynomials $p_m\to f$ in $C^1(J')$ (Weierstrass applied to $f'$, then integrate). Both sides of (a) and (b) converge uniformly in $t$ near $t_0$, so the derivative identities pass to the limit. $\square$
+
+**Lemma 3.3 (log mean $\le$ arithmetic mean).** For $a,b>0$, $\ \dfrac1{\log^{[1]}(a,b)}\le\dfrac{a+b}2$, where $\log^{[1]}(a,b)=\frac{\log a-\log b}{a-b}$.
+
+*Proof.* For $a=b$ both sides equal $a$. Otherwise write $a=be^{2u}$ with $u\ne0$. The claim becomes $\frac{b(e^{2u}-1)}{2u}\le\frac{b(e^{2u}+1)}2$, i.e. $\tanh u\le u$ for $u>0$ (and the reverse inequality, equivalent after dividing by $u<0$, for $u<0$). $\square$
+
+*Proof of Theorem 3.1.* Let $H=Y-X$, so $\operatorname{tr}H=0$, and $X(t)=X+tH=(1-t)X+tY$. For $t\in[0,1)$, $X(t)\in\Delta_n$ has full rank, since $X(t)\succeq(1-t)X\succ0$. Let $g(t)=\operatorname{tr}\varphi(X(t))$ with $\varphi(x)=x\log x$, continuous on $[0,1]$.
+
+*First derivative.* By Lemma 3.2(a) with $f=\varphi'=1+\log$, $\ g'(t)=\operatorname{tr}\big((I+\log X(t))H\big)$. In particular $g'(0)=\langle\log X+I,Y-X\rangle$.
+
+*Second derivative.* By Lemma 3.2(b) with $f=1+\log$, in an eigenbasis of $X(t)$ with eigenvalues $x_i>0$,
+$$g''(t)=\operatorname{tr}\Big(\tfrac{d}{dt}\log X(t)\cdot H\Big)=\sum_{i,j}\log^{[1]}(x_i,x_j)\,H_{ij}H_{ji}=\sum_{i,j}\log^{[1]}(x_i,x_j)\,H_{ij}^2\ \ge\ \sum_{i,j}\frac{H_{ij}^2}{m_{ij}},\qquad m_{ij}=\frac{x_i+x_j}2,$$
+using Lemma 3.3.
+
+*Cauchy–Schwarz against the sign.* Let $U=\operatorname{sgn}(H)$, symmetric with eigenvalues in $\{-1,0,1\}$, so $U^2\preceq I$ and $\|H\|_1=\operatorname{tr}(HU)=\sum_{i,j}H_{ij}U_{ji}$ (entries in the same eigenbasis of $X(t)$). Then
+$$\|H\|_1^2\le\Big(\sum_{i,j}\frac{H_{ij}^2}{m_{ij}}\Big)\Big(\sum_{i,j}m_{ij}U_{ij}^2\Big),\qquad \sum_{i,j}m_{ij}U_{ij}^2=\sum_ix_i\,(U^2)_{ii}\le\sum_ix_i=1,$$
+where the middle identity uses the symmetry of $m$ and $U$: $\sum_{i,j}\frac{x_i+x_j}2U_{ij}^2=\sum_ix_i\sum_jU_{ij}^2$. Hence $g''(t)\ge\|H\|_1^2$ for all $t\in[0,1)$.
+
+*Integrate.* For $s<1$, Taylor's formula with integral remainder gives $g(s)=g(0)+sg'(0)+\int_0^s(s-t)g''(t)\,dt\ge g(0)+sg'(0)+\frac{s^2}2\|H\|_1^2$. Let $s\to1$ and use continuity of $g$ on $[0,1]$. $\square$
+
+**Corollary 3.4 (quantum Pinsker, Klein).** For $X\in\Delta_n$ of full rank and $Y\in\Delta_n$, $\ D(Y\Vert X)\ge\frac12\|Y-X\|_1^2$. In particular $D(Y\Vert X)\ge0$, with equality iff $Y=X$.
+
+*Proof.* Since $\operatorname{tr}(Y-X)=0$, the gap in Theorem 3.1 is $\operatorname{tr}Y\log Y-\operatorname{tr}X\log X-\operatorname{tr}(Y\log X)+\operatorname{tr}(X\log X)=D(Y\Vert X)$. $\square$
+
+**Remarks.** (i) For diagonal $X$ and $Y$ this is the classical Pinsker inequality $\mathrm{KL}(q\Vert p)\ge\frac12\|q-p\|_1^2$ (Lecture 3). (ii) The constant is sharp: already for $2\times2$ diagonal matrices near $I/2$, $\mathrm{KL}\approx\frac12\|q-p\|_1^2$. (iii) The proof shows more: the Hessian of $R$ at $X$ dominates the **local** quadratic form $H\mapsto\sum_{ij}H_{ij}^2/m_{ij}$, whose dual form is $M\mapsto\sum_{ij}m_{ij}M_{ij}^2=\langle X,M^2\rangle$. This is the starting point for the local-norm bound of §5. This argument follows Yu (2013).
+
+## 4. Strong convexity implies smoothness of the maximum
+
+**Lemma 4.1.** Let $K$ be convex, $R:K\to\mathbb R$ $\alpha$-strongly convex w.r.t. $\|\cdot\|$ at the maximizers below, $\Psi(S)=\max_{X\in K}\{\langle S,X\rangle-R(X)\}$, and $X(S)$ a maximizer at which $R$ is differentiable along $K$ and first-order optimality holds: $\langle S-\nabla R(X(S)),Y-X(S)\rangle\le0$ for all $Y\in K$. Then
+$$\Psi(S+M)\le\Psi(S)+\langle X(S),M\rangle+\frac1{2\alpha}\|M\|_*^2 .$$
+
+*Proof.* Let $X=X(S)$, $g(Y)=\langle S,Y\rangle-R(Y)$. By strong convexity and first-order optimality, for every $Y\in K$,
+$$g(Y)\le\langle S,Y\rangle-R(X)-\langle\nabla R(X),Y-X\rangle-\tfrac\alpha2\|Y-X\|^2=g(X)+\langle S-\nabla R(X),Y-X\rangle-\tfrac\alpha2\|Y-X\|^2\le\Psi(S)-\tfrac\alpha2\|Y-X\|^2 .$$
+With $Y=X(S+M)$ and $r=\|Y-X\|$:
+$$\Psi(S+M)=g(Y)+\langle M,X\rangle+\langle M,Y-X\rangle\le\Psi(S)+\langle M,X\rangle+\|M\|_*r-\tfrac\alpha2r^2\le\Psi(S)+\langle M,X\rangle+\tfrac1{2\alpha}\|M\|_*^2.\ \square$$
+
+**Remark (the maximizer is Lipschitz).** Under the same hypotheses, writing the quadratic-decay inequality for $g_S$ at $X=X(S)$ and for $g_{S+M}=g_S+\langle M,\cdot\rangle$ at $Y=X(S+M)$, and adding, gives $\alpha\|Y-X\|^2\le\langle M,Y-X\rangle\le\|M\|_*\|Y-X\|$, so $\|X(S+M)-X(S)\|\le\|M\|_*/\alpha$. For the entropy: $\|X(S+M)-X(S)\|_1\le\eta\|M\|$. Linear objectives ($\alpha=0$) have no such bound: the maximizer jumps between extreme points, which is why FTL fails.
+
+**Application to the entropy.** Take $K=\Delta_n$, $R_\eta=\frac1\eta\operatorname{tr}X\log X$, which is $\frac1\eta$-strongly convex w.r.t. $\|\cdot\|_1$ by Theorem 3.1, with dual norm $\|\cdot\|$. The maximizer $X=X(S)=e^{\eta S}/\operatorname{tr}e^{\eta S}$ has full rank, $\nabla R_\eta(X)=\frac1\eta(\log X+I)=S+cI$ for a scalar $c$, and so $\langle S-\nabla R_\eta(X),Y-X\rangle=-c\operatorname{tr}(Y-X)=0$: first-order optimality holds with equality. Therefore
+$$\Psi(S+M)\le\Psi(S)+\langle X(S),M\rangle+\tfrac\eta2\|M\|^2 .\tag{4.1}$$
+
+## 5. Regret bounds
+
+**Theorem 5.1.** For any adaptively chosen $M_1,\dots,M_T\in\mathbb S^n$, the MMWU plays $X_t=X(S_{t-1})$ satisfy
+$$\lambda_{\max}\Big(\sum_tM_t\Big)\le\sum_t\langle M_t,X_t\rangle+\frac\eta2\sum_t\|M_t\|^2+\frac{\log n}\eta .$$
+
+*Proof.* Sum (4.1) with $S=S_{t-1}$, $M=M_t$ over $t$: $\Psi(S_T)\le\Psi(0)+\sum_t\langle X_t,M_t\rangle+\frac\eta2\sum_t\|M_t\|^2$. Then use $\lambda_{\max}(S_T)\le\Psi(S_T)$ and $\Psi(0)=\frac{\log n}\eta$. $\square$
+
+**Tuning.** If $\|M_t\|\le\rho$, then $\eta=\sqrt{2\log n/(T\rho^2)}$ gives $\mathrm{Regret}_T\le\rho\sqrt{2T\log n}$. In averaged form, $\frac1T\lambda_{\max}(S_T)\le\frac1T\sum_t\langle M_t,X_t\rangle+\varepsilon$ once $T\ge2\rho^2\log n/\varepsilon^2$.
+
+**Losses.** Applying the theorem to $-M_t$: the plays $X_t\propto e^{-\eta S_{t-1}}$ satisfy $\lambda_{\min}(\sum_tM_t)\ge\sum_t\langle M_t,X_t\rangle-\frac\eta2\sum_t\|M_t\|^2-\frac{\log n}\eta$. When $S_{t-1}=s\mathcal L$ with $\mathcal L=D^{-1/2}LD^{-1/2}=D^{1/2}L_{rw}D^{-1/2}$, the play is $e^{-\eta s\mathcal L}/\operatorname{tr}(\cdot)$ and $e^{-\tau\mathcal L}=D^{1/2}H_\tau D^{-1/2}$ is similar to the heat semigroup of Lecture 2. Similarity preserves the diagonal, so $(e^{-\tau\mathcal L})_{ii}=H_\tau(i,i)$, the return probability of the continuous-time walk.
+
+**Local norms (statement).** If $\eta M_t\preceq I$ for all $t$, then
+$$\lambda_{\max}\Big(\sum_tM_t\Big)\le\sum_t\langle M_t,X_t\rangle+\eta\sum_t\langle M_t^2,X_t\rangle+\frac{\log n}\eta .\tag{5.1}$$
+For $0\preceq M_t\preceq\rho I$ we have $M_t^2\preceq\rho M_t$, and (5.1) becomes $\lambda_{\max}(\sum_tM_t)\le(1+\eta\rho)\sum_t\langle M_t,X_t\rangle+\frac{\log n}\eta$: the width enters linearly. The proof is deferred to Lecture 12, where (5.1) drives spectral sparsification. Remark (iii) of §3 suggests a proof by a local version of Lemma 4.1.
+
+## 6. Balanced separator: the relaxation
+
+$S$ is $b$-balanced if $b\,\mathrm{vol}(V)\le\mathrm{vol}(S)\le(1-b)\,\mathrm{vol}(V)$. Consider
+$$\mathrm{SDP}(b):\quad\min\ \frac1{\mathrm{vol}(V)}\sum_{\{i,j\}\in E}w_{ij}\|v_i-v_j\|^2\quad\text{s.t.}\quad\sum_i\pi_iv_i=0,\quad\sum_i\pi_i\|v_i\|^2=1,\quad\|v_i\|^2\le\tfrac1b\ \ \forall i .$$
+
+**Cuts are feasible.** Let $p=\pi(S)\in[b,\frac12]$ and $v_i=(\mathbf 1_S(i)-p)/\sqrt{p(1-p)}\in\mathbb R$. Then $\sum_i\pi_iv_i=0$, $\sum_i\pi_iv_i^2=\frac{p(1-p)^2+(1-p)p^2}{p(1-p)}=1$, and $v_i^2$ equals $\frac{1-p}p$ on $S$ and $\frac p{1-p}\le1$ off $S$. Since $\frac{1-p}p\le\frac1b$ iff $p\ge\frac b{1+b}$, the spread constraint holds. The objective is $\frac{w(S,\bar S)}{\mathrm{vol}(V)\,p(1-p)}=\frac{w(S,\bar S)\,\mathrm{vol}(V)}{\mathrm{vol}(S)\mathrm{vol}(\bar S)}=\bar\phi(S)$. Hence $\mathrm{SDP}(b)\le\min_{S\ b\text{-bal.}}\bar\phi(S)\le2\min_{S\ b\text{-bal.}}\Phi(S)$.
+
+**Without the spread constraint** the minimum is $\lambda=\lambda_2(L_{rw})$: the objective and the two remaining constraints decompose over coordinates of the $v_i$, so the vector problem is no better than the scalar one, $\min_{f\perp_\pi\mathbf 1}\mathcal E(f,f)/\operatorname{Var}_\pi(f)=\lambda$ (Lecture 6).
+
+**Matrix form.** With $X_{ij}=\langle v_i,v_j\rangle$: minimize $\frac{\langle L,X\rangle}{\mathrm{vol}(V)}$ subject to $X\pi=0$ (equivalently $\pi^\top X\pi=\|\sum_i\pi_iv_i\|^2=0$), $\langle\Pi,X\rangle=1$, $X_{ii}\le\frac1b$, $X\succeq0$.
+
+## 7. Exercises
+
+1. For diagonal $M_t$, write out Lemma 2.1, Theorem 3.1 and Theorem 5.1. Which classical results do you get?
+2. FTRL with $R(X)=\frac12\|X\|_F^2$: compute the play (a projection onto $\Delta_n$), the range of $R$ on $\Delta_n$, and the regret bound from Lemma 4.1. Compare with Theorem 5.1 when the $M_t$ have rank one, and when $M_t=I$.
+3. Show that Theorem 3.1 cannot hold with a constant larger than $\frac12$ in front of $\|Y-X\|_1^2$.
+4. Prove (5.1) in the commutative case (all $M_t$ diagonal) using $e^x\le1+x+x^2$ for $x\le1$.
+5. Construct a family of graphs on which recursive spectral partitioning needs $\Omega(n)$ rounds to find a $\frac14$-balanced cut.
+
+## References
+
+- S. Arora, E. Hazan, S. Kale. The multiplicative weights update method: a meta-algorithm and applications. *Theory of Computing* 8 (2012).
+- S. Shalev-Shwartz. Online learning and online convex optimization. *Foundations and Trends in ML* 4 (2012), §2.
+- Y.-L. Yu. The strong convexity of von Neumann's entropy. Note, 2013.
+- R. Bhatia. *Matrix Analysis*, Springer 1997, Ch. V (derivatives of matrix functions, Daleckii–Krein).
+- L. Orecchia, S. Sachdeva, N. K. Vishnoi. Approximating the exponential, the Lanczos method and an $\tilde O(m)$-time spectral algorithm for balanced separator. *STOC* 2012.
