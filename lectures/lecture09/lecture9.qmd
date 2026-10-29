@@ -1,7 +1,6 @@
 ---
 title: "Lecture 9 · Electrical Flows, Effective Resistance, and Fast Laplacian Solvers"
-subtitle: "From gradient descent to cycle toggling:<br>
-randomized coordinate descent in the cycle space"
+subtitle: "From gradient descent to cycle toggling:\ randomized coordinate descent in the cycle space"
 author: "CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis"
 format:
   revealjs:
@@ -28,7 +27,7 @@ $$Lx=b .$$
 :::
 
 ::: notes
-~2 min. The point of the first slide: the number of iterations of anything that only multiplies by L is controlled by the spectrum (we prove a lower bound later). Nearly-linear solvers escape this by using combinatorial structure (trees, sparsifiers, elimination). Today: one full, self-contained proof (KOSZ), and a map of the rest.
+~2 min. The point of the first slide: the number of iterations of anything that only multiplies by L is controlled by the spectrum (we prove a lower bound later). Nearly-linear solvers escape this by using combinatorial structure (trees, sparsifiers, elimination). Today: one full, self-contained proof (KOSZ). The other routes (Spielman–Teng, approximate Gaussian elimination) come in Lecture 12, after sparsification.
 :::
 
 ## Plan
@@ -37,7 +36,7 @@ $$Lx=b .$$
 - Classical methods: gradient descent, Krylov, preconditioning, trees
 - **Randomized coordinate descent**
 - **Full proof of KOSZ** (Kelner–Orecchia–Sidford–Zhu 2013), read as coordinate descent as in Lee–Sidford 2013
-- Other routes: Spielman–Teng, approximate Gaussian elimination (Kyng–Sachdeva 2016)
+- The data structure: $O(\log n)$ per toggle
 
 # Laplacian systems
 
@@ -699,6 +698,83 @@ A toggle of $e=(a,b)$ **reads** one number and **writes** one push:
 ~2 min. The write is the expensive part if we store tree flows; the idea box says how to avoid it. The next slide draws the state we keep.
 :::
 
+## Centroid decomposition: $O(\log n)$ per toggle
+
+- **Read = two queries.** The off-tree flows inject charges $q=\sum_{e=(a,b)\notin T}f_e(\mathbf 1_b-\mathbf 1_a)$ into $T$, the tree flow routes $\chi+q$, and with $R_T$ the resistance metric of $T$,
+$$x_T(u)=x_0(u)-\tfrac12\sum_vq_v\,R_T(u,v)+\text{const},\qquad x_0=L_T^+\chi .$$
+The read $x_T(b)-x_T(a)$ is two **charge-weighted sums of tree distances**.
+
+- **Centroid tree.** Every tree has a vertex whose removal leaves components of size $\le n/2$. Recursing gives a centroid tree of depth $\le\log_2n+1$, and if $c$ is the centroid-tree LCA of $u,v$, then $c$ lies on the tree path from $u$ to $v$:
+$$R_T(u,v)=R_T(u,c)+R_T(c,v).$$
+
+- **Store** at each centroid the total charge and the charge-weighted distance of its component. An update $q_v\mathrel{+}=\alpha$ and a query at $u$ both walk the $\le\log_2n+1$ centroid ancestors.
+
+::: {.thm}
+**Each toggle costs $O(\log n)$** after $O(n\log n)$ preprocessing. The same structure returns $R_T(a,b)$, hence the sampling probabilities.
+:::
+
+::: notes
+~4 min. The formula for x_T comes from L_T⁺ written in terms of R_T: R_T(u,v) = L⁺_uu + L⁺_vv − 2L⁺_uv, and Σ_v q_v = 0. The key point is the reduction "path update + path query" → "point update + sum of weighted distances", a classical problem on a static tree. Full details (stored sums S_c, D_c, D↑_c, the query formula and its proof, the centroid-chain picture) are in the appendix at the end of the deck. Measured: about 35 array entries per toggle on the 64×64 grid.
+:::
+
+## Does it work?
+
+![](figures/grid-convergence.svg){.nostretch width="100%"}
+
+- **Unit-weight $64\times64$ grid** ($n=4\,096$, $m=8\,064$): recursive tree $\tau=6.3m$, BFS tree $\tau=32m$. To reach $10^{-3}$: KOSZ $1\,500m$ work (the cost of $1\,500$ products), CG $112$ products ($146$ for $10^{-6}$). **Here CG wins easily**: $\kappa\approx3\,300$ is mild, and constants matter.
+- **Weighted $32\times32$ grid**, $\kappa\approx6.4\cdot10^4$: max-weight tree $\tau=0.75m$; after a short start KOSZ is ahead of CG (to $10^{-3}$: $180m$ work vs. $620$ products; KOSZ is at $3.5\cdot10^{-6}$ after $330m$), and PCG with the same tree needs 28 iterations. A weight-oblivious tree (BFS: $\tau=3\,535m$) is useless.
+- **Rate:** the observed decay is faster than the guarantee's slope $e^{-k/2\tau}$ (right).
+
+::: notes
+~3 min. The x-axis is work in units of one product with L, i.e. total operations / m. A matvec costs m operations (one per edge), a PCG iteration m + n, a toggle the number of centroid-tree entries it reads or writes (≈ 4·average chain length ≈ 35 here). Computing the plotted error is not charged. The honest message: KOSZ is a theorem about worst-case asymptotics and a beautiful proof; production solvers are PCG with combinatorial preconditioners or approximate Cholesky (Lecture 12). In the right panel the L-norm error, not the energy, is plotted; the guarantee for the energy is e^{−k/τ}, for the L-norm its square root.
+:::
+
+## Demo
+
+<iframe class="demo-frame" style="height:660px" src="demos/laplacian-solvers-demo.html"></iframe>
+
+<p class="tiny muted">Standalone: <a href="demos/laplacian-solvers-demo.html" target="_blank">demos/laplacian-solvers-demo.html</a> (append <code>#toggle</code> to open the second tab). Try: unit grid vs. weighted grid; BFS vs. recursive vs. max-weight tree; step through single toggles on a small grid.</p>
+
+::: notes
+Things to show live. (1) Convergence tab, unit-weight grid: CG wins; switch to log-normal weights with large spread: CG slows down by √κ, KOSZ and PCG with the max-weight tree do not. (2) Switch the tree to BFS on the weighted grid: τ explodes and KOSZ stalls. (3) Toggle tab: a few single steps on an 8×8 grid. Watch the cycle, Δ_e, and the energy gap; the potentials (colors) become smooth.
+:::
+
+## Takeaways
+
+1. **Electrical flows** are the primal, **potentials** the dual; the gap is $\tfrac12\sum_e(r_ef_e-b_e^\top x)^2/r_e$. Effective resistance, hitting and commute times are Laplacian solves.
+2. **Matrix–vector methods** need $\Omega(\text{diameter})$ products for a worst-case $b$, which is $\Omega(\sqrt\kappa)$ on paths and grids: GD is diffusion, Krylov is local.
+3. **Trees** are global: $L_T\preceq L_G\preceq\mathrm{st}_T(G)L_T$, and low-stretch trees have $\mathrm{st}_T(G)=\tilde O(m)$.
+4. **RCD on a quadratic:** sample $\propto M_{ii}$, rate $1-\lambda_{\min}/\operatorname{tr}M$. Three lines.
+5. **KOSZ = RCD in the cycle basis of a low-stretch tree, scaled by $\sqrt{r_e}$:** $\lambda_{\min}\ge1$, $\operatorname{tr}=\tau(T)=\tilde O(m)$. Plus a start lemma (stretch), a stop lemma (duality gap = gradient) and an $O(\log n)$ data structure (centroids + resistance distances).
+
+## Discussion questions
+
+1. Run RCD on the **dual** $\max_x\mathcal D(x)$, one vertex potential at a time. What is the rate? Why is the primal (cycle space) better?
+2. Where does the proof use that $T$ is a **tree**? What changes if $T$ is replaced by a subgraph $H$ with a few cycles (an ultra-sparsifier)?
+3. The stop lemma used $\lambda_{\max}(M)\le\operatorname{tr}M$. What is $\lambda_{\max}(M)$ on the unit grid with the recursive tree, and does it matter?
+4. KOSZ measures cost in toggles, CG in matrix–vector products. On the unit-weight grid, CG wins by a factor $>10$. Which part of the KOSZ bound is loose here, and which part is real?
+
+## References
+
+<div class="small">
+
+- **D. A. Spielman, S.-H. Teng.** Nearly-linear time algorithms for graph partitioning, graph sparsification, and solving linear systems. *STOC* 2004. · Nearly linear time algorithms for preconditioning and solving symmetric, diagonally dominant linear systems. *SIAM J. Matrix Anal. Appl.* 2014.
+- **J. A. Kelner, L. Orecchia, A. Sidford, Z. A. Zhu.** A simple, combinatorial algorithm for solving SDD systems in nearly-linear time. *STOC* 2013 (arXiv:1301.6628).
+- **Y. T. Lee, A. Sidford.** Efficient accelerated coordinate descent methods and faster algorithms for solving linear systems. *FOCS* 2013 (arXiv:1305.1922).
+- Z. Allen-Zhu, Z. Qu, P. Richtárik, Y. Yuan. Even faster accelerated coordinate descent using non-uniform sampling. *ICML* 2016. · Y. Nesterov. Efficiency of coordinate descent methods on huge-scale optimization problems. *SIAM J. Optim.* 2012. · D. Leventhal, A. S. Lewis. Randomized methods for linear constraints: convergence rates and conditioning. *Math. Oper. Res.* 2010. · T. Strohmer, R. Vershynin. A randomized Kaczmarz algorithm with exponential convergence. *J. Fourier Anal. Appl.* 2009.
+- P. M. Vaidya. Solving linear equations with symmetric diagonally dominant matrices by constructing good preconditioners. Manuscript, 1991. · E. G. Boman, B. Hendrickson. Support theory for preconditioning. *SIAM J. Matrix Anal. Appl.* 2003. · D. A. Spielman, J. Woo. A note on preconditioning by low-stretch spanning trees. arXiv:0903.2816, 2009.
+- N. Alon, R. M. Karp, D. Peleg, D. West. A graph-theoretic game and its application to the k-server problem. *SIAM J. Comput.* 1995. · M. Elkin, Y. Emek, D. A. Spielman, S.-H. Teng. Lower-stretch spanning trees. *STOC* 2005. · I. Abraham, O. Neiman. Using petal-decompositions to build a low stretch spanning tree. *STOC* 2012.
+- I. Koutis, G. L. Miller, R. Peng. Approaching optimality for solving SDD systems. *FOCS* 2010; A nearly-$m\log n$ time solver for SDD linear systems. *FOCS* 2011. · M. B. Cohen et al. Solving SDD linear systems in nearly $m\log^{1/2}n$ time. *STOC* 2014.
+- **R. Kyng, S. Sachdeva.** Approximate Gaussian elimination for Laplacians: fast, sparse, and simple. *FOCS* 2016 (arXiv:1605.02353). · Y. Gao, R. Kyng, D. A. Spielman. Robust and practical solution of Laplacian equations by approximate elimination. arXiv:2303.00709, 2023.
+- A. K. Chandra, P. Raghavan, W. L. Ruzzo, R. Smolensky, P. Tiwari. The electrical resistance of a graph captures its commute and cover times. *STOC* 1989. · P. G. Doyle, J. L. Snell. *Random Walks and Electric Networks*. MAA, 1984.
+- D. A. Spielman, N. Srivastava. Graph sparsification by effective resistances. *STOC* 2008. · S.-H. Teng. The Laplacian paradigm: emerging algorithms for massive graphs. *TAMC* 2010. · N. K. Vishnoi. *Lx = b: Laplacian Solvers and Their Algorithmic Applications*. *FnT TCS* 2013.
+
+</div>
+
+<p class="tiny muted">Reading: Vishnoi, *Lx = b*, Parts I–II; KOSZ §§3–5; Spielman's *Spectral and Algebraic Graph Theory*, chapters on solvers and elimination.</p>
+
+# Appendix: the data structure in detail
+
 ## What we store: off-tree flows and charges
 
 :::: {.columns}
@@ -793,123 +869,3 @@ The vertices $v\in K_{c_i}\setminus K_{c_{i-1}}$ are exactly those whose centroi
 ::: notes
 ~4 min. KOSZ's own data structure is also a recursive vertex-separator decomposition of the tree with O(log n) cost; this "charges + resistance distances" presentation is a reformulation that makes the correctness proof two lines. Tested against the naive O(n) formula and against L_T⁺ directly (scripts §6). Sampling: alias method, O(1) per sample after O(m) preprocessing.
 :::
-
-## Does it work?
-
-![](figures/grid-convergence.svg){.nostretch width="100%"}
-
-- **Unit-weight $64\times64$ grid** ($n=4\,096$, $m=8\,064$): recursive tree $\tau=6.3m$, BFS tree $\tau=32m$. To reach $10^{-3}$: KOSZ $1\,500m$ work (the cost of $1\,500$ products), CG $112$ products ($146$ for $10^{-6}$). **Here CG wins easily**: $\kappa\approx3\,300$ is mild, and constants matter.
-- **Weighted $32\times32$ grid**, $\kappa\approx6.4\cdot10^4$: max-weight tree $\tau=0.75m$; after a short start KOSZ is ahead of CG (to $10^{-3}$: $180m$ work vs. $620$ products; KOSZ is at $3.5\cdot10^{-6}$ after $330m$), and PCG with the same tree needs 28 iterations. A weight-oblivious tree (BFS: $\tau=3\,535m$) is useless.
-- **Rate:** the observed decay is faster than the guarantee's slope $e^{-k/2\tau}$ (right).
-
-::: notes
-~3 min. The x-axis is work in units of one product with L, i.e. total operations / m. A matvec costs m operations (one per edge), a PCG iteration m + n, a toggle the number of centroid-tree entries it reads or writes (≈ 4·average chain length ≈ 35 here). Computing the plotted error is not charged. The honest message: KOSZ is a theorem about worst-case asymptotics and a beautiful proof; production solvers are PCG with combinatorial preconditioners or approximate Cholesky (next). In the right panel the L-norm error, not the energy, is plotted; the guarantee for the energy is e^{−k/τ}, for the L-norm its square root.
-:::
-
-# Other routes to nearly-linear time
-
-## Spielman–Teng and recursive preconditioning
-
-::: {.defn}
-**Ultra-sparsifier.** $H$ = spanning tree + $\tilde O(m/k)$ extra edges, with $\ L_H\preceq L_G\preceq k\,L_H$.
-:::
-
-**One level of the recursion:**
-
-1. PCG (or Chebyshev) on $G$ with preconditioner $H$: $O(\sqrt k)$ iterations.
-2. To solve with $L_H$: **eliminate** vertices of degree 1 and 2. A degree-1 vertex is a leaf; a degree-2 vertex is an edge in series ($r\leftarrow r_1+r_2$). No fill-in. What remains has $\tilde O(m/k)$ vertices and edges.
-3. Solve the remaining system **recursively**, approximately.
-
-- Work: $T(m)\approx\sqrt k\,\big(m+T(\tilde O(m/k))\big)$, nearly linear for a suitable $k=\mathrm{polylog}(n)$.
-- Ingredients: low-stretch trees and **spectral sparsifiers** (Lecture 10).
-
-| | running time ($\times\log(1/\varepsilon)$) |
-|:--|:--|
-| Spielman–Teng 2004 | $m\log^{c}n$ |
-| Koutis–Miller–Peng 2010, 2011 | $m\log^2n$, then $m\log n\,(\log\log n)^2$ |
-| Kelner–Orecchia–Sidford–Zhu 2013 | $m\log^2n\,\log\log n$ (no recursion) |
-| Lee–Sidford 2013 | $m\log^{3/2}n\,\sqrt{\log\log n}$ |
-| Cohen–Kyng–Miller–Pachocki–Peng–Rao–Xu 2014 | $m\sqrt{\log n}\,(\log\log n)^{O(1)}$ |
-| Kyng–Sachdeva 2016 | $m\log^3n$ (sampling only) |
-
-::: notes
-~4 min. The degree-1 and degree-2 eliminations are exact Gaussian elimination steps that create no new edges: this is "partial Cholesky". The table is a guide, not a precise statement: polyloglog factors and the exact dependence on ε vary between papers (KOSZ has log(n/ε) in our analysis). KMP: Koutis–Miller–Peng, "Approaching optimality..." (FOCS 2010) and "A nearly m log n time solver..." (FOCS 2011).
-:::
-
-## Gaussian elimination is a graph operation
-
-Eliminating vertex $v$ (one step of Cholesky) writes $L=d_v\,c_vc_v^\top+L'$, with $c_v=\mathbf 1_v-\sum_u\frac{w_{vu}}{d_v}\mathbf 1_u$, and the **Schur complement**
-$$L'=L-\mathrm{star}(v)+\mathrm{clique}(v),\qquad \mathrm{clique}(v)=\sum_{\{u,u'\}\subseteq N(v)}\frac{w_{vu}w_{vu'}}{d_v}\,b_{uu'}b_{uu'}^\top .$$
-
-- **The Schur complement of a Laplacian is a Laplacian**, on $V-v$. It is the electrical network seen from $V-v$ (star–mesh transform).
-- Eliminating all vertices gives $L=\mathcal L\mathcal L^\top$ exactly. The cost is the **fill-in**: a vertex of degree $d$ creates up to $\binom d2$ edges.
-- Trees (degree 1) and series edges (degree 2) create no fill. Grids do: nested dissection gives $O(n^{1.5})$ time for planar graphs (George 1973; Lipton–Rose–Tarjan 1979); expanders are hopeless.
-
-::: notes
-~3 min. Check of the clique weights: d_v c_v c_v^T has off-diagonal entries w_vu w_vu'/d_v, which must be added back to keep the star's contribution correct. Star–mesh: eliminating the center of a 3-star is the Y–Δ transform from physics.
-:::
-
-## Approximate Gaussian elimination (Kyng–Sachdeva 2016)
-
-::: {.defn}
-**Clique sampling.** When eliminating $v$, for each (multi-)edge $(v,u)$ sample one neighbor $u'$ with probability $w_{vu'}/d_v$ and add the edge $(u,u')$ with weight $\dfrac{w_{vu}w_{vu'}}{w_{vu}+w_{vu'}}$ (nothing if $u'=u$).
-:::
-
-- **Unbiased:** the expected weight on $\{u,u'\}$ is $\frac{w_{vu'}}{d_v}\cdot\frac{w_{vu}w_{vu'}}{w_{vu}+w_{vu'}}+\frac{w_{vu}}{d_v}\cdot\frac{w_{vu}w_{vu'}}{w_{vu}+w_{vu'}}=\frac{w_{vu}w_{vu'}}{d_v}$.
-- **Sparse:** eliminating $v$ removes $\deg(v)$ edges and adds at most $\deg(v)$. **The number of edges never grows.**
-- **Concentrated:** split every edge into $\rho=O(\log^2n)$ copies and eliminate in a **uniformly random order**. Every sample is then a small piece relative to $L$, and the errors form a **matrix martingale** (matrix Freedman). W.h.p. the result $\tilde L=\tilde{\mathcal L}\tilde{\mathcal L}^\top$ satisfies $\ \tfrac12L\preceq\tilde L\preceq\tfrac32L$.
-- Factorization in $O(m\log^3n)$ time, then PCG: $O(m\log^3n\log(1/\varepsilon))$. No trees, no sparsifiers, no expanders.
-
-![](figures/approx-elimination.svg){width="88%"}
-
-<p class="small muted center">$24\times24$ grid, random order. Exact elimination peaks at $18m$ edges. With $\rho=16$, $\ \mathrm{spec}(L^{+/2}\tilde LL^{+/2})\subseteq[0.70,1.30]$; with $\rho=64$, $[0.84,1.18]$ (average over 4 runs).</p>
-
-::: notes
-~5 min. The split copies are what make every sample have leverage score ≤ 1/ρ, exactly the condition for matrix concentration in Lecture 8 (matrix Bernstein) and Lecture 10 (sparsification). The random order keeps expected degrees small: a random remaining vertex has expected degree 2·(edges)/(vertices). Modern practice: Gao–Kyng–Spielman (2023) "ApproxChol" in Laplacians.jl, a robust variant of this algorithm used as a PCG preconditioner. Numbers from make_figures.py, Fig. 4; unbiasedness checked in scripts §8.
-:::
-
-## Demo
-
-<iframe class="demo-frame" style="height:660px" src="demos/laplacian-solvers-demo.html"></iframe>
-
-<p class="tiny muted">Standalone: <a href="demos/laplacian-solvers-demo.html" target="_blank">demos/laplacian-solvers-demo.html</a> (append <code>#toggle</code> to open the second tab). Try: unit grid vs. weighted grid; BFS vs. recursive vs. max-weight tree; step through single toggles on a small grid.</p>
-
-::: notes
-Things to show live. (1) Convergence tab, unit-weight grid: CG wins; switch to log-normal weights with large spread: CG slows down by √κ, KOSZ and PCG with the max-weight tree do not. (2) Switch the tree to BFS on the weighted grid: τ explodes and KOSZ stalls. (3) Toggle tab: a few single steps on an 8×8 grid. Watch the cycle, Δ_e, and the energy gap; the potentials (colors) become smooth.
-:::
-
-## Takeaways
-
-1. **Electrical flows** are the primal, **potentials** the dual; the gap is $\tfrac12\sum_e(r_ef_e-b_e^\top x)^2/r_e$. Effective resistance, hitting and commute times are Laplacian solves.
-2. **Matrix–vector methods** need $\Omega(\text{diameter})$ products for a worst-case $b$, which is $\Omega(\sqrt\kappa)$ on paths and grids: GD is diffusion, Krylov is local.
-3. **Trees** are global: $L_T\preceq L_G\preceq\mathrm{st}_T(G)L_T$, and low-stretch trees have $\mathrm{st}_T(G)=\tilde O(m)$.
-4. **RCD on a quadratic:** sample $\propto M_{ii}$, rate $1-\lambda_{\min}/\operatorname{tr}M$. Three lines.
-5. **KOSZ = RCD in the cycle basis of a low-stretch tree, scaled by $\sqrt{r_e}$:** $\lambda_{\min}\ge1$, $\operatorname{tr}=\tau(T)=\tilde O(m)$. Plus a start lemma (stretch), a stop lemma (duality gap = gradient) and an $O(\log n)$ data structure (centroids + resistance distances).
-6. **Elimination:** the Schur complement of a Laplacian is a Laplacian; sample the cliques to keep it sparse (Kyng–Sachdeva).
-
-## Discussion questions
-
-1. Run RCD on the **dual** $\max_x\mathcal D(x)$, one vertex potential at a time. What is the rate? Why is the primal (cycle space) better?
-2. Where does the proof use that $T$ is a **tree**? What changes if $T$ is replaced by a subgraph $H$ with a few cycles (an ultra-sparsifier)?
-3. The stop lemma used $\lambda_{\max}(M)\le\operatorname{tr}M$. What is $\lambda_{\max}(M)$ on the unit grid with the recursive tree, and does it matter?
-4. KOSZ measures cost in toggles, CG in matrix–vector products. On the unit-weight grid, CG wins by a factor $>10$. Which part of the KOSZ bound is loose here, and which part is real?
-5. Why does Kyng–Sachdeva need a **random** elimination order? Construct an order that makes clique sampling fail on a star.
-
-## References
-
-<div class="small">
-
-- **D. A. Spielman, S.-H. Teng.** Nearly-linear time algorithms for graph partitioning, graph sparsification, and solving linear systems. *STOC* 2004. · Nearly linear time algorithms for preconditioning and solving symmetric, diagonally dominant linear systems. *SIAM J. Matrix Anal. Appl.* 2014.
-- **J. A. Kelner, L. Orecchia, A. Sidford, Z. A. Zhu.** A simple, combinatorial algorithm for solving SDD systems in nearly-linear time. *STOC* 2013 (arXiv:1301.6628).
-- **Y. T. Lee, A. Sidford.** Efficient accelerated coordinate descent methods and faster algorithms for solving linear systems. *FOCS* 2013 (arXiv:1305.1922).
-- Z. Allen-Zhu, Z. Qu, P. Richtárik, Y. Yuan. Even faster accelerated coordinate descent using non-uniform sampling. *ICML* 2016. · Y. Nesterov. Efficiency of coordinate descent methods on huge-scale optimization problems. *SIAM J. Optim.* 2012. · D. Leventhal, A. S. Lewis. Randomized methods for linear constraints: convergence rates and conditioning. *Math. Oper. Res.* 2010. · T. Strohmer, R. Vershynin. A randomized Kaczmarz algorithm with exponential convergence. *J. Fourier Anal. Appl.* 2009.
-- P. M. Vaidya. Solving linear equations with symmetric diagonally dominant matrices by constructing good preconditioners. Manuscript, 1991. · E. G. Boman, B. Hendrickson. Support theory for preconditioning. *SIAM J. Matrix Anal. Appl.* 2003. · D. A. Spielman, J. Woo. A note on preconditioning by low-stretch spanning trees. arXiv:0903.2816, 2009.
-- N. Alon, R. M. Karp, D. Peleg, D. West. A graph-theoretic game and its application to the k-server problem. *SIAM J. Comput.* 1995. · M. Elkin, Y. Emek, D. A. Spielman, S.-H. Teng. Lower-stretch spanning trees. *STOC* 2005. · I. Abraham, O. Neiman. Using petal-decompositions to build a low stretch spanning tree. *STOC* 2012.
-- I. Koutis, G. L. Miller, R. Peng. Approaching optimality for solving SDD systems. *FOCS* 2010; A nearly-$m\log n$ time solver for SDD linear systems. *FOCS* 2011. · M. B. Cohen et al. Solving SDD linear systems in nearly $m\log^{1/2}n$ time. *STOC* 2014.
-- **R. Kyng, S. Sachdeva.** Approximate Gaussian elimination for Laplacians: fast, sparse, and simple. *FOCS* 2016 (arXiv:1605.02353). · Y. Gao, R. Kyng, D. A. Spielman. Robust and practical solution of Laplacian equations by approximate elimination. arXiv:2303.00709, 2023.
-- A. K. Chandra, P. Raghavan, W. L. Ruzzo, R. Smolensky, P. Tiwari. The electrical resistance of a graph captures its commute and cover times. *STOC* 1989. · P. G. Doyle, J. L. Snell. *Random Walks and Electric Networks*. MAA, 1984.
-- D. A. Spielman, N. Srivastava. Graph sparsification by effective resistances. *STOC* 2008. · S.-H. Teng. The Laplacian paradigm: emerging algorithms for massive graphs. *TAMC* 2010. · N. K. Vishnoi. *Lx = b: Laplacian Solvers and Their Algorithmic Applications*. *FnT TCS* 2013.
-
-</div>
-
-<p class="tiny muted">Reading: Vishnoi, *Lx = b*, Parts I–II; KOSZ §§3–5; Spielman's *Spectral and Algebraic Graph Theory*, chapters on solvers and elimination.</p>
