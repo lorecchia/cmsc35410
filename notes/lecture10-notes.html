@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Notes for Lecture 10 (10/29), with full proofs.">
+
+<title>Online Learning over Density Matrices – CMSC 35410</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b626d73c4c936ccc3cb08be7d45d1df6.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-69e6cf5ba00cf12fca44835f239c74bb.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-7e5a284c3b7a91c15c664ebe35ec31de.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-69e6cf5ba00cf12fca44835f239c74bb.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">CMSC 35410</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../schedule.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../notes.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../resources.html"> 
+<span class="menu-text">Resources</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/lorecchia/cmsc35410"> <i class="bi bi-github" role="img" aria-label="GitHub repository">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-game" id="toc-the-game" class="nav-link active" data-scroll-target="#the-game">1. The game</a></li>
+  <li><a href="#ftrl-and-the-gibbs-variational-principle" id="toc-ftrl-and-the-gibbs-variational-principle" class="nav-link" data-scroll-target="#ftrl-and-the-gibbs-variational-principle">2. FTRL and the Gibbs variational principle</a></li>
+  <li><a href="#strong-convexity-of-von-neumann-entropy" id="toc-strong-convexity-of-von-neumann-entropy" class="nav-link" data-scroll-target="#strong-convexity-of-von-neumann-entropy">3. Strong convexity of von Neumann entropy</a></li>
+  <li><a href="#strong-convexity-implies-smoothness-of-the-maximum" id="toc-strong-convexity-implies-smoothness-of-the-maximum" class="nav-link" data-scroll-target="#strong-convexity-implies-smoothness-of-the-maximum">4. Strong convexity implies smoothness of the maximum</a></li>
+  <li><a href="#regret-bounds" id="toc-regret-bounds" class="nav-link" data-scroll-target="#regret-bounds">5. Regret bounds</a></li>
+  <li><a href="#balanced-separator-the-relaxation" id="toc-balanced-separator-the-relaxation" class="nav-link" data-scroll-target="#balanced-separator-the-relaxation">6. Balanced separator: the relaxation</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">7. Exercises</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/notes/lecture10-notes.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Online Learning over Density Matrices</h1>
+<p class="subtitle lead">FTRL, the matrix multiplicative weights update, and strong convexity of von Neumann entropy</p>
+</div>
+
+<div>
+  <div class="description">
+    Notes for Lecture 10 (10/29), with full proofs.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>These notes accompany the second half of Lecture 10. They set up online linear optimization over density matrices, derive the matrix multiplicative weights update (MMWU) as follow-the-regularized-leader (FTRL) with von Neumann entropy, and prove its regret bound through the principle “strong convexity of the regularizer implies smoothness of the maximum”. §3 contains the full proof that von Neumann entropy is <span class="math inline">\(1\)</span>-strongly convex with respect to the trace norm, which the slides state without proof. §6 records the balanced-separator relaxation.</p>
+<p><strong>Notation.</strong> <span class="math inline">\(\mathbb S^n\)</span> is the space of real symmetric <span class="math inline">\(n\times n\)</span> matrices with <span class="math inline">\(\langle A,B\rangle=\operatorname{tr}(AB)\)</span>. For <span class="math inline">\(X=\sum_kx_ku_ku_k^\top\in\mathbb S^n\)</span> and a function <span class="math inline">\(f\)</span> defined on the spectrum, <span class="math inline">\(f(X)=\sum_kf(x_k)u_ku_k^\top\)</span>. The <strong>trace norm</strong> is <span class="math inline">\(\|H\|_1=\sum_k|\lambda_k(H)|\)</span> and the <strong>operator norm</strong> is <span class="math inline">\(\|M\|=\max_k|\lambda_k(M)|\)</span>. They are dual: <span class="math inline">\(\|M\|=\max_{\|H\|_1\le1}\langle M,H\rangle\)</span> and <span class="math inline">\(\|H\|_1=\max_{\|M\|\le1}\langle M,H\rangle\)</span>, the latter attained at <span class="math inline">\(M=\operatorname{sgn}(H)\)</span>. The <strong>spectraplex</strong> is <span class="math inline">\(\Delta_n=\{X\in\mathbb S^n:X\succeq0,\ \operatorname{tr}X=1\}\)</span>, and we use <span class="math inline">\(0\log0=0\)</span>.</p>
+<hr>
+<section id="the-game" class="level2">
+<h2 class="anchored" data-anchor-id="the-game">1. The game</h2>
+<p>For <span class="math inline">\(t=1,\dots,T\)</span> the player chooses <span class="math inline">\(X_t\in\Delta_n\)</span>, then an adversary reveals <span class="math inline">\(M_t\in\mathbb S^n\)</span> (possibly depending on <span class="math inline">\(X_1,\dots,X_t\)</span>), and the player gains <span class="math inline">\(\langle M_t,X_t\rangle\)</span>. With <span class="math inline">\(S_t=\sum_{s\le t}M_s\)</span>, the regret is <span class="math display">\[\mathrm{Regret}_T=\max_{X\in\Delta_n}\langle S_T,X\rangle-\sum_t\langle M_t,X_t\rangle=\lambda_{\max}(S_T)-\sum_t\langle M_t,X_t\rangle .\]</span> The second equality is Courant–Fischer: a linear function on the compact convex set <span class="math inline">\(\Delta_n\)</span> is maximized at an extreme point <span class="math inline">\(uu^\top\)</span>, and <span class="math inline">\(\langle S,uu^\top\rangle=u^\top Su\)</span>.</p>
+<p><strong>A regret bound is an eigenvalue bound.</strong> Rearranged, <span class="math inline">\(\lambda_{\max}(\sum_tM_t)\le\sum_t\langle M_t,X_t\rangle+\mathrm{Regret}_T\)</span>. In applications we choose <span class="math inline">\(M_t\)</span> in response to <span class="math inline">\(X_t\)</span> so that <span class="math inline">\(\langle M_t,X_t\rangle\)</span> is small, and the regret bound controls the top eigenvalue of the sum.</p>
+<p><strong>Follow the leader fails.</strong> FTL plays <span class="math inline">\(X_t\in\arg\max_X\langle S_{t-1},X\rangle\)</span>, a top eigenvector of <span class="math inline">\(S_{t-1}\)</span>. With two experts (diagonal <span class="math inline">\(M_t\)</span>) and gains <span class="math inline">\(g_1=(\frac12,0)\)</span>, then alternately <span class="math inline">\((0,1)\)</span> and <span class="math inline">\((1,0)\)</span>, the leader after round <span class="math inline">\(t\)</span> is always the expert that gains <span class="math inline">\(0\)</span> in round <span class="math inline">\(t+1\)</span>. FTL gains at most <span class="math inline">\(\frac12\)</span>, while each expert gains at least <span class="math inline">\(\frac{T-1}2\)</span>.</p>
+</section>
+<section id="ftrl-and-the-gibbs-variational-principle" class="level2">
+<h2 class="anchored" data-anchor-id="ftrl-and-the-gibbs-variational-principle">2. FTRL and the Gibbs variational principle</h2>
+<p>FTRL with regularizer <span class="math inline">\(R\)</span> and step size <span class="math inline">\(\eta&gt;0\)</span> plays <span class="math inline">\(X_t=\arg\max_{X\in\Delta_n}\{\langle S_{t-1},X\rangle-\frac1\eta R(X)\}\)</span>. We take the <strong>von Neumann negative entropy</strong> <span class="math inline">\(R(X)=\operatorname{tr}X\log X=\sum_kx_k\log x_k\)</span>. Since the eigenvalues of <span class="math inline">\(X\in\Delta_n\)</span> form a probability vector, <span class="math inline">\(-\log n\le R(X)\le0\)</span>, with the minimum at <span class="math inline">\(I/n\)</span> and the maximum at rank-one <span class="math inline">\(X\)</span>. The <strong>quantum relative entropy</strong> is <span class="math inline">\(D(Y\Vert X)=\operatorname{tr}Y(\log Y-\log X)\)</span> for <span class="math inline">\(X\)</span> of full rank.</p>
+<p><strong>Lemma 2.1 (Gibbs).</strong> For <span class="math inline">\(A\in\mathbb S^n\)</span>, <span class="math inline">\(\ \max_{X\in\Delta_n}\{\langle A,X\rangle-\operatorname{tr}X\log X\}=\log\operatorname{tr}e^A\)</span>, attained only at <span class="math inline">\(\rho_A=e^A/\operatorname{tr}e^A\)</span>.</p>
+<p><em>Proof.</em> With <span class="math inline">\(Z=\operatorname{tr}e^A\)</span> we have <span class="math inline">\(\log\rho_A=A-(\log Z)I\)</span>, so <span class="math inline">\(\langle A,X\rangle=\operatorname{tr}X\log\rho_A+\log Z\)</span> for <span class="math inline">\(X\in\Delta_n\)</span>, and <span class="math inline">\(\langle A,X\rangle-\operatorname{tr}X\log X=\log Z-D(X\Vert\rho_A)\)</span>. By Klein’s inequality (Corollary 3.4 below), <span class="math inline">\(D(X\Vert\rho_A)\ge0\)</span> with equality iff <span class="math inline">\(X=\rho_A\)</span>. <span class="math inline">\(\square\)</span></p>
+<p>Applying the lemma to <span class="math inline">\(A=\eta S\)</span> gives the MMWU and its value function: <span class="math display">\[X(S)=\frac{e^{\eta S}}{\operatorname{tr}e^{\eta S}},\qquad\Psi(S):=\max_{X\in\Delta_n}\Big\{\langle S,X\rangle-\tfrac1\eta\operatorname{tr}X\log X\Big\}=\frac1\eta\log\operatorname{tr}e^{\eta S},\qquad X_t=X(S_{t-1}).\]</span> Two facts follow at once: <span class="math inline">\(\Psi(0)=\frac{\log n}\eta\)</span>, and <span class="math inline">\(\lambda_{\max}(S)\le\Psi(S)\le\lambda_{\max}(S)+\frac{\log n}\eta\)</span> (compare with <span class="math inline">\(X=uu^\top\)</span> and use the range of <span class="math inline">\(R\)</span>). For diagonal <span class="math inline">\(S=\operatorname{diag}(s)\)</span>, <span class="math inline">\(X(S)=\operatorname{diag}(p)\)</span> with <span class="math inline">\(p_i\propto e^{\eta s_i}\)</span>: the Hedge algorithm.</p>
+</section>
+<section id="strong-convexity-of-von-neumann-entropy" class="level2">
+<h2 class="anchored" data-anchor-id="strong-convexity-of-von-neumann-entropy">3. Strong convexity of von Neumann entropy</h2>
+<p><strong>Theorem 3.1.</strong> For <span class="math inline">\(X\in\Delta_n\)</span> of full rank and every <span class="math inline">\(Y\in\Delta_n\)</span>, <span class="math display">\[\operatorname{tr}Y\log Y\ \ge\ \operatorname{tr}X\log X+\langle\log X+I,\,Y-X\rangle+\tfrac12\|Y-X\|_1^2 .\]</span> That is, <span class="math inline">\(R\)</span> is <span class="math inline">\(1\)</span>-strongly convex on <span class="math inline">\(\Delta_n\)</span> with respect to <span class="math inline">\(\|\cdot\|_1\)</span>.</p>
+<p>We need two facts about derivatives of matrix functions. For a function <span class="math inline">\(f\)</span> and reals <span class="math inline">\(a,b\)</span> in its domain, write <span class="math inline">\(f^{[1]}(a,b)=\frac{f(a)-f(b)}{a-b}\)</span> if <span class="math inline">\(a\ne b\)</span> and <span class="math inline">\(f^{[1]}(a,a)=f'(a)\)</span>.</p>
+<p><strong>Lemma 3.2.</strong> Let <span class="math inline">\(f\)</span> be <span class="math inline">\(C^1\)</span> on an open interval <span class="math inline">\(J\)</span>, let <span class="math inline">\(X(t)=X+tH\)</span> with <span class="math inline">\(X,H\in\mathbb S^n\)</span>, and suppose the spectrum of <span class="math inline">\(X(t_0)\)</span> lies in <span class="math inline">\(J\)</span>. Then at <span class="math inline">\(t=t_0\)</span>:</p>
+<ol type="a">
+<li><p><span class="math inline">\(\ \frac{d}{dt}\operatorname{tr}F(X(t))=\operatorname{tr}\big(f(X(t))\,H\big)\)</span>, where <span class="math inline">\(F\)</span> is an antiderivative of <span class="math inline">\(f\)</span>;</p></li>
+<li><p><strong>(Daleckii–Krein)</strong> in an orthonormal eigenbasis of <span class="math inline">\(X(t_0)\)</span> with eigenvalues <span class="math inline">\(x_1,\dots,x_n\)</span>, <span class="math inline">\(\ \big[\tfrac{d}{dt}f(X(t))\big]_{ij}=f^{[1]}(x_i,x_j)\,H_{ij}\)</span>.</p></li>
+</ol>
+<p><em>Proof.</em> For <span class="math inline">\(f(x)=x^k\)</span>: <span class="math inline">\(\frac d{dt}X(t)^k=\sum_{a+b=k-1}X^aHX^b\)</span>. In the eigenbasis its <span class="math inline">\((i,j)\)</span> entry is <span class="math inline">\(H_{ij}\sum_{a+b=k-1}x_i^ax_j^b=H_{ij}\,f^{[1]}(x_i,x_j)\)</span>, which is (b). Taking the trace and using cyclicity gives <span class="math inline">\(\frac d{dt}\operatorname{tr}X(t)^{k+1}=(k+1)\operatorname{tr}(X^kH)\)</span>, which is (a) for <span class="math inline">\(F(x)=x^{k+1}/(k+1)\)</span>. Both statements are linear in <span class="math inline">\(f\)</span>, so they hold for polynomials. For general <span class="math inline">\(C^1\)</span> <span class="math inline">\(f\)</span>, choose a compact interval <span class="math inline">\(J'\subset J\)</span> containing the spectra of <span class="math inline">\(X(t)\)</span> for <span class="math inline">\(t\)</span> near <span class="math inline">\(t_0\)</span>, and polynomials <span class="math inline">\(p_m\to f\)</span> in <span class="math inline">\(C^1(J')\)</span> (Weierstrass applied to <span class="math inline">\(f'\)</span>, then integrate). Both sides of (a) and (b) converge uniformly in <span class="math inline">\(t\)</span> near <span class="math inline">\(t_0\)</span>, so the derivative identities pass to the limit. <span class="math inline">\(\square\)</span></p>
+<p><strong>Lemma 3.3 (log mean <span class="math inline">\(\le\)</span> arithmetic mean).</strong> For <span class="math inline">\(a,b&gt;0\)</span>, <span class="math inline">\(\ \dfrac1{\log^{[1]}(a,b)}\le\dfrac{a+b}2\)</span>, where <span class="math inline">\(\log^{[1]}(a,b)=\frac{\log a-\log b}{a-b}\)</span>.</p>
+<p><em>Proof.</em> For <span class="math inline">\(a=b\)</span> both sides equal <span class="math inline">\(a\)</span>. Otherwise write <span class="math inline">\(a=be^{2u}\)</span> with <span class="math inline">\(u\ne0\)</span>. The claim becomes <span class="math inline">\(\frac{b(e^{2u}-1)}{2u}\le\frac{b(e^{2u}+1)}2\)</span>, i.e.&nbsp;<span class="math inline">\(\tanh u\le u\)</span> for <span class="math inline">\(u&gt;0\)</span> (and the reverse inequality, equivalent after dividing by <span class="math inline">\(u&lt;0\)</span>, for <span class="math inline">\(u&lt;0\)</span>). <span class="math inline">\(\square\)</span></p>
+<p><em>Proof of Theorem 3.1.</em> Let <span class="math inline">\(H=Y-X\)</span>, so <span class="math inline">\(\operatorname{tr}H=0\)</span>, and <span class="math inline">\(X(t)=X+tH=(1-t)X+tY\)</span>. For <span class="math inline">\(t\in[0,1)\)</span>, <span class="math inline">\(X(t)\in\Delta_n\)</span> has full rank, since <span class="math inline">\(X(t)\succeq(1-t)X\succ0\)</span>. Let <span class="math inline">\(g(t)=\operatorname{tr}\varphi(X(t))\)</span> with <span class="math inline">\(\varphi(x)=x\log x\)</span>, continuous on <span class="math inline">\([0,1]\)</span>.</p>
+<p><em>First derivative.</em> By Lemma 3.2(a) with <span class="math inline">\(f=\varphi'=1+\log\)</span>, <span class="math inline">\(\ g'(t)=\operatorname{tr}\big((I+\log X(t))H\big)\)</span>. In particular <span class="math inline">\(g'(0)=\langle\log X+I,Y-X\rangle\)</span>.</p>
+<p><em>Second derivative.</em> By Lemma 3.2(b) with <span class="math inline">\(f=1+\log\)</span>, in an eigenbasis of <span class="math inline">\(X(t)\)</span> with eigenvalues <span class="math inline">\(x_i&gt;0\)</span>, <span class="math display">\[g''(t)=\operatorname{tr}\Big(\tfrac{d}{dt}\log X(t)\cdot H\Big)=\sum_{i,j}\log^{[1]}(x_i,x_j)\,H_{ij}H_{ji}=\sum_{i,j}\log^{[1]}(x_i,x_j)\,H_{ij}^2\ \ge\ \sum_{i,j}\frac{H_{ij}^2}{m_{ij}},\qquad m_{ij}=\frac{x_i+x_j}2,\]</span> using Lemma 3.3.</p>
+<p><em>Cauchy–Schwarz against the sign.</em> Let <span class="math inline">\(U=\operatorname{sgn}(H)\)</span>, symmetric with eigenvalues in <span class="math inline">\(\{-1,0,1\}\)</span>, so <span class="math inline">\(U^2\preceq I\)</span> and <span class="math inline">\(\|H\|_1=\operatorname{tr}(HU)=\sum_{i,j}H_{ij}U_{ji}\)</span> (entries in the same eigenbasis of <span class="math inline">\(X(t)\)</span>). Then <span class="math display">\[\|H\|_1^2\le\Big(\sum_{i,j}\frac{H_{ij}^2}{m_{ij}}\Big)\Big(\sum_{i,j}m_{ij}U_{ij}^2\Big),\qquad \sum_{i,j}m_{ij}U_{ij}^2=\sum_ix_i\,(U^2)_{ii}\le\sum_ix_i=1,\]</span> where the middle identity uses the symmetry of <span class="math inline">\(m\)</span> and <span class="math inline">\(U\)</span>: <span class="math inline">\(\sum_{i,j}\frac{x_i+x_j}2U_{ij}^2=\sum_ix_i\sum_jU_{ij}^2\)</span>. Hence <span class="math inline">\(g''(t)\ge\|H\|_1^2\)</span> for all <span class="math inline">\(t\in[0,1)\)</span>.</p>
+<p><em>Integrate.</em> For <span class="math inline">\(s&lt;1\)</span>, Taylor’s formula with integral remainder gives <span class="math inline">\(g(s)=g(0)+sg'(0)+\int_0^s(s-t)g''(t)\,dt\ge g(0)+sg'(0)+\frac{s^2}2\|H\|_1^2\)</span>. Let <span class="math inline">\(s\to1\)</span> and use continuity of <span class="math inline">\(g\)</span> on <span class="math inline">\([0,1]\)</span>. <span class="math inline">\(\square\)</span></p>
+<p><strong>Corollary 3.4 (quantum Pinsker, Klein).</strong> For <span class="math inline">\(X\in\Delta_n\)</span> of full rank and <span class="math inline">\(Y\in\Delta_n\)</span>, <span class="math inline">\(\ D(Y\Vert X)\ge\frac12\|Y-X\|_1^2\)</span>. In particular <span class="math inline">\(D(Y\Vert X)\ge0\)</span>, with equality iff <span class="math inline">\(Y=X\)</span>.</p>
+<p><em>Proof.</em> Since <span class="math inline">\(\operatorname{tr}(Y-X)=0\)</span>, the gap in Theorem 3.1 is <span class="math inline">\(\operatorname{tr}Y\log Y-\operatorname{tr}X\log X-\operatorname{tr}(Y\log X)+\operatorname{tr}(X\log X)=D(Y\Vert X)\)</span>. <span class="math inline">\(\square\)</span></p>
+<p><strong>Remarks.</strong> (i) For diagonal <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> this is the classical Pinsker inequality <span class="math inline">\(\mathrm{KL}(q\Vert p)\ge\frac12\|q-p\|_1^2\)</span> (Lecture 3). (ii) The constant is sharp: already for <span class="math inline">\(2\times2\)</span> diagonal matrices near <span class="math inline">\(I/2\)</span>, <span class="math inline">\(\mathrm{KL}\approx\frac12\|q-p\|_1^2\)</span>. (iii) The proof shows more: the Hessian of <span class="math inline">\(R\)</span> at <span class="math inline">\(X\)</span> dominates the <strong>local</strong> quadratic form <span class="math inline">\(H\mapsto\sum_{ij}H_{ij}^2/m_{ij}\)</span>, whose dual form is <span class="math inline">\(M\mapsto\sum_{ij}m_{ij}M_{ij}^2=\langle X,M^2\rangle\)</span>. This is the starting point for the local-norm bound of §5. This argument follows Yu (2013).</p>
+</section>
+<section id="strong-convexity-implies-smoothness-of-the-maximum" class="level2">
+<h2 class="anchored" data-anchor-id="strong-convexity-implies-smoothness-of-the-maximum">4. Strong convexity implies smoothness of the maximum</h2>
+<p><strong>Lemma 4.1.</strong> Let <span class="math inline">\(K\)</span> be convex, <span class="math inline">\(R:K\to\mathbb R\)</span> <span class="math inline">\(\alpha\)</span>-strongly convex w.r.t. <span class="math inline">\(\|\cdot\|\)</span> at the maximizers below, <span class="math inline">\(\Psi(S)=\max_{X\in K}\{\langle S,X\rangle-R(X)\}\)</span>, and <span class="math inline">\(X(S)\)</span> a maximizer at which <span class="math inline">\(R\)</span> is differentiable along <span class="math inline">\(K\)</span> and first-order optimality holds: <span class="math inline">\(\langle S-\nabla R(X(S)),Y-X(S)\rangle\le0\)</span> for all <span class="math inline">\(Y\in K\)</span>. Then <span class="math display">\[\Psi(S+M)\le\Psi(S)+\langle X(S),M\rangle+\frac1{2\alpha}\|M\|_*^2 .\]</span></p>
+<p><em>Proof.</em> Let <span class="math inline">\(X=X(S)\)</span>, <span class="math inline">\(g(Y)=\langle S,Y\rangle-R(Y)\)</span>. By strong convexity and first-order optimality, for every <span class="math inline">\(Y\in K\)</span>, <span class="math display">\[g(Y)\le\langle S,Y\rangle-R(X)-\langle\nabla R(X),Y-X\rangle-\tfrac\alpha2\|Y-X\|^2=g(X)+\langle S-\nabla R(X),Y-X\rangle-\tfrac\alpha2\|Y-X\|^2\le\Psi(S)-\tfrac\alpha2\|Y-X\|^2 .\]</span> With <span class="math inline">\(Y=X(S+M)\)</span> and <span class="math inline">\(r=\|Y-X\|\)</span>: <span class="math display">\[\Psi(S+M)=g(Y)+\langle M,X\rangle+\langle M,Y-X\rangle\le\Psi(S)+\langle M,X\rangle+\|M\|_*r-\tfrac\alpha2r^2\le\Psi(S)+\langle M,X\rangle+\tfrac1{2\alpha}\|M\|_*^2.\ \square\]</span></p>
+<p><strong>Remark (the maximizer is Lipschitz).</strong> Under the same hypotheses, writing the quadratic-decay inequality for <span class="math inline">\(g_S\)</span> at <span class="math inline">\(X=X(S)\)</span> and for <span class="math inline">\(g_{S+M}=g_S+\langle M,\cdot\rangle\)</span> at <span class="math inline">\(Y=X(S+M)\)</span>, and adding, gives <span class="math inline">\(\alpha\|Y-X\|^2\le\langle M,Y-X\rangle\le\|M\|_*\|Y-X\|\)</span>, so <span class="math inline">\(\|X(S+M)-X(S)\|\le\|M\|_*/\alpha\)</span>. For the entropy: <span class="math inline">\(\|X(S+M)-X(S)\|_1\le\eta\|M\|\)</span>. Linear objectives (<span class="math inline">\(\alpha=0\)</span>) have no such bound: the maximizer jumps between extreme points, which is why FTL fails.</p>
+<p><strong>Application to the entropy.</strong> Take <span class="math inline">\(K=\Delta_n\)</span>, <span class="math inline">\(R_\eta=\frac1\eta\operatorname{tr}X\log X\)</span>, which is <span class="math inline">\(\frac1\eta\)</span>-strongly convex w.r.t. <span class="math inline">\(\|\cdot\|_1\)</span> by Theorem 3.1, with dual norm <span class="math inline">\(\|\cdot\|\)</span>. The maximizer <span class="math inline">\(X=X(S)=e^{\eta S}/\operatorname{tr}e^{\eta S}\)</span> has full rank, <span class="math inline">\(\nabla R_\eta(X)=\frac1\eta(\log X+I)=S+cI\)</span> for a scalar <span class="math inline">\(c\)</span>, and so <span class="math inline">\(\langle S-\nabla R_\eta(X),Y-X\rangle=-c\operatorname{tr}(Y-X)=0\)</span>: first-order optimality holds with equality. Therefore <span class="math display">\[\Psi(S+M)\le\Psi(S)+\langle X(S),M\rangle+\tfrac\eta2\|M\|^2 .\tag{4.1}\]</span></p>
+</section>
+<section id="regret-bounds" class="level2">
+<h2 class="anchored" data-anchor-id="regret-bounds">5. Regret bounds</h2>
+<p><strong>Theorem 5.1.</strong> For any adaptively chosen <span class="math inline">\(M_1,\dots,M_T\in\mathbb S^n\)</span>, the MMWU plays <span class="math inline">\(X_t=X(S_{t-1})\)</span> satisfy <span class="math display">\[\lambda_{\max}\Big(\sum_tM_t\Big)\le\sum_t\langle M_t,X_t\rangle+\frac\eta2\sum_t\|M_t\|^2+\frac{\log n}\eta .\]</span></p>
+<p><em>Proof.</em> Sum (4.1) with <span class="math inline">\(S=S_{t-1}\)</span>, <span class="math inline">\(M=M_t\)</span> over <span class="math inline">\(t\)</span>: <span class="math inline">\(\Psi(S_T)\le\Psi(0)+\sum_t\langle X_t,M_t\rangle+\frac\eta2\sum_t\|M_t\|^2\)</span>. Then use <span class="math inline">\(\lambda_{\max}(S_T)\le\Psi(S_T)\)</span> and <span class="math inline">\(\Psi(0)=\frac{\log n}\eta\)</span>. <span class="math inline">\(\square\)</span></p>
+<p><strong>Tuning.</strong> If <span class="math inline">\(\|M_t\|\le\rho\)</span>, then <span class="math inline">\(\eta=\sqrt{2\log n/(T\rho^2)}\)</span> gives <span class="math inline">\(\mathrm{Regret}_T\le\rho\sqrt{2T\log n}\)</span>. In averaged form, <span class="math inline">\(\frac1T\lambda_{\max}(S_T)\le\frac1T\sum_t\langle M_t,X_t\rangle+\varepsilon\)</span> once <span class="math inline">\(T\ge2\rho^2\log n/\varepsilon^2\)</span>.</p>
+<p><strong>Losses.</strong> Applying the theorem to <span class="math inline">\(-M_t\)</span>: the plays <span class="math inline">\(X_t\propto e^{-\eta S_{t-1}}\)</span> satisfy <span class="math inline">\(\lambda_{\min}(\sum_tM_t)\ge\sum_t\langle M_t,X_t\rangle-\frac\eta2\sum_t\|M_t\|^2-\frac{\log n}\eta\)</span>. When <span class="math inline">\(S_{t-1}=s\mathcal L\)</span> with <span class="math inline">\(\mathcal L=D^{-1/2}LD^{-1/2}=D^{1/2}L_{rw}D^{-1/2}\)</span>, the play is <span class="math inline">\(e^{-\eta s\mathcal L}/\operatorname{tr}(\cdot)\)</span> and <span class="math inline">\(e^{-\tau\mathcal L}=D^{1/2}H_\tau D^{-1/2}\)</span> is similar to the heat semigroup of Lecture 2. Similarity preserves the diagonal, so <span class="math inline">\((e^{-\tau\mathcal L})_{ii}=H_\tau(i,i)\)</span>, the return probability of the continuous-time walk.</p>
+<p><strong>Local norms (statement).</strong> If <span class="math inline">\(\eta M_t\preceq I\)</span> for all <span class="math inline">\(t\)</span>, then <span class="math display">\[\lambda_{\max}\Big(\sum_tM_t\Big)\le\sum_t\langle M_t,X_t\rangle+\eta\sum_t\langle M_t^2,X_t\rangle+\frac{\log n}\eta .\tag{5.1}\]</span> For <span class="math inline">\(0\preceq M_t\preceq\rho I\)</span> we have <span class="math inline">\(M_t^2\preceq\rho M_t\)</span>, and (5.1) becomes <span class="math inline">\(\lambda_{\max}(\sum_tM_t)\le(1+\eta\rho)\sum_t\langle M_t,X_t\rangle+\frac{\log n}\eta\)</span>: the width enters linearly. The proof is deferred to Lecture 12, where (5.1) drives spectral sparsification. Remark (iii) of §3 suggests a proof by a local version of Lemma 4.1.</p>
+</section>
+<section id="balanced-separator-the-relaxation" class="level2">
+<h2 class="anchored" data-anchor-id="balanced-separator-the-relaxation">6. Balanced separator: the relaxation</h2>
+<p><span class="math inline">\(S\)</span> is <span class="math inline">\(b\)</span>-balanced if <span class="math inline">\(b\,\mathrm{vol}(V)\le\mathrm{vol}(S)\le(1-b)\,\mathrm{vol}(V)\)</span>. Consider <span class="math display">\[\mathrm{SDP}(b):\quad\min\ \frac1{\mathrm{vol}(V)}\sum_{\{i,j\}\in E}w_{ij}\|v_i-v_j\|^2\quad\text{s.t.}\quad\sum_i\pi_iv_i=0,\quad\sum_i\pi_i\|v_i\|^2=1,\quad\|v_i\|^2\le\tfrac1b\ \ \forall i .\]</span></p>
+<p><strong>Cuts are feasible.</strong> Let <span class="math inline">\(p=\pi(S)\in[b,\frac12]\)</span> and <span class="math inline">\(v_i=(\mathbf 1_S(i)-p)/\sqrt{p(1-p)}\in\mathbb R\)</span>. Then <span class="math inline">\(\sum_i\pi_iv_i=0\)</span>, <span class="math inline">\(\sum_i\pi_iv_i^2=\frac{p(1-p)^2+(1-p)p^2}{p(1-p)}=1\)</span>, and <span class="math inline">\(v_i^2\)</span> equals <span class="math inline">\(\frac{1-p}p\)</span> on <span class="math inline">\(S\)</span> and <span class="math inline">\(\frac p{1-p}\le1\)</span> off <span class="math inline">\(S\)</span>. Since <span class="math inline">\(\frac{1-p}p\le\frac1b\)</span> iff <span class="math inline">\(p\ge\frac b{1+b}\)</span>, the spread constraint holds. The objective is <span class="math inline">\(\frac{w(S,\bar S)}{\mathrm{vol}(V)\,p(1-p)}=\frac{w(S,\bar S)\,\mathrm{vol}(V)}{\mathrm{vol}(S)\mathrm{vol}(\bar S)}=\bar\phi(S)\)</span>. Hence <span class="math inline">\(\mathrm{SDP}(b)\le\min_{S\ b\text{-bal.}}\bar\phi(S)\le2\min_{S\ b\text{-bal.}}\Phi(S)\)</span>.</p>
+<p><strong>Without the spread constraint</strong> the minimum is <span class="math inline">\(\lambda=\lambda_2(L_{rw})\)</span>: the objective and the two remaining constraints decompose over coordinates of the <span class="math inline">\(v_i\)</span>, so the vector problem is no better than the scalar one, <span class="math inline">\(\min_{f\perp_\pi\mathbf 1}\mathcal E(f,f)/\operatorname{Var}_\pi(f)=\lambda\)</span> (Lecture 6).</p>
+<p><strong>Matrix form.</strong> With <span class="math inline">\(X_{ij}=\langle v_i,v_j\rangle\)</span>: minimize <span class="math inline">\(\frac{\langle L,X\rangle}{\mathrm{vol}(V)}\)</span> subject to <span class="math inline">\(X\pi=0\)</span> (equivalently <span class="math inline">\(\pi^\top X\pi=\|\sum_i\pi_iv_i\|^2=0\)</span>), <span class="math inline">\(\langle\Pi,X\rangle=1\)</span>, <span class="math inline">\(X_{ii}\le\frac1b\)</span>, <span class="math inline">\(X\succeq0\)</span>.</p>
+</section>
+<section id="exercises" class="level2">
+<h2 class="anchored" data-anchor-id="exercises">7. Exercises</h2>
+<ol type="1">
+<li>For diagonal <span class="math inline">\(M_t\)</span>, write out Lemma 2.1, Theorem 3.1 and Theorem 5.1. Which classical results do you get?</li>
+<li>FTRL with <span class="math inline">\(R(X)=\frac12\|X\|_F^2\)</span>: compute the play (a projection onto <span class="math inline">\(\Delta_n\)</span>), the range of <span class="math inline">\(R\)</span> on <span class="math inline">\(\Delta_n\)</span>, and the regret bound from Lemma 4.1. Compare with Theorem 5.1 when the <span class="math inline">\(M_t\)</span> have rank one, and when <span class="math inline">\(M_t=I\)</span>.</li>
+<li>Show that Theorem 3.1 cannot hold with a constant larger than <span class="math inline">\(\frac12\)</span> in front of <span class="math inline">\(\|Y-X\|_1^2\)</span>.</li>
+<li>Prove (5.1) in the commutative case (all <span class="math inline">\(M_t\)</span> diagonal) using <span class="math inline">\(e^x\le1+x+x^2\)</span> for <span class="math inline">\(x\le1\)</span>.</li>
+<li>Construct a family of graphs on which recursive spectral partitioning needs <span class="math inline">\(\Omega(n)\)</span> rounds to find a <span class="math inline">\(\frac14\)</span>-balanced cut.</li>
+</ol>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li>S. Arora, E. Hazan, S. Kale. The multiplicative weights update method: a meta-algorithm and applications. <em>Theory of Computing</em> 8 (2012).</li>
+<li>S. Shalev-Shwartz. Online learning and online convex optimization. <em>Foundations and Trends in ML</em> 4 (2012), §2.</li>
+<li>Y.-L. Yu. The strong convexity of von Neumann’s entropy. Note, 2013.</li>
+<li>R. Bhatia. <em>Matrix Analysis</em>, Springer 1997, Ch. V (derivatives of matrix functions, Daleckii–Krein).</li>
+<li>L. Orecchia, S. Sachdeva, N. K. Vishnoi. Approximating the exponential, the Lanczos method and an <span class="math inline">\(\tilde O(m)\)</span>-time spectral algorithm for balanced separator. <em>STOC</em> 2012.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/lorecchia\.github\.io\/cmsc35410");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/notes/lecture10-notes.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

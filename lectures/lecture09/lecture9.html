@@ -136,7 +136,7 @@
 
 <section class="quarto-title-block center">
   <h1 class="title">Lecture 9 · Electrical Flows, Effective Resistance, and Fast Laplacian Solvers</h1>
-  <p class="subtitle">From gradient descent to cycle toggling:<br> randomized coordinate descent in the cycle space</p>
+  <p class="subtitle">From gradient descent to cycle toggling: randomized coordinate descent in the cycle space</p>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
@@ -162,7 +162,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <p><strong>Theorem (Spielman–Teng 2004).</strong> An <span class="math inline">\(\varepsilon\)</span>-approximate solution of <span class="math inline">\(Lx=b\)</span> can be computed in time <span class="math inline">\(O(m\log^{c}n\log(1/\varepsilon))\)</span>, <strong>independently of <span class="math inline">\(\lambda_2\)</span></strong>.</p>
 </div>
 <aside class="notes">
-<p>~2 min. The point of the first slide: the number of iterations of anything that only multiplies by L is controlled by the spectrum (we prove a lower bound later). Nearly-linear solvers escape this by using combinatorial structure (trees, sparsifiers, elimination). Today: one full, self-contained proof (KOSZ), and a map of the rest.</p>
+<p>~2 min. The point of the first slide: the number of iterations of anything that only multiplies by L is controlled by the spectrum (we prove a lower bound later). Nearly-linear solvers escape this by using combinatorial structure (trees, sparsifiers, elimination). Today: one full, self-contained proof (KOSZ). The other routes (Spielman–Teng, approximate Gaussian elimination) come in Lecture 12, after sparsification.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -182,7 +182,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <li>Classical methods: gradient descent, Krylov, preconditioning, trees</li>
 <li><strong>Randomized coordinate descent</strong></li>
 <li><strong>Full proof of KOSZ</strong> (Kelner–Orecchia–Sidford–Zhu 2013), read as coordinate descent as in Lee–Sidford 2013</li>
-<li>Other routes: Spielman–Teng, approximate Gaussian elimination (Kyng–Sachdeva 2016)</li>
+<li>The data structure: <span class="math inline">\(O(\log n)\)</span> per toggle</li>
 </ul>
 </section>
 <section>
@@ -1293,6 +1293,117 @@ BFS: <span class="math inline">\(\approx\sqrt n/2\)</span>. Recursive (middle ro
       }</style></aside>
 </section>
 <section class="slide level2">
+<h2>Centroid decomposition: <span class="math inline">\(O(\log n)\)</span> per toggle</h2>
+<ul>
+<li><p><strong>Read = two queries.</strong> The off-tree flows inject charges <span class="math inline">\(q=\sum_{e=(a,b)\notin T}f_e(\mathbf 1_b-\mathbf 1_a)\)</span> into <span class="math inline">\(T\)</span>, the tree flow routes <span class="math inline">\(\chi+q\)</span>, and with <span class="math inline">\(R_T\)</span> the resistance metric of <span class="math inline">\(T\)</span>, <span class="math display">\[x_T(u)=x_0(u)-\tfrac12\sum_vq_v\,R_T(u,v)+\text{const},\qquad x_0=L_T^+\chi .\]</span> The read <span class="math inline">\(x_T(b)-x_T(a)\)</span> is two <strong>charge-weighted sums of tree distances</strong>.</p></li>
+<li><p><strong>Centroid tree.</strong> Every tree has a vertex whose removal leaves components of size <span class="math inline">\(\le n/2\)</span>. Recursing gives a centroid tree of depth <span class="math inline">\(\le\log_2n+1\)</span>, and if <span class="math inline">\(c\)</span> is the centroid-tree LCA of <span class="math inline">\(u,v\)</span>, then <span class="math inline">\(c\)</span> lies on the tree path from <span class="math inline">\(u\)</span> to <span class="math inline">\(v\)</span>: <span class="math display">\[R_T(u,v)=R_T(u,c)+R_T(c,v).\]</span></p></li>
+<li><p><strong>Store</strong> at each centroid the total charge and the charge-weighted distance of its component. An update <span class="math inline">\(q_v\mathrel{+}=\alpha\)</span> and a query at <span class="math inline">\(u\)</span> both walk the <span class="math inline">\(\le\log_2n+1\)</span> centroid ancestors.</p></li>
+</ul>
+<div class="thm">
+<p><strong>Each toggle costs <span class="math inline">\(O(\log n)\)</span></strong> after <span class="math inline">\(O(n\log n)\)</span> preprocessing. The same structure returns <span class="math inline">\(R_T(a,b)\)</span>, hence the sampling probabilities.</p>
+</div>
+<aside class="notes">
+<p>~4 min. The formula for x_T comes from L_T⁺ written in terms of R_T: R_T(u,v) = L⁺_uu + L⁺_vv − 2L⁺_uv, and Σ_v q_v = 0. The key point is the reduction “path update + path query” → “point update + sum of weighted distances”, a classical problem on a static tree. Full details (stored sums S_c, D_c, D↑_c, the query formula and its proof, the centroid-chain picture) are in the appendix at the end of the deck. Measured: about 35 array entries per toggle on the 64×64 grid.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Does it work?</h2>
+<p><img data-src="figures/grid-convergence.svg" class="" style="width:100.0%"></p>
+<ul>
+<li><strong>Unit-weight <span class="math inline">\(64\times64\)</span> grid</strong> (<span class="math inline">\(n=4\,096\)</span>, <span class="math inline">\(m=8\,064\)</span>): recursive tree <span class="math inline">\(\tau=6.3m\)</span>, BFS tree <span class="math inline">\(\tau=32m\)</span>. To reach <span class="math inline">\(10^{-3}\)</span>: KOSZ <span class="math inline">\(1\,500m\)</span> work (the cost of <span class="math inline">\(1\,500\)</span> products), CG <span class="math inline">\(112\)</span> products (<span class="math inline">\(146\)</span> for <span class="math inline">\(10^{-6}\)</span>). <strong>Here CG wins easily</strong>: <span class="math inline">\(\kappa\approx3\,300\)</span> is mild, and constants matter.</li>
+<li><strong>Weighted <span class="math inline">\(32\times32\)</span> grid</strong>, <span class="math inline">\(\kappa\approx6.4\cdot10^4\)</span>: max-weight tree <span class="math inline">\(\tau=0.75m\)</span>; after a short start KOSZ is ahead of CG (to <span class="math inline">\(10^{-3}\)</span>: <span class="math inline">\(180m\)</span> work vs.&nbsp;<span class="math inline">\(620\)</span> products; KOSZ is at <span class="math inline">\(3.5\cdot10^{-6}\)</span> after <span class="math inline">\(330m\)</span>), and PCG with the same tree needs 28 iterations. A weight-oblivious tree (BFS: <span class="math inline">\(\tau=3\,535m\)</span>) is useless.</li>
+<li><strong>Rate:</strong> the observed decay is faster than the guarantee’s slope <span class="math inline">\(e^{-k/2\tau}\)</span> (right).</li>
+</ul>
+<aside class="notes">
+<p>~3 min. The x-axis is work in units of one product with L, i.e.&nbsp;total operations / m. A matvec costs m operations (one per edge), a PCG iteration m + n, a toggle the number of centroid-tree entries it reads or writes (≈ 4·average chain length ≈ 35 here). Computing the plotted error is not charged. The honest message: KOSZ is a theorem about worst-case asymptotics and a beautiful proof; production solvers are PCG with combinatorial preconditioners or approximate Cholesky (Lecture 12). In the right panel the L-norm error, not the energy, is plotted; the guarantee for the energy is e^{−k/τ}, for the L-norm its square root.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Demo</h2>
+<iframe class="demo-frame" style="height:660px" src="demos/laplacian-solvers-demo.html">
+</iframe>
+<p class="tiny muted">
+Standalone: <a href="demos/laplacian-solvers-demo.html" target="_blank">demos/laplacian-solvers-demo.html</a> (append <code>#toggle</code> to open the second tab). Try: unit grid vs.&nbsp;weighted grid; BFS vs.&nbsp;recursive vs.&nbsp;max-weight tree; step through single toggles on a small grid.
+</p>
+<aside class="notes">
+<p>Things to show live. (1) Convergence tab, unit-weight grid: CG wins; switch to log-normal weights with large spread: CG slows down by √κ, KOSZ and PCG with the max-weight tree do not. (2) Switch the tree to BFS on the weighted grid: τ explodes and KOSZ stalls. (3) Toggle tab: a few single steps on an 8×8 grid. Watch the cycle, Δ_e, and the energy gap; the potentials (colors) become smooth.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2 scrollable">
+<h2>Takeaways</h2>
+<ol type="1">
+<li><strong>Electrical flows</strong> are the primal, <strong>potentials</strong> the dual; the gap is <span class="math inline">\(\tfrac12\sum_e(r_ef_e-b_e^\top x)^2/r_e\)</span>. Effective resistance, hitting and commute times are Laplacian solves.</li>
+<li><strong>Matrix–vector methods</strong> need <span class="math inline">\(\Omega(\text{diameter})\)</span> products for a worst-case <span class="math inline">\(b\)</span>, which is <span class="math inline">\(\Omega(\sqrt\kappa)\)</span> on paths and grids: GD is diffusion, Krylov is local.</li>
+<li><strong>Trees</strong> are global: <span class="math inline">\(L_T\preceq L_G\preceq\mathrm{st}_T(G)L_T\)</span>, and low-stretch trees have <span class="math inline">\(\mathrm{st}_T(G)=\tilde O(m)\)</span>.</li>
+<li><strong>RCD on a quadratic:</strong> sample <span class="math inline">\(\propto M_{ii}\)</span>, rate <span class="math inline">\(1-\lambda_{\min}/\operatorname{tr}M\)</span>. Three lines.</li>
+<li><strong>KOSZ = RCD in the cycle basis of a low-stretch tree, scaled by <span class="math inline">\(\sqrt{r_e}\)</span>:</strong> <span class="math inline">\(\lambda_{\min}\ge1\)</span>, <span class="math inline">\(\operatorname{tr}=\tau(T)=\tilde O(m)\)</span>. Plus a start lemma (stretch), a stop lemma (duality gap = gradient) and an <span class="math inline">\(O(\log n)\)</span> data structure (centroids + resistance distances).</li>
+</ol>
+</section>
+<section class="slide level2 scrollable">
+<h2>Discussion questions</h2>
+<ol type="1">
+<li>Run RCD on the <strong>dual</strong> <span class="math inline">\(\max_x\mathcal D(x)\)</span>, one vertex potential at a time. What is the rate? Why is the primal (cycle space) better?</li>
+<li>Where does the proof use that <span class="math inline">\(T\)</span> is a <strong>tree</strong>? What changes if <span class="math inline">\(T\)</span> is replaced by a subgraph <span class="math inline">\(H\)</span> with a few cycles (an ultra-sparsifier)?</li>
+<li>The stop lemma used <span class="math inline">\(\lambda_{\max}(M)\le\operatorname{tr}M\)</span>. What is <span class="math inline">\(\lambda_{\max}(M)\)</span> on the unit grid with the recursive tree, and does it matter?</li>
+<li>KOSZ measures cost in toggles, CG in matrix–vector products. On the unit-weight grid, CG wins by a factor <span class="math inline">\(&gt;10\)</span>. Which part of the KOSZ bound is loose here, and which part is real?</li>
+</ol>
+</section>
+<section class="slide level2">
+<h2>References</h2>
+<div class="small">
+<ul>
+<li><strong>D. A. Spielman, S.-H. Teng.</strong> Nearly-linear time algorithms for graph partitioning, graph sparsification, and solving linear systems. <em>STOC</em> 2004. · Nearly linear time algorithms for preconditioning and solving symmetric, diagonally dominant linear systems. <em>SIAM J. Matrix Anal. Appl.</em> 2014.</li>
+<li><strong>J. A. Kelner, L. Orecchia, A. Sidford, Z. A. Zhu.</strong> A simple, combinatorial algorithm for solving SDD systems in nearly-linear time. <em>STOC</em> 2013 (arXiv:1301.6628).</li>
+<li><strong>Y. T. Lee, A. Sidford.</strong> Efficient accelerated coordinate descent methods and faster algorithms for solving linear systems. <em>FOCS</em> 2013 (arXiv:1305.1922).</li>
+<li>Z. Allen-Zhu, Z. Qu, P. Richtárik, Y. Yuan. Even faster accelerated coordinate descent using non-uniform sampling. <em>ICML</em> 2016. · Y. Nesterov. Efficiency of coordinate descent methods on huge-scale optimization problems. <em>SIAM J. Optim.</em> 2012. · D. Leventhal, A. S. Lewis. Randomized methods for linear constraints: convergence rates and conditioning. <em>Math. Oper. Res.</em> 2010. · T. Strohmer, R. Vershynin. A randomized Kaczmarz algorithm with exponential convergence. <em>J. Fourier Anal. Appl.</em> 2009.</li>
+<li>P. M. Vaidya. Solving linear equations with symmetric diagonally dominant matrices by constructing good preconditioners. Manuscript, 1991. · E. G. Boman, B. Hendrickson. Support theory for preconditioning. <em>SIAM J. Matrix Anal. Appl.</em> 2003. · D. A. Spielman, J. Woo. A note on preconditioning by low-stretch spanning trees. arXiv:0903.2816, 2009.</li>
+<li>N. Alon, R. M. Karp, D. Peleg, D. West. A graph-theoretic game and its application to the k-server problem. <em>SIAM J. Comput.</em> 1995. · M. Elkin, Y. Emek, D. A. Spielman, S.-H. Teng. Lower-stretch spanning trees. <em>STOC</em> 2005. · I. Abraham, O. Neiman. Using petal-decompositions to build a low stretch spanning tree. <em>STOC</em> 2012.</li>
+<li>I. Koutis, G. L. Miller, R. Peng. Approaching optimality for solving SDD systems. <em>FOCS</em> 2010; A nearly-<span class="math inline">\(m\log n\)</span> time solver for SDD linear systems. <em>FOCS</em> 2011. · M. B. Cohen et al.&nbsp;Solving SDD linear systems in nearly <span class="math inline">\(m\log^{1/2}n\)</span> time. <em>STOC</em> 2014.</li>
+<li><strong>R. Kyng, S. Sachdeva.</strong> Approximate Gaussian elimination for Laplacians: fast, sparse, and simple. <em>FOCS</em> 2016 (arXiv:1605.02353). · Y. Gao, R. Kyng, D. A. Spielman. Robust and practical solution of Laplacian equations by approximate elimination. arXiv:2303.00709, 2023.</li>
+<li>A. K. Chandra, P. Raghavan, W. L. Ruzzo, R. Smolensky, P. Tiwari. The electrical resistance of a graph captures its commute and cover times. <em>STOC</em> 1989. · P. G. Doyle, J. L. Snell. <em>Random Walks and Electric Networks</em>. MAA, 1984.</li>
+<li>D. A. Spielman, N. Srivastava. Graph sparsification by effective resistances. <em>STOC</em> 2008. · S.-H. Teng. The Laplacian paradigm: emerging algorithms for massive graphs. <em>TAMC</em> 2010. · N. K. Vishnoi. <em>Lx = b: Laplacian Solvers and Their Algorithmic Applications</em>. <em>FnT TCS</em> 2013.</li>
+</ul>
+</div>
+<p class="tiny muted">
+Reading: Vishnoi, <em>Lx = b</em>, Parts I–II; KOSZ §§3–5; Spielman’s <em>Spectral and Algebraic Graph Theory</em>, chapters on solvers and elimination.
+</p>
+</section></section>
+<section>
+<section class="title-slide slide level1 center">
+<h1>Appendix: the data structure in detail</h1>
+
+</section>
+<section class="slide level2">
 <h2>What we store: off-tree flows and charges</h2>
 <div class="columns">
 <div class="column" style="width:58%;">
@@ -1429,213 +1540,6 @@ BFS: <span class="math inline">\(\approx\sqrt n/2\)</span>. Recursive (middle ro
           overflow: hidden!important;
           display:block!important;
       }</style></aside>
-</section>
-<section class="slide level2">
-<h2>Does it work?</h2>
-<p><img data-src="figures/grid-convergence.svg" class="" style="width:100.0%"></p>
-<ul>
-<li><strong>Unit-weight <span class="math inline">\(64\times64\)</span> grid</strong> (<span class="math inline">\(n=4\,096\)</span>, <span class="math inline">\(m=8\,064\)</span>): recursive tree <span class="math inline">\(\tau=6.3m\)</span>, BFS tree <span class="math inline">\(\tau=32m\)</span>. To reach <span class="math inline">\(10^{-3}\)</span>: KOSZ <span class="math inline">\(1\,500m\)</span> work (the cost of <span class="math inline">\(1\,500\)</span> products), CG <span class="math inline">\(112\)</span> products (<span class="math inline">\(146\)</span> for <span class="math inline">\(10^{-6}\)</span>). <strong>Here CG wins easily</strong>: <span class="math inline">\(\kappa\approx3\,300\)</span> is mild, and constants matter.</li>
-<li><strong>Weighted <span class="math inline">\(32\times32\)</span> grid</strong>, <span class="math inline">\(\kappa\approx6.4\cdot10^4\)</span>: max-weight tree <span class="math inline">\(\tau=0.75m\)</span>; after a short start KOSZ is ahead of CG (to <span class="math inline">\(10^{-3}\)</span>: <span class="math inline">\(180m\)</span> work vs.&nbsp;<span class="math inline">\(620\)</span> products; KOSZ is at <span class="math inline">\(3.5\cdot10^{-6}\)</span> after <span class="math inline">\(330m\)</span>), and PCG with the same tree needs 28 iterations. A weight-oblivious tree (BFS: <span class="math inline">\(\tau=3\,535m\)</span>) is useless.</li>
-<li><strong>Rate:</strong> the observed decay is faster than the guarantee’s slope <span class="math inline">\(e^{-k/2\tau}\)</span> (right).</li>
-</ul>
-<aside class="notes">
-<p>~3 min. The x-axis is work in units of one product with L, i.e.&nbsp;total operations / m. A matvec costs m operations (one per edge), a PCG iteration m + n, a toggle the number of centroid-tree entries it reads or writes (≈ 4·average chain length ≈ 35 here). Computing the plotted error is not charged. The honest message: KOSZ is a theorem about worst-case asymptotics and a beautiful proof; production solvers are PCG with combinatorial preconditioners or approximate Cholesky (next). In the right panel the L-norm error, not the energy, is plotted; the guarantee for the energy is e^{−k/τ}, for the L-norm its square root.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section></section>
-<section>
-<section class="title-slide slide level1 center">
-<h1>Other routes to nearly-linear time</h1>
-
-</section>
-<section class="slide level2 scrollable">
-<h2>Spielman–Teng and recursive preconditioning</h2>
-<div class="defn">
-<p><strong>Ultra-sparsifier.</strong> <span class="math inline">\(H\)</span> = spanning tree + <span class="math inline">\(\tilde O(m/k)\)</span> extra edges, with <span class="math inline">\(\ L_H\preceq L_G\preceq k\,L_H\)</span>.</p>
-</div>
-<p><strong>One level of the recursion:</strong></p>
-<ol type="1">
-<li>PCG (or Chebyshev) on <span class="math inline">\(G\)</span> with preconditioner <span class="math inline">\(H\)</span>: <span class="math inline">\(O(\sqrt k)\)</span> iterations.</li>
-<li>To solve with <span class="math inline">\(L_H\)</span>: <strong>eliminate</strong> vertices of degree 1 and 2. A degree-1 vertex is a leaf; a degree-2 vertex is an edge in series (<span class="math inline">\(r\leftarrow r_1+r_2\)</span>). No fill-in. What remains has <span class="math inline">\(\tilde O(m/k)\)</span> vertices and edges.</li>
-<li>Solve the remaining system <strong>recursively</strong>, approximately.</li>
-</ol>
-<ul>
-<li>Work: <span class="math inline">\(T(m)\approx\sqrt k\,\big(m+T(\tilde O(m/k))\big)\)</span>, nearly linear for a suitable <span class="math inline">\(k=\mathrm{polylog}(n)\)</span>.</li>
-<li>Ingredients: low-stretch trees and <strong>spectral sparsifiers</strong> (Lecture 10).</li>
-</ul>
-<table class="caption-top">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;"></th>
-<th style="text-align: left;">running time (<span class="math inline">\(\times\log(1/\varepsilon)\)</span>)</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">Spielman–Teng 2004</td>
-<td style="text-align: left;"><span class="math inline">\(m\log^{c}n\)</span></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Koutis–Miller–Peng 2010, 2011</td>
-<td style="text-align: left;"><span class="math inline">\(m\log^2n\)</span>, then <span class="math inline">\(m\log n\,(\log\log n)^2\)</span></td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Kelner–Orecchia–Sidford–Zhu 2013</td>
-<td style="text-align: left;"><span class="math inline">\(m\log^2n\,\log\log n\)</span> (no recursion)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Lee–Sidford 2013</td>
-<td style="text-align: left;"><span class="math inline">\(m\log^{3/2}n\,\sqrt{\log\log n}\)</span></td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Cohen–Kyng–Miller–Pachocki–Peng–Rao–Xu 2014</td>
-<td style="text-align: left;"><span class="math inline">\(m\sqrt{\log n}\,(\log\log n)^{O(1)}\)</span></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Kyng–Sachdeva 2016</td>
-<td style="text-align: left;"><span class="math inline">\(m\log^3n\)</span> (sampling only)</td>
-</tr>
-</tbody>
-</table>
-<aside class="notes">
-<p>~4 min. The degree-1 and degree-2 eliminations are exact Gaussian elimination steps that create no new edges: this is “partial Cholesky”. The table is a guide, not a precise statement: polyloglog factors and the exact dependence on ε vary between papers (KOSZ has log(n/ε) in our analysis). KMP: Koutis–Miller–Peng, “Approaching optimality…” (FOCS 2010) and “A nearly m log n time solver…” (FOCS 2011).</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section class="slide level2">
-<h2>Gaussian elimination is a graph operation</h2>
-<p>Eliminating vertex <span class="math inline">\(v\)</span> (one step of Cholesky) writes <span class="math inline">\(L=d_v\,c_vc_v^\top+L'\)</span>, with <span class="math inline">\(c_v=\mathbf 1_v-\sum_u\frac{w_{vu}}{d_v}\mathbf 1_u\)</span>, and the <strong>Schur complement</strong> <span class="math display">\[L'=L-\mathrm{star}(v)+\mathrm{clique}(v),\qquad \mathrm{clique}(v)=\sum_{\{u,u'\}\subseteq N(v)}\frac{w_{vu}w_{vu'}}{d_v}\,b_{uu'}b_{uu'}^\top .\]</span></p>
-<ul>
-<li><strong>The Schur complement of a Laplacian is a Laplacian</strong>, on <span class="math inline">\(V-v\)</span>. It is the electrical network seen from <span class="math inline">\(V-v\)</span> (star–mesh transform).</li>
-<li>Eliminating all vertices gives <span class="math inline">\(L=\mathcal L\mathcal L^\top\)</span> exactly. The cost is the <strong>fill-in</strong>: a vertex of degree <span class="math inline">\(d\)</span> creates up to <span class="math inline">\(\binom d2\)</span> edges.</li>
-<li>Trees (degree 1) and series edges (degree 2) create no fill. Grids do: nested dissection gives <span class="math inline">\(O(n^{1.5})\)</span> time for planar graphs (George 1973; Lipton–Rose–Tarjan 1979); expanders are hopeless.</li>
-</ul>
-<aside class="notes">
-<p>~3 min. Check of the clique weights: d_v c_v c_v^T has off-diagonal entries w_vu w_vu’/d_v, which must be added back to keep the star’s contribution correct. Star–mesh: eliminating the center of a 3-star is the Y–Δ transform from physics.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section class="slide level2">
-<h2>Approximate Gaussian elimination (Kyng–Sachdeva 2016)</h2>
-<div class="defn">
-<p><strong>Clique sampling.</strong> When eliminating <span class="math inline">\(v\)</span>, for each (multi-)edge <span class="math inline">\((v,u)\)</span> sample one neighbor <span class="math inline">\(u'\)</span> with probability <span class="math inline">\(w_{vu'}/d_v\)</span> and add the edge <span class="math inline">\((u,u')\)</span> with weight <span class="math inline">\(\dfrac{w_{vu}w_{vu'}}{w_{vu}+w_{vu'}}\)</span> (nothing if <span class="math inline">\(u'=u\)</span>).</p>
-</div>
-<ul>
-<li><strong>Unbiased:</strong> the expected weight on <span class="math inline">\(\{u,u'\}\)</span> is <span class="math inline">\(\frac{w_{vu'}}{d_v}\cdot\frac{w_{vu}w_{vu'}}{w_{vu}+w_{vu'}}+\frac{w_{vu}}{d_v}\cdot\frac{w_{vu}w_{vu'}}{w_{vu}+w_{vu'}}=\frac{w_{vu}w_{vu'}}{d_v}\)</span>.</li>
-<li><strong>Sparse:</strong> eliminating <span class="math inline">\(v\)</span> removes <span class="math inline">\(\deg(v)\)</span> edges and adds at most <span class="math inline">\(\deg(v)\)</span>. <strong>The number of edges never grows.</strong></li>
-<li><strong>Concentrated:</strong> split every edge into <span class="math inline">\(\rho=O(\log^2n)\)</span> copies and eliminate in a <strong>uniformly random order</strong>. Every sample is then a small piece relative to <span class="math inline">\(L\)</span>, and the errors form a <strong>matrix martingale</strong> (matrix Freedman). W.h.p. the result <span class="math inline">\(\tilde L=\tilde{\mathcal L}\tilde{\mathcal L}^\top\)</span> satisfies <span class="math inline">\(\ \tfrac12L\preceq\tilde L\preceq\tfrac32L\)</span>.</li>
-<li>Factorization in <span class="math inline">\(O(m\log^3n)\)</span> time, then PCG: <span class="math inline">\(O(m\log^3n\log(1/\varepsilon))\)</span>. No trees, no sparsifiers, no expanders.</li>
-</ul>
-
-<img data-src="figures/approx-elimination.svg" style="width:88.0%" class="r-stretch"><p class="small muted center">
-<span class="math inline">\(24\times24\)</span> grid, random order. Exact elimination peaks at <span class="math inline">\(18m\)</span> edges. With <span class="math inline">\(\rho=16\)</span>, <span class="math inline">\(\ \mathrm{spec}(L^{+/2}\tilde LL^{+/2})\subseteq[0.70,1.30]\)</span>; with <span class="math inline">\(\rho=64\)</span>, <span class="math inline">\([0.84,1.18]\)</span> (average over 4 runs).
-</p>
-<aside class="notes">
-<p>~5 min. The split copies are what make every sample have leverage score ≤ 1/ρ, exactly the condition for matrix concentration in Lecture 8 (matrix Bernstein) and Lecture 10 (sparsification). The random order keeps expected degrees small: a random remaining vertex has expected degree 2·(edges)/(vertices). Modern practice: Gao–Kyng–Spielman (2023) “ApproxChol” in Laplacians.jl, a robust variant of this algorithm used as a PCG preconditioner. Numbers from make_figures.py, Fig. 4; unbiasedness checked in scripts §8.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section class="slide level2">
-<h2>Demo</h2>
-<iframe class="demo-frame" style="height:660px" src="demos/laplacian-solvers-demo.html">
-</iframe>
-<p class="tiny muted">
-Standalone: <a href="demos/laplacian-solvers-demo.html" target="_blank">demos/laplacian-solvers-demo.html</a> (append <code>#toggle</code> to open the second tab). Try: unit grid vs.&nbsp;weighted grid; BFS vs.&nbsp;recursive vs.&nbsp;max-weight tree; step through single toggles on a small grid.
-</p>
-<aside class="notes">
-<p>Things to show live. (1) Convergence tab, unit-weight grid: CG wins; switch to log-normal weights with large spread: CG slows down by √κ, KOSZ and PCG with the max-weight tree do not. (2) Switch the tree to BFS on the weighted grid: τ explodes and KOSZ stalls. (3) Toggle tab: a few single steps on an 8×8 grid. Watch the cycle, Δ_e, and the energy gap; the potentials (colors) become smooth.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section class="slide level2 scrollable">
-<h2>Takeaways</h2>
-<ol type="1">
-<li><strong>Electrical flows</strong> are the primal, <strong>potentials</strong> the dual; the gap is <span class="math inline">\(\tfrac12\sum_e(r_ef_e-b_e^\top x)^2/r_e\)</span>. Effective resistance, hitting and commute times are Laplacian solves.</li>
-<li><strong>Matrix–vector methods</strong> need <span class="math inline">\(\Omega(\text{diameter})\)</span> products for a worst-case <span class="math inline">\(b\)</span>, which is <span class="math inline">\(\Omega(\sqrt\kappa)\)</span> on paths and grids: GD is diffusion, Krylov is local.</li>
-<li><strong>Trees</strong> are global: <span class="math inline">\(L_T\preceq L_G\preceq\mathrm{st}_T(G)L_T\)</span>, and low-stretch trees have <span class="math inline">\(\mathrm{st}_T(G)=\tilde O(m)\)</span>.</li>
-<li><strong>RCD on a quadratic:</strong> sample <span class="math inline">\(\propto M_{ii}\)</span>, rate <span class="math inline">\(1-\lambda_{\min}/\operatorname{tr}M\)</span>. Three lines.</li>
-<li><strong>KOSZ = RCD in the cycle basis of a low-stretch tree, scaled by <span class="math inline">\(\sqrt{r_e}\)</span>:</strong> <span class="math inline">\(\lambda_{\min}\ge1\)</span>, <span class="math inline">\(\operatorname{tr}=\tau(T)=\tilde O(m)\)</span>. Plus a start lemma (stretch), a stop lemma (duality gap = gradient) and an <span class="math inline">\(O(\log n)\)</span> data structure (centroids + resistance distances).</li>
-<li><strong>Elimination:</strong> the Schur complement of a Laplacian is a Laplacian; sample the cliques to keep it sparse (Kyng–Sachdeva).</li>
-</ol>
-</section>
-<section class="slide level2 scrollable">
-<h2>Discussion questions</h2>
-<ol type="1">
-<li>Run RCD on the <strong>dual</strong> <span class="math inline">\(\max_x\mathcal D(x)\)</span>, one vertex potential at a time. What is the rate? Why is the primal (cycle space) better?</li>
-<li>Where does the proof use that <span class="math inline">\(T\)</span> is a <strong>tree</strong>? What changes if <span class="math inline">\(T\)</span> is replaced by a subgraph <span class="math inline">\(H\)</span> with a few cycles (an ultra-sparsifier)?</li>
-<li>The stop lemma used <span class="math inline">\(\lambda_{\max}(M)\le\operatorname{tr}M\)</span>. What is <span class="math inline">\(\lambda_{\max}(M)\)</span> on the unit grid with the recursive tree, and does it matter?</li>
-<li>KOSZ measures cost in toggles, CG in matrix–vector products. On the unit-weight grid, CG wins by a factor <span class="math inline">\(&gt;10\)</span>. Which part of the KOSZ bound is loose here, and which part is real?</li>
-<li>Why does Kyng–Sachdeva need a <strong>random</strong> elimination order? Construct an order that makes clique sampling fail on a star.</li>
-</ol>
-</section>
-<section class="slide level2">
-<h2>References</h2>
-<div class="small">
-<ul>
-<li><strong>D. A. Spielman, S.-H. Teng.</strong> Nearly-linear time algorithms for graph partitioning, graph sparsification, and solving linear systems. <em>STOC</em> 2004. · Nearly linear time algorithms for preconditioning and solving symmetric, diagonally dominant linear systems. <em>SIAM J. Matrix Anal. Appl.</em> 2014.</li>
-<li><strong>J. A. Kelner, L. Orecchia, A. Sidford, Z. A. Zhu.</strong> A simple, combinatorial algorithm for solving SDD systems in nearly-linear time. <em>STOC</em> 2013 (arXiv:1301.6628).</li>
-<li><strong>Y. T. Lee, A. Sidford.</strong> Efficient accelerated coordinate descent methods and faster algorithms for solving linear systems. <em>FOCS</em> 2013 (arXiv:1305.1922).</li>
-<li>Z. Allen-Zhu, Z. Qu, P. Richtárik, Y. Yuan. Even faster accelerated coordinate descent using non-uniform sampling. <em>ICML</em> 2016. · Y. Nesterov. Efficiency of coordinate descent methods on huge-scale optimization problems. <em>SIAM J. Optim.</em> 2012. · D. Leventhal, A. S. Lewis. Randomized methods for linear constraints: convergence rates and conditioning. <em>Math. Oper. Res.</em> 2010. · T. Strohmer, R. Vershynin. A randomized Kaczmarz algorithm with exponential convergence. <em>J. Fourier Anal. Appl.</em> 2009.</li>
-<li>P. M. Vaidya. Solving linear equations with symmetric diagonally dominant matrices by constructing good preconditioners. Manuscript, 1991. · E. G. Boman, B. Hendrickson. Support theory for preconditioning. <em>SIAM J. Matrix Anal. Appl.</em> 2003. · D. A. Spielman, J. Woo. A note on preconditioning by low-stretch spanning trees. arXiv:0903.2816, 2009.</li>
-<li>N. Alon, R. M. Karp, D. Peleg, D. West. A graph-theoretic game and its application to the k-server problem. <em>SIAM J. Comput.</em> 1995. · M. Elkin, Y. Emek, D. A. Spielman, S.-H. Teng. Lower-stretch spanning trees. <em>STOC</em> 2005. · I. Abraham, O. Neiman. Using petal-decompositions to build a low stretch spanning tree. <em>STOC</em> 2012.</li>
-<li>I. Koutis, G. L. Miller, R. Peng. Approaching optimality for solving SDD systems. <em>FOCS</em> 2010; A nearly-<span class="math inline">\(m\log n\)</span> time solver for SDD linear systems. <em>FOCS</em> 2011. · M. B. Cohen et al.&nbsp;Solving SDD linear systems in nearly <span class="math inline">\(m\log^{1/2}n\)</span> time. <em>STOC</em> 2014.</li>
-<li><strong>R. Kyng, S. Sachdeva.</strong> Approximate Gaussian elimination for Laplacians: fast, sparse, and simple. <em>FOCS</em> 2016 (arXiv:1605.02353). · Y. Gao, R. Kyng, D. A. Spielman. Robust and practical solution of Laplacian equations by approximate elimination. arXiv:2303.00709, 2023.</li>
-<li>A. K. Chandra, P. Raghavan, W. L. Ruzzo, R. Smolensky, P. Tiwari. The electrical resistance of a graph captures its commute and cover times. <em>STOC</em> 1989. · P. G. Doyle, J. L. Snell. <em>Random Walks and Electric Networks</em>. MAA, 1984.</li>
-<li>D. A. Spielman, N. Srivastava. Graph sparsification by effective resistances. <em>STOC</em> 2008. · S.-H. Teng. The Laplacian paradigm: emerging algorithms for massive graphs. <em>TAMC</em> 2010. · N. K. Vishnoi. <em>Lx = b: Laplacian Solvers and Their Algorithmic Applications</em>. <em>FnT TCS</em> 2013.</li>
-</ul>
-</div>
-<p class="tiny muted">
-Reading: Vishnoi, <em>Lx = b</em>, Parts I–II; KOSZ §§3–5; Spielman’s <em>Spectral and Algebraic Graph Theory</em>, chapters on solvers and elimination.
-</p>
 
 
 </section></section>
