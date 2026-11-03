@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Notes for Lecture 11 (11/3).">
+
+<title>MMWU for Balanced Separator – CMSC 35410</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-447e42e69aaa9833c0ba1b986f430b20.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-fd98d5735b1a31b4b15da6c24aa43dd1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-4f9d4a289133199b60d5a2bce1a2510b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-fd98d5735b1a31b4b15da6c24aa43dd1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">Skip to main content</a><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          toggle.setAttribute("aria-checked", alternate ? "true" : "false");
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455).
+    // Not run on load: stylesheets are set before first paint there, and
+    // scrolling would undo the scroll to a URL fragment (#14973).
+    // The one pixel nudge keeps the reader where they were.
+    const refreshSafariScrollbar = () => {
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        const scrollY = window.scrollY;
+        window.scrollTo(0, scrollY > 0 ? scrollY - 1 : 1);
+        setTimeout(() => {
+          window.scrollTo(0, scrollY);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      refreshSafariScrollbar();
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark" aria-label="Site">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">CMSC 35410</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../schedule.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../notes.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../resources.html"> 
+<span class="menu-text">Resources</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/lorecchia/cmsc35410"> <i class="bi bi-github" role="img" aria-label="GitHub repository">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <button type="button" role="switch" aria-checked="false" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode" aria-label="Toggle dark mode"><i class="bi"></i></button>
+</div>
+            <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" aria-labelledby="toc-title" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-relaxation-as-a-problem-over-density-matrices" id="toc-the-relaxation-as-a-problem-over-density-matrices" class="nav-link active" data-scroll-target="#the-relaxation-as-a-problem-over-density-matrices">1. The relaxation as a problem over density matrices</a></li>
+  <li><a href="#penalties-the-center-and-the-cut-as-a-comparator" id="toc-penalties-the-center-and-the-cut-as-a-comparator" class="nav-link" data-scroll-target="#penalties-the-center-and-the-cut-as-a-comparator">2. Penalties, the center, and the cut as a comparator</a></li>
+  <li><a href="#the-loop-and-its-certificates" id="toc-the-loop-and-its-certificates" class="nav-link" data-scroll-target="#the-loop-and-its-certificates">3. The loop and its certificates</a></li>
+  <li><a href="#rounding-a-spread-play-sketch" id="toc-rounding-a-spread-play-sketch" class="nav-link" data-scroll-target="#rounding-a-spread-play-sketch">4. Rounding a spread play (sketch)</a></li>
+  <li><a href="#computing-the-plays" id="toc-computing-the-plays" class="nav-link" data-scroll-target="#computing-the-plays">5. Computing the plays</a></li>
+  <li><a href="#what-to-check-against-the-paper" id="toc-what-to-check-against-the-paper" class="nav-link" data-scroll-target="#what-to-check-against-the-paper">6. What to check against the paper</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">7. Exercises</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/notes/lecture11-notes.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content" tabindex="-1">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">MMWU for Balanced Separator</h1>
+<p class="subtitle lead">A heat-kernel center, the primal-dual loop, O(log n) rounds, and computing the heat kernel</p>
+</div>
+
+<div>
+  <div class="description">
+    Notes for Lecture 11 (11/3).
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>These notes accompany the Lecture 11 deck. They give full proofs of the certificates and of the round count, a proof sketch of the rounding lemma, and the material on computing matrix exponentials that the slides only summarize. The algorithm follows the approach of Orecchia–Sachdeva–Vishnoi (STOC 2012); the constants (<span class="math inline">\(16/b\)</span>, <span class="math inline">\(2\gamma\)</span>, <span class="math inline">\(\tau_0=8\ln n/\gamma\)</span>, <span class="math inline">\(\eta=1/(4\gamma)\)</span>, <span class="math inline">\(T=\lceil32\ln n\rceil\)</span>) are chosen to make each step a one-line calculation and differ from the paper’s.</p>
+<p><strong>Notation.</strong> <span class="math inline">\(G=(V,E,w)\)</span> with degrees <span class="math inline">\(d\)</span>, <span class="math inline">\(\mathrm{vol}(V)=\sum_id_i\)</span>, <span class="math inline">\(\pi=d/\mathrm{vol}(V)\)</span>, <span class="math inline">\(\Pi=\operatorname{diag}(\pi)\)</span>, and normalized Laplacian <span class="math inline">\(\mathcal L=D^{-1/2}LD^{-1/2}\)</span>. Its bottom eigenvector is <span class="math inline">\(\sqrt\pi\)</span>; <span class="math inline">\(W=\sqrt\pi^\perp\)</span> and <span class="math inline">\(P\)</span> is the orthogonal projector onto <span class="math inline">\(W\)</span>. For <span class="math inline">\(S\subseteq V\)</span>, <span class="math inline">\(\Phi(S)=w(S,\bar S)/\min(\mathrm{vol}S,\mathrm{vol}\bar S)\)</span> and <span class="math inline">\(\bar\phi(S)=w(S,\bar S)\,\mathrm{vol}(V)/(\mathrm{vol}S\,\mathrm{vol}\bar S)\in[\Phi(S),2\Phi(S)]\)</span>. <span class="math inline">\(S\)</span> is <span class="math inline">\(b\)</span>-balanced if <span class="math inline">\(b\le\pi(S)\le1-b\)</span>. Throughout, <span class="math inline">\(b\in(0,\frac12]\)</span> and <span class="math inline">\(\gamma\in(0,1]\)</span>.</p>
+<hr>
+<section id="the-relaxation-as-a-problem-over-density-matrices" class="level2">
+<h2 class="anchored" data-anchor-id="the-relaxation-as-a-problem-over-density-matrices">1. The relaxation as a problem over density matrices</h2>
+<p>Lecture 10 wrote <span class="math inline">\(\mathrm{SDP}(b)\)</span> in terms of vectors <span class="math inline">\(v_i\)</span> with Gram matrix <span class="math inline">\(X\)</span>. With <span class="math inline">\(Y=\Pi^{1/2}X\Pi^{1/2}\)</span>:</p>
+<ul>
+<li><span class="math inline">\(\operatorname{tr}Y=\sum_i\pi_i\|v_i\|^2\)</span>, so the normalization is <span class="math inline">\(\operatorname{tr}Y=1\)</span>;</li>
+<li><span class="math inline">\(Y\sqrt\pi=\Pi^{1/2}X\pi\)</span>, so centering <span class="math inline">\(\sum_i\pi_iv_i=0\)</span> is <span class="math inline">\(Y\sqrt\pi=0\)</span>, i.e.&nbsp;<span class="math inline">\(Y\)</span> lives on <span class="math inline">\(W\)</span>;</li>
+<li><span class="math inline">\(\langle L,X\rangle/\mathrm{vol}(V)=\langle\Pi^{-1/2}L\Pi^{-1/2},Y\rangle/\mathrm{vol}(V)=\langle\mathcal L,Y\rangle\)</span>;</li>
+<li>the spread constraint <span class="math inline">\(\|v_i\|^2\le1/b\)</span> is <span class="math inline">\(Y_{ii}\le\pi_i/b\)</span>.</li>
+</ul>
+<p>So <span class="math inline">\(\mathrm{SDP}(b)=\min\{\langle\mathcal L,Y\rangle: Y\in\Delta(W),\ Y_{ii}\le\pi_i/b\}\)</span>, where <span class="math inline">\(\Delta(W)\)</span> is the set of density matrices supported on <span class="math inline">\(W\)</span>. Lecture 10 showed <span class="math inline">\(\mathrm{SDP}(b)\le\min\{\bar\phi(S):S\ b\text{-balanced}\}\)</span> using the <strong>cut embedding</strong> <span class="math inline">\(y=(\mathbf 1_S-p)/\sqrt{p(1-p)}\)</span>, <span class="math inline">\(p=\pi(S)\in[b,\frac12]\)</span>, for which <span class="math inline">\(\sum_i\pi_iy_i=0\)</span>, <span class="math inline">\(\sum_i\pi_iy_i^2=1\)</span>, <span class="math inline">\(y_i^2\le\max\{\frac{1-p}p,\frac p{1-p}\}\le\frac1b\)</span>, and <span class="math inline">\(y^\top Ly/\mathrm{vol}(V)=\bar\phi(S)\)</span>.</p>
+<p><strong>The dual.</strong> Attach <span class="math inline">\(\alpha\)</span> to <span class="math inline">\(\operatorname{tr}Y=1\)</span> and <span class="math inline">\(\beta_i\ge0\)</span> to <span class="math inline">\(Y_{ii}\le\pi_i/b\)</span>. The dual is <span class="math display">\[\max\Big\{\alpha-\frac1b\sum_i\beta_i\pi_i\ :\ \mathcal L+\operatorname{diag}(\beta)\succeq\alpha I\text{ on }W,\ \beta\ge0\Big\}.\]</span> Weak duality: for feasible <span class="math inline">\(Y\)</span> and dual <span class="math inline">\((\alpha,\beta)\)</span>, <span class="math inline">\(\langle\mathcal L,Y\rangle\ge\alpha\operatorname{tr}Y-\langle\operatorname{diag}\beta,Y\rangle\ge\alpha-\sum_i\beta_i\pi_i/b\)</span>.</p>
+</section>
+<section id="penalties-the-center-and-the-cut-as-a-comparator" class="level2">
+<h2 class="anchored" data-anchor-id="penalties-the-center-and-the-cut-as-a-comparator">2. Penalties, the center, and the cut as a comparator</h2>
+<p>For <span class="math inline">\(H\subseteq V\)</span> let <span class="math inline">\(\Delta_H=P\operatorname{diag}(\mathbf 1_H)P\)</span>. For <span class="math inline">\(x=\Pi^{1/2}y\in W\)</span>, <span class="math display">\[x^\top\Delta_Hx=\sum_{i\in H}x_i^2=\sum_{i\in H}\pi_iy_i^2 .\]</span> Since <span class="math inline">\(\sum_i\pi_iy_i=0\)</span>, this is the energy of edges of weight <span class="math inline">\(\pi_i\)</span> joining each <span class="math inline">\(i\in H\)</span> to an extra vertex held at the mean value <span class="math inline">\(0\)</span> (“ground”). In particular <span class="math inline">\(D^{1/2}\big(c\,\mathcal L+\sum_tc_t\operatorname{diag}(\mathbf 1_{H_t})\big)D^{1/2}=cL+\operatorname{diag}(\cdot)\)</span> is a grounded Laplacian (SDD with nonpositive off-diagonal entries).</p>
+<p><strong>The center.</strong> Let <span class="math inline">\(Z=\operatorname{tr}_We^{-\tau_0\mathcal L}=\sum_{k\ge2}e^{-\tau_0\lambda_k}\le n-1\)</span> and <span class="math inline">\(C=e^{-\tau_0\mathcal L}/Z\)</span> on <span class="math inline">\(W\)</span>, a full-rank density matrix on <span class="math inline">\(W\)</span> with <span class="math inline">\(\log C=-\tau_0\mathcal L-(\ln Z)I\)</span> there. By Lecture 10 (notes §5, “Centers”), FTRL over density matrices on <span class="math inline">\(W\)</span> with regularizer <span class="math inline">\(D(\cdot\Vert C)\)</span> and losses <span class="math inline">\(M_t\)</span> plays <span class="math inline">\(Y_t\propto\exp(\log C-\eta S_{t-1})\propto e^{-\tau_0\mathcal L-\eta S_{t-1}}\)</span>, and for every density matrix <span class="math inline">\(U\)</span> on <span class="math inline">\(W\)</span>, if <span class="math inline">\(-\eta M_t\preceq I\)</span>, <span class="math display">\[\sum_t\langle M_t,Y_t\rangle\le\Big\langle\sum_tM_t,U\Big\rangle+\eta\sum_t\langle M_t^2,Y_t\rangle+\frac{D(U\Vert C)}\eta .\tag{2.1}\]</span></p>
+<p><strong>Lemma 2.1 (the cut as a comparator).</strong> Let <span class="math inline">\(S\)</span> be <span class="math inline">\(b\)</span>-balanced; replacing <span class="math inline">\(S\)</span> by <span class="math inline">\(\bar S\)</span> if needed, <span class="math inline">\(p=\pi(S)\in[b,\frac12]\)</span>. Let <span class="math inline">\(x=\Pi^{1/2}y\)</span> with <span class="math inline">\(y\)</span> the cut embedding and <span class="math inline">\(U_S=xx^\top\)</span>. Then <span class="math inline">\(U_S\)</span> is a density matrix on <span class="math inline">\(W\)</span> and</p>
+<ol type="i">
+<li><span class="math inline">\(\langle\mathcal L,U_S\rangle=\bar\phi(S)\)</span>; (ii) <span class="math inline">\(\langle\Delta_H,U_S\rangle\le\pi(H)/b\)</span> for every <span class="math inline">\(H\)</span>; (iii) <span class="math inline">\(D(U_S\Vert C)=\tau_0\bar\phi(S)+\ln Z\le\tau_0\bar\phi(S)+\ln n\)</span>.</li>
+</ol>
+<p><em>Proof.</em> <span class="math inline">\(x\in W\)</span> and <span class="math inline">\(\|x\|^2=\sum_i\pi_iy_i^2=1\)</span>. (i) is §1. (ii) <span class="math inline">\(x^\top\Delta_Hx=\sum_{i\in H}\pi_iy_i^2\le\pi(H)\max_iy_i^2\le\pi(H)/b\)</span>. (iii) <span class="math inline">\(U_S\)</span> has eigenvalues <span class="math inline">\(1,0,\dots,0\)</span>, so <span class="math inline">\(\operatorname{tr}U_S\log U_S=0\)</span> and <span class="math inline">\(D(U_S\Vert C)=-\langle\log C,U_S\rangle=\tau_0x^\top\mathcal Lx+\ln Z\)</span>. <span class="math inline">\(\square\)</span></p>
+</section>
+<section id="the-loop-and-its-certificates" class="level2">
+<h2 class="anchored" data-anchor-id="the-loop-and-its-certificates">3. The loop and its certificates</h2>
+<p><strong>BalSep<span class="math inline">\((G,b,\gamma)\)</span>.</strong> Set <span class="math inline">\(\tau_0=8\ln n/\gamma\)</span>, <span class="math inline">\(\eta=1/(4\gamma)\)</span>, <span class="math inline">\(T=\lceil32\ln n\rceil\)</span>, <span class="math inline">\(S_0=0\)</span>. For <span class="math inline">\(t=1,\dots,T\)</span>: let <span class="math inline">\(Y_t=e^{-\tau_0\mathcal L-\eta S_{t-1}}/\operatorname{tr}(\cdot)\)</span>, computed on <span class="math inline">\(W\)</span>; let <span class="math inline">\(\|v_i\|^2=(Y_t)_{ii}/\pi_i\)</span> and <span class="math inline">\(H_t=\{i:\|v_i\|^2\ge16/b\}\)</span>.</p>
+<ul>
+<li><ol type="a">
+<li>If <span class="math inline">\(\langle\mathcal L,Y_t\rangle\ge\gamma\)</span>, stop and certify.</li>
+</ol></li>
+<li><ol start="3" type="a">
+<li>Else, if <span class="math inline">\(\sum_{i\in H_t}\pi_i\|v_i\|^2\ge\frac12\)</span>, set <span class="math inline">\(M_t=2\gamma\Delta_{H_t}\)</span> and <span class="math inline">\(S_t=S_{t-1}+M_t\)</span>.</li>
+</ol></li>
+<li><ol start="2" type="a">
+<li>Else round <span class="math inline">\(Y_t\)</span> (§4) and stop.</li>
+</ol></li>
+</ul>
+<p>If all <span class="math inline">\(T\)</span> rounds are case (c), certify.</p>
+<p><strong>Lemma 3.1.</strong> <span class="math inline">\(\pi(H_t)\le b/16\)</span>; in case (c), <span class="math inline">\(\langle M_t,Y_t\rangle\ge\gamma\)</span>; and <span class="math inline">\(0\preceq M_t\preceq2\gamma I\)</span>.</p>
+<p><em>Proof.</em> <span class="math inline">\(\frac{16}b\pi(H_t)\le\sum_{i\in H_t}\pi_i\|v_i\|^2\le\operatorname{tr}Y_t=1\)</span>. Since <span class="math inline">\(PY_tP=Y_t\)</span>, <span class="math inline">\(\langle\Delta_{H_t},Y_t\rangle=\sum_{i\in H_t}(Y_t)_{ii}=\sum_{i\in H_t}\pi_i\|v_i\|^2\ge\frac12\)</span>. Finally <span class="math inline">\(0\preceq P\operatorname{diag}(\mathbf 1_H)P\preceq P\preceq I\)</span>. <span class="math inline">\(\square\)</span></p>
+<p>In particular, by Lemma 2.1(ii), <span class="math inline">\(\langle M_s,U_S\rangle\le2\gamma\cdot\frac1{16}=\frac\gamma8\)</span> for every penalty and every <span class="math inline">\(b\)</span>-balanced <span class="math inline">\(S\)</span>.</p>
+<p><strong>Theorem 3.2 (case (a) certifies).</strong> If <span class="math inline">\(\langle\mathcal L,Y_t\rangle\ge\gamma\)</span> for some <span class="math inline">\(t\le T\)</span>, then every <span class="math inline">\(b\)</span>-balanced <span class="math inline">\(S\)</span> has <span class="math inline">\(\bar\phi(S)\ge\frac{3\gamma}4\)</span>.</p>
+<p><em>Proof.</em> By Gibbs (Lecture 10, Lemma 2.1, with <span class="math inline">\(A=\log C-\eta S_{t-1}\)</span>), <span class="math inline">\(Y_t\)</span> minimizes <span class="math inline">\(F(Y)=\eta\langle S_{t-1},Y\rangle+D(Y\Vert C)\)</span> over density matrices on <span class="math inline">\(W\)</span>. Hence <span class="math inline">\(F(Y_t)\le F(U_S)\)</span>. On the left, <span class="math inline">\(\eta\langle S_{t-1},Y_t\rangle\ge0\)</span> and <span class="math inline">\(D(Y_t\Vert C)=\operatorname{tr}Y_t\log Y_t+\tau_0\langle\mathcal L,Y_t\rangle+\ln Z\ge-\ln n+\tau_0\langle\mathcal L,Y_t\rangle+\ln Z\)</span>. On the right, <span class="math inline">\(\eta\langle S_{t-1},U_S\rangle\le\eta(t-1)\frac\gamma8=\frac{t-1}{32}\le\ln n\)</span> (since <span class="math inline">\(t-1\le T-1\le32\ln n\)</span>), and <span class="math inline">\(D(U_S\Vert C)=\tau_0\bar\phi(S)+\ln Z\)</span>. Cancelling <span class="math inline">\(\ln Z\)</span>, <span class="math display">\[\tau_0\langle\mathcal L,Y_t\rangle\le\tau_0\bar\phi(S)+2\ln n,\qquad\text{i.e.}\qquad\langle\mathcal L,Y_t\rangle\le\bar\phi(S)+\frac\gamma4 .\ \square\]</span></p>
+<p><strong>Theorem 3.3 (running out certifies).</strong> If all <span class="math inline">\(T\)</span> rounds are case (c), then every <span class="math inline">\(b\)</span>-balanced <span class="math inline">\(S\)</span> has <span class="math inline">\(\bar\phi(S)\ge\frac\gamma4\)</span>.</p>
+<p><em>Proof.</em> Apply (2.1) with <span class="math inline">\(U=U_S\)</span>; the condition <span class="math inline">\(-\eta M_t\preceq I\)</span> holds since <span class="math inline">\(M_t\succeq0\)</span>. By Lemma 3.1, <span class="math inline">\(M_t^2\preceq2\gamma M_t\)</span>, so <span class="math inline">\(\eta\sum_t\langle M_t^2,Y_t\rangle\le\frac12\sum_t\langle M_t,Y_t\rangle\)</span>, and <span class="math display">\[\frac12\sum_t\langle M_t,Y_t\rangle\le\sum_t\langle M_t,U_S\rangle+4\gamma\,D(U_S\Vert C).\]</span> The left side is at least <span class="math inline">\(\frac{T\gamma}2\)</span>; the right side is at most <span class="math inline">\(\frac{T\gamma}8+4\gamma(\tau_0\bar\phi(S)+\ln n)=\frac{T\gamma}8+32\ln n\,\bar\phi(S)+4\gamma\ln n\)</span>. Since <span class="math inline">\(T\ge32\ln n\)</span>, <span class="math inline">\(\frac{3T\gamma}8\ge12\gamma\ln n\)</span>, hence <span class="math inline">\(32\ln n\,\bar\phi(S)\ge8\gamma\ln n\)</span>. <span class="math inline">\(\square\)</span></p>
+<p>Since <span class="math inline">\(\Phi\ge\bar\phi/2\)</span>, any certificate gives <span class="math inline">\(\Phi(S)\ge\gamma/8\)</span> for every <span class="math inline">\(b\)</span>-balanced <span class="math inline">\(S\)</span>.</p>
+<p><strong>As a dual solution.</strong> Apply (2.1) instead with <span class="math inline">\(U=uu^\top\)</span>, <span class="math inline">\(u\)</span> a bottom eigenvector of <span class="math inline">\(A_T=\tau_0\mathcal L+\eta S_T\)</span> on <span class="math inline">\(W\)</span>: then <span class="math inline">\(D(U\Vert C)=\tau_0u^\top\mathcal Lu+\ln Z\)</span> and <span class="math inline">\(\frac{\eta T\gamma}2\le\eta u^\top S_Tu+\tau_0u^\top\mathcal Lu+\ln Z=\lambda_{\min}(A_T)+\ln Z\)</span>, so <span class="math inline">\(\lambda_{\min}(A_T)\ge\frac T8-\ln n\ge3\ln n\)</span>. Dividing by <span class="math inline">\(\tau_0\)</span>: <span class="math inline">\(\mathcal L+\operatorname{diag}(\beta)\succeq\frac{3\gamma}8I\)</span> on <span class="math inline">\(W\)</span> with <span class="math inline">\(\beta=\frac{2\gamma\eta}{\tau_0}\sum_t\mathbf 1_{H_t}\)</span> (quadratic forms of <span class="math inline">\(P\operatorname{diag}(\beta)P\)</span> and <span class="math inline">\(\operatorname{diag}(\beta)\)</span> agree on <span class="math inline">\(W\)</span>). Its dual value is at least <span class="math inline">\(\frac{3\gamma}8-\frac{2\gamma\eta}{\tau_0}\cdot\frac{T}{16}=\frac{3\gamma}8-\frac{\gamma T}{256\ln n}\ge\frac\gamma4-\frac\gamma{256\ln n}\)</span> (using <span class="math inline">\(T\le32\ln n+1\)</span>), matching Theorem 3.3 up to the rounding of <span class="math inline">\(T\)</span>.</p>
+<p><strong>Why the center.</strong> Without it (<span class="math inline">\(C=I/n\)</span>, plays <span class="math inline">\(e^{-\eta S_{t-1}}\)</span>), a high-energy round cannot be turned into a certificate, because <span class="math inline">\(D(U_S\Vert I/n)=\ln n\)</span> carries no information about <span class="math inline">\(\bar\phi(S)\)</span>. It must instead be played as the loss <span class="math inline">\(\mathcal L\)</span>, which has width <span class="math inline">\(2\)</span> and gain only <span class="math inline">\(\gamma\)</span>. The local-norm bound then needs <span class="math inline">\(\eta\le\frac14\)</span> and <span class="math inline">\(T=\Theta(\ln n/\gamma)\)</span> rounds, and the plays reach heat-kernel time <span class="math inline">\(\tau=\eta T_a=\Theta(\ln n/\gamma)\)</span> only after those rounds. The center starts the plays at that time for free and charges <span class="math inline">\(D(U_S\Vert C)/\eta=4\gamma(\tau_0\bar\phi(S)+\ln Z)\)</span>, which is <span class="math inline">\(O(\gamma\ln n)\)</span>, i.e.&nbsp;the gain of <span class="math inline">\(O(\ln n)\)</span> rounds, exactly when <span class="math inline">\(\bar\phi(S)=O(\gamma)\)</span> (equivalently, <span class="math inline">\(D(U_S\Vert C)=O(\ln n)\)</span> iff <span class="math inline">\(\bar\phi(S)=O(\gamma)\)</span>). The remaining losses (penalties) have gain/width ratio <span class="math inline">\(\frac12\)</span>, so <span class="math inline">\(O(\ln n)\)</span> rounds suffice, independently of <span class="math inline">\(\gamma\)</span>.</p>
+<p><strong>What the plays are.</strong> <span class="math inline">\(Y_t\propto\exp\big(-\tau_0(\mathcal L+\frac{2\gamma\eta}{\tau_0}\sum_{s&lt;t}\Delta_{H_s})\big)\)</span>: the (<span class="math inline">\(\sqrt\pi\)</span>-projected) heat kernel at time <span class="math inline">\(\tau_0\)</span> of <span class="math inline">\(G\)</span> with extra edges to ground of weight <span class="math inline">\(\frac{2\gamma\eta}{\tau_0}|\{s&lt;t:i\in H_s\}|\,\pi_i=\frac{|\{s&lt;t:i\in H_s\}|}{16\ln n}\,\gamma\,\pi_i\)</span> at vertex <span class="math inline">\(i\)</span> (in the scaling of the quadratic form). The walk is killed at a rate that grows each time a vertex is heavy.</p>
+</section>
+<section id="rounding-a-spread-play-sketch" class="level2">
+<h2 class="anchored" data-anchor-id="rounding-a-spread-play-sketch">4. Rounding a spread play (sketch)</h2>
+<p><strong>Lemma 4.1 (rounding).</strong> Suppose <span class="math inline">\(\langle\mathcal L,Y\rangle&lt;\gamma\)</span> and the light vertices <span class="math inline">\(\{i:\|v_i\|^2&lt;16/b\}\)</span> carry at least half of <span class="math inline">\(\sum_i\pi_i\|v_i\|^2=1\)</span>. Let <span class="math inline">\(g\)</span> be a standard Gaussian vector and <span class="math inline">\(y_i=\langle v_i,g\rangle\)</span>. With constant probability, some sweep cut of <span class="math inline">\(y\)</span> is <span class="math inline">\(\Omega(b)\)</span>-balanced with <span class="math inline">\(\Phi=O(\sqrt{\gamma})\)</span>, where the constants depend only on <span class="math inline">\(b\)</span>.</p>
+<p><em>Sketch.</em> This is the step where we have not optimized constants, and the argument below should be checked against OSV §3 (and Orecchia–Vishnoi 2011) before it is relied on.</p>
+<ol type="1">
+<li><em>Projection.</em> <span class="math inline">\(\mathbb E\,y_i^2=\|v_i\|^2\)</span> and <span class="math inline">\(\mathbb E(y_i-y_j)^2=\|v_i-v_j\|^2\)</span>. So <span class="math inline">\(\mathbb E\sum_{ij}w_{ij}(y_i-y_j)^2=\mathrm{vol}(V)\langle\mathcal L,Y\rangle\)</span> and <span class="math inline">\(\mathbb E\sum_i\pi_iy_i^2=1\)</span>; also <span class="math inline">\(\sum_i\pi_iy_i=0\)</span> exactly. By Markov on the energy and a second-moment (Paley–Zygmund) bound on the light part of the variance, with constant probability the energy is <span class="math inline">\(O(\gamma)\mathrm{vol}(V)\)</span> and the light vertices carry <span class="math inline">\(\Omega(1)\)</span> of <span class="math inline">\(\sum\pi_iy_i^2\)</span>, while <span class="math inline">\(\sum_{\text{light}}\pi_iy_i^2\mathbf 1[y_i^2&gt;C/b]\)</span> is a small fraction of it for a large constant <span class="math inline">\(C\)</span> (Gaussian tails, since <span class="math inline">\(\mathbb E y_i^2&lt;16/b\)</span> there).</li>
+<li><em>Truncation.</em> Let <span class="math inline">\(z_i=\max(-a,\min(y_i,a))\)</span> with <span class="math inline">\(a=\sqrt{C/b}\)</span>. Truncation is <span class="math inline">\(1\)</span>-Lipschitz, so the energy of <span class="math inline">\(z\)</span> is at most that of <span class="math inline">\(y\)</span>, and <span class="math inline">\(\sum_i\pi_iz_i^2=\Omega(1)\)</span> by step 1. Shifting <span class="math inline">\(z\)</span> by a median-type constant <span class="math inline">\(\theta\)</span> (chosen so that <span class="math inline">\(\pi\{z&gt;\theta\}\le\frac12\)</span> and <span class="math inline">\(\pi\{z&lt;\theta\}\le\frac12\)</span>) keeps a constant fraction of the variance.</li>
+<li><em>Volume.</em> Since <span class="math inline">\(|z_i-\theta|\le2a\)</span>, the set where <span class="math inline">\((z_i-\theta)^2\ge c\)</span> has volume at least <span class="math inline">\((\Omega(1)-c)/(4a^2)=\Omega(b)\)</span> for a small constant <span class="math inline">\(c\)</span>.</li>
+<li><em>Sweep.</em> Apply the co-area/Cauchy–Schwarz argument of Cheeger’s inequality (Lecture 6) to the positive and negative parts of <span class="math inline">\(z-\theta\)</span>, but only over thresholds <span class="math inline">\(r\)</span> with <span class="math inline">\(r^2\ge c\)</span>. The level sets over that range have volume between <span class="math inline">\(\Omega(b)\)</span> (step 3) and <span class="math inline">\(\frac12\)</span> (choice of <span class="math inline">\(\theta\)</span>), and the argument produces one with <span class="math inline">\(\Phi=O(\sqrt{\text{energy}/\text{variance}})=O(\sqrt\gamma)\)</span>, with the constant depending on <span class="math inline">\(b\)</span> through <span class="math inline">\(a\)</span> and <span class="math inline">\(c\)</span>.</li>
+</ol>
+<p>On the whisker example (script <code>lectures/lecture11/scripts/loop_figure.py</code>, <span class="math inline">\(b=\frac14\)</span>) the first play is already spread and 20 projections give, for <span class="math inline">\(\gamma=0.02\)</span>, a cut with <span class="math inline">\(\Phi=0.0235\)</span> and balance <span class="math inline">\(0.49\)</span>, and for <span class="math inline">\(\gamma=0.05\)</span> a two-whisker cut with <span class="math inline">\(\Phi=0.024\)</span> and balance <span class="math inline">\(0.095\)</span>.</p>
+</section>
+<section id="computing-the-plays" class="level2">
+<h2 class="anchored" data-anchor-id="computing-the-plays">5. Computing the plays</h2>
+<p><strong>What is needed.</strong> Each round uses <span class="math inline">\(\|v_i\|^2\)</span> for all <span class="math inline">\(i\)</span>, the energy <span class="math inline">\(\langle\mathcal L,Y_t\rangle=\frac1{\mathrm{vol}(V)}\sum_{ij}w_{ij}\|v_i-v_j\|^2\)</span>, and, in case (b), the projections <span class="math inline">\(y_i=\langle v_i,g\rangle\)</span>. With <span class="math inline">\(A=\tau_0\mathcal L+\eta S_{t-1}\)</span> (on <span class="math inline">\(W\)</span>) and <span class="math inline">\(Y_t^{1/2}=e^{-A/2}/\sqrt{\operatorname{tr}e^{-A}}\)</span>, a valid choice of vectors is <span class="math inline">\(v_i=\pi_i^{-1/2}\,e_i^\top Y_t^{1/2}\)</span>.</p>
+<p><strong>Johnson–Lindenstrauss.</strong> Let <span class="math inline">\(U\)</span> be <span class="math inline">\(n\times k\)</span> with i.i.d. <span class="math inline">\(N(0,1/k)\)</span> entries, <span class="math inline">\(k=O(\log n/\varepsilon^2)\)</span>. With high probability the vectors <span class="math inline">\(\tilde v_i=\pi_i^{-1/2}e_i^\top Y_t^{1/2}U\)</span> satisfy <span class="math inline">\(\|\tilde v_i\|^2=(1\pm\varepsilon)\|v_i\|^2\)</span> and <span class="math inline">\(\|\tilde v_i-\tilde v_j\|^2=(1\pm\varepsilon)\|v_i-v_j\|^2\)</span> for all the <span class="math inline">\(O(n+m)\)</span> pairs needed. The trace is estimated the same way: <span class="math inline">\(\operatorname{tr}e^{-A}=\|e^{-A/2}\|_F^2\)</span>. Each round therefore needs <span class="math inline">\(k=O(\log n)\)</span> products <span class="math inline">\(e^{-A/2}u\)</span>; an approximation error <span class="math inline">\(\delta\)</span> in these products perturbs the gains by <span class="math inline">\(O(\delta)\)</span>, which is absorbed by running the oracle with <span class="math inline">\(\gamma/2\)</span> in place of <span class="math inline">\(\gamma\)</span>.</p>
+<p><strong>The matrix.</strong> <span class="math inline">\(A=\tau_0\mathcal L+\eta S_{t-1}\)</span>, so <span class="math inline">\(\|A\|\le2\tau_0+2\gamma\eta T=\frac{16\ln n}\gamma+\frac T2=O(\log n/\gamma)\)</span>. On <span class="math inline">\(W\)</span>, <span class="math inline">\(A=PA'P\)</span> with <span class="math inline">\(A'=\tau_0\mathcal L+\operatorname{diag}(\beta')\)</span>, <span class="math inline">\(\beta'\ge0\)</span>, and <span class="math inline">\(D^{1/2}A'D^{1/2}=\tau_0L+D\operatorname{diag}(\beta')\)</span> is a grounded Laplacian. Note <span class="math inline">\(Pe^{-A'}P\ne e^{-PA'P}\)</span> in general (the penalties break the eigenvector <span class="math inline">\(\sqrt\pi\)</span>), so the projection must be handled inside each solve. For <span class="math inline">\(u\in W\)</span>, the solution <span class="math inline">\(z\in W\)</span> of <span class="math inline">\((I+PA'P/k)z=u\)</span> is <span class="math inline">\(z=B^{-1}u+cB^{-1}\sqrt\pi\)</span> with <span class="math inline">\(B=I+A'/k\)</span> and <span class="math inline">\(c=-\langle\sqrt\pi,B^{-1}u\rangle/\langle\sqrt\pi,B^{-1}\sqrt\pi\rangle\)</span>: then <span class="math inline">\(z\perp\sqrt\pi\)</span> and <span class="math inline">\(PBz=u\)</span>. So each solve costs two SDD solves with <span class="math inline">\(B\)</span>, <span class="math inline">\(\tilde O(m)\)</span> time (Lecture 9). (OSV instead use star penalties, whose Laplacians annihilate <span class="math inline">\(\sqrt\pi\)</span>, which avoids the issue.)</p>
+<p><strong>Polynomial approximation.</strong> For <span class="math inline">\(x\in[0,\beta]\)</span> there is a polynomial of degree <span class="math inline">\(O\big(\sqrt{\max(\beta,\log\frac1\delta)\log\frac1\delta}\big)\)</span> with <span class="math inline">\(|e^{-x}-p(x)|\le\delta\)</span> (Chebyshev; see Sachdeva–Vishnoi). Lanczos finds an approximation at least as good without knowing <span class="math inline">\(p\)</span>. With <span class="math inline">\(\beta=\|A\|=O(\log n/\gamma)\)</span> this is <span class="math inline">\(\tilde O(1/\sqrt\gamma)\)</span> matrix-vector products, i.e.&nbsp;<span class="math inline">\(\tilde O(m/\sqrt\gamma)\)</span> per product <span class="math inline">\(e^{-A/2}u\)</span>.</p>
+<p><strong>Rational approximation.</strong> Saff–Schönhage–Varga: there are polynomials <span class="math inline">\(p_k\)</span> of degree <span class="math inline">\(k\)</span> with <span class="math display">\[\sup_{x\ge0}\big|e^{-x}-p_k\big((1+x/k)^{-1}\big)\big|\le2^{-\Omega(k)} .\]</span> So <span class="math inline">\(k=O(\log\frac1\delta)\)</span> suffices <strong>uniformly on <span class="math inline">\([0,\infty)\)</span></strong>, independently of <span class="math inline">\(\|A\|\)</span>. Evaluating <span class="math inline">\(p_k((I+A/k)^{-1})u\)</span> takes <span class="math inline">\(k\)</span> solves with <span class="math inline">\(I+A/k\)</span> on <span class="math inline">\(W\)</span>, each two SDD solves by the bordered system above; OSV run Lanczos on <span class="math inline">\((I+A/k)^{-1}\)</span> and show that approximate solves suffice. Cost: <span class="math inline">\(\tilde O(m)\)</span> per product. <em>Precision.</em> The plays are normalized by <span class="math inline">\(\operatorname{tr}e^{-A}\ge e^{-\lambda_{\min}(A)}\)</span>, so we need <span class="math inline">\(\delta\le n^{-O(1)}e^{-\lambda_{\min}(A)}\)</span>. Before any penalty <span class="math inline">\(\lambda_{\min}(A)=\tau_0\lambda_2\)</span>, and if <span class="math inline">\(\lambda_2\ge\gamma\)</span> then <span class="math inline">\(\langle\mathcal L,Y_1\rangle\ge\lambda_2\ge\gamma\)</span> and case (a) certifies in round 1; otherwise <span class="math inline">\(\lambda_{\min}(A)\le\tau_0\gamma+\frac T2=O(\ln n)\)</span> throughout (penalties add at most <span class="math inline">\(2\gamma\eta T=\frac T2\)</span>), so <span class="math inline">\(k=O(\log n)\)</span> suffices.</p>
+<p><strong>Total.</strong> <span class="math inline">\(T=O(\log n)\)</span> rounds, <span class="math inline">\(O(\log n)\)</span> products per round, <span class="math inline">\(\tilde O(m)\)</span> per product: <span class="math inline">\(\tilde O(m)\)</span>, independent of <span class="math inline">\(\gamma\)</span>. With the polynomial approximation instead, the large starting time <span class="math inline">\(\tau_0\)</span> costs a factor <span class="math inline">\(\sqrt{\|A\|}\)</span>: <span class="math inline">\(\tilde O(m/\sqrt\gamma)\)</span>. Without the center (§3, “Why the center”) the round count alone would add a factor <span class="math inline">\(1/\gamma\)</span>.</p>
+</section>
+<section id="what-to-check-against-the-paper" class="level2">
+<h2 class="anchored" data-anchor-id="what-to-check-against-the-paper">6. What to check against the paper</h2>
+<ul>
+<li>The paper’s oracle and penalty normalization (stars vs.&nbsp;the diagonal penalties <span class="math inline">\(\Delta_H\)</span> used here), its heavy-set threshold, and whether it also uses radial sweeps to find unbalanced sparse cuts.</li>
+<li>The exact statement of the rounding lemma and its constants (§4).</li>
+<li>How the paper initializes the walk (our center <span class="math inline">\(e^{-\tau_0\mathcal L}\)</span> with <span class="math inline">\(\tau_0=\Theta(\log n/\gamma)\)</span>) and its iteration count (ours is <span class="math inline">\(\lceil32\ln n\rceil\)</span>).</li>
+</ul>
+</section>
+<section id="exercises" class="level2">
+<h2 class="anchored" data-anchor-id="exercises">7. Exercises</h2>
+<ol type="1">
+<li>Show <span class="math inline">\(\bar\phi(S)\in[\Phi(S),2\Phi(S)]\)</span>, and that the cut embedding satisfies <span class="math inline">\(y_i^2\le1/b\)</span> when <span class="math inline">\(\pi(S)\in[b,\frac12]\)</span>.</li>
+<li>Verify the dual of <span class="math inline">\(\mathrm{SDP}(b)\)</span> in §1 and the dual solution extracted from the certificate.</li>
+<li>Redo Theorems 3.2 and 3.3 with heavy threshold <span class="math inline">\(c/b\)</span>, penalty weight <span class="math inline">\(\kappa\gamma\)</span>, starting time <span class="math inline">\(\tau_0=\alpha\ln n/\gamma\)</span> and step size <span class="math inline">\(\eta=\theta/\gamma\)</span>. For which parameters do both go through, and how do <span class="math inline">\(T\)</span> and the certificate constant depend on them?</li>
+<li>Run the loop without a center (<span class="math inline">\(C=I/n\)</span>), playing high-energy rounds as losses <span class="math inline">\(\mathcal L\)</span>. Prove a round bound of <span class="math inline">\(O(\log n/\gamma)\)</span> with the local-norm bound, and show that the uncentered regret bound cannot give <span class="math inline">\(O(\log n)\)</span>.</li>
+<li>Construct a family of graphs on which case (c) occurs in BalSep. (Half of the variance of a low-energy heat kernel must sit on vertices with <span class="math inline">\(\|v_i\|^2\ge16/b\)</span>.)</li>
+<li>Prove the Johnson–Lindenstrauss claim in §5, including the estimate of <span class="math inline">\(\operatorname{tr}e^{-A}\)</span>. ## References</li>
+</ol>
+<ul>
+<li>L. Orecchia, S. Sachdeva, N. K. Vishnoi. Approximating the exponential, the Lanczos method and an <span class="math inline">\(\tilde O(m)\)</span>-time spectral algorithm for balanced separator. <em>STOC</em> 2012 (arXiv:1111.1491).</li>
+<li>L. Orecchia, N. K. Vishnoi. Towards an SDP-based approach to spectral methods: a nearly-linear-time algorithm for graph partitioning and decomposition. <em>SODA</em> 2011.</li>
+<li>S. Arora, S. Kale. A combinatorial, primal-dual approach to semidefinite programs. <em>STOC</em> 2007; <em>J. ACM</em> 2016.</li>
+<li>E. B. Saff, A. Schönhage, R. S. Varga. Geometric convergence to <span class="math inline">\(e^{-z}\)</span> by rational functions with real poles. <em>Numer. Math.</em> 1975.</li>
+<li>S. Sachdeva, N. K. Vishnoi. Faster algorithms via approximation theory. <em>Foundations and Trends in TCS</em> 2014.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const toggle = window.document.createElement('button');
+      toggle.type = "button";
+      toggle.setAttribute("role", "switch");
+      toggle.setAttribute("aria-checked", "false");
+      toggle.classList.add('top-right');
+      toggle.classList.add('quarto-color-scheme-toggle');
+      toggle.setAttribute("aria-label", "Toggle dark mode");
+      toggle.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      toggle.appendChild(i);
+      // Put the toggle in a landmark of its own, so that landmark navigation
+      // can reach it.
+      //
+      // The container is always a fresh direct child of body, and the toggle is
+      // never moved into page furniture that the theme or the author controls.
+      // The toggle is positioned against the page, so any ancestor that
+      // establishes a containing block captures it: a positioned element or a
+      // grid for position: absolute, and transform, filter, will-change or
+      // contain for position: fixed. A direct child of body has none of these
+      // to inherit, and the shift when one appears is silent and visual.
+      //
+      // ARIA says a document should have at most one banner, and axe reports a
+      // duplicate whether or not the banners carry distinct labels. So use a
+      // header when the page has no banner yet, and a named region otherwise.
+      //
+      // A header is a banner wherever it sits, unless it is inside sectioning
+      // content, so this cannot just look at the children of body: a custom
+      // page layout wraps the title block header in a plain div. An explicit
+      // role="banner" always counts.
+      const sectioning = 'article, aside, main, nav, section, [role="article"], [role="complementary"], [role="main"], [role="navigation"], [role="region"]';
+      const hasBanner = Array.from(
+        window.document.querySelectorAll('header:not([role]), [role="banner"]')
+      ).some(function(el) {
+        return el.hasAttribute("role") || el.closest(sectioning) === null;
+      });
+      const container = window.document.createElement(hasBanner ? "div" : "header");
+      if (hasBanner) {
+        container.setAttribute("role", "region");
+        container.setAttribute("aria-label", "Toggle dark mode");
+      }
+      container.classList.add('quarto-color-scheme-toggle-container');
+      container.appendChild(toggle);
+      window.document.body.appendChild(container);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/lorecchia\.github\.io\/cmsc35410");
+      const newWindowLabel = "(opens in a new tab)";
+      const newWindowNoteId = "quarto-ext-newwindow-label";
+      // Links reference one hidden label through aria-describedby, so the
+      // announcement never changes their accessible name.
+      var describeNewWindow = (link) => {
+        if (!window.document.getElementById(newWindowNoteId)) {
+          var newWindowNote = window.document.createElement("span");
+          newWindowNote.id = newWindowNoteId;
+          newWindowNote.hidden = true;
+          newWindowNote.textContent = newWindowLabel;
+          window.document.body.appendChild(newWindowNote);
+        }
+        var describedBy = (link.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean);
+        if (!describedBy.includes(newWindowNoteId)) {
+          describedBy.push(newWindowNoteId);
+          link.setAttribute("aria-describedby", describedBy.join(" "));
+        }
+      }
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+            describeNewWindow(link);
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"Scrollable code","output":"Scrollable output"};
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/lorecchia/cmsc35410/blob/main/notes/lecture11-notes.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/lorecchia/cmsc35410/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

@@ -6,14 +6,14 @@
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.10.19">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.11.9">
 
   <meta name="author" content="CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis">
   <title>CMSC 35410 – Lecture 10 · Online Learning over Density Matrices and the Balanced Separator Problem</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="../../site_libs/revealjs/dist/reset.css">
   <link rel="stylesheet" href="../../site_libs/revealjs/dist/reveal.css">
   <style>
@@ -35,7 +35,7 @@
       vertical-align: middle;
     }
   </style>
-  <link rel="stylesheet" href="../../site_libs/revealjs/dist/theme/quarto-2740581606dc327e82f18f789b69d8a0.css">
+  <link rel="stylesheet" href="../../site_libs/revealjs/dist/theme/quarto-00ad5a49dff614330cd349bcec985ec3.css">
   <link rel="stylesheet" href="lecture10.css">
   <link href="../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="../../site_libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
@@ -136,7 +136,7 @@
 
 <section class="quarto-title-block center">
   <h1 class="title">Lecture 10 · Online Learning over Density Matrices and the Balanced Separator Problem</h1>
-  <p class="subtitle">Follow the regularized leader, the matrix multiplicative weights update,<br> and why recursive eigenvectors follow the leader</p>
+  <p class="subtitle">Follow the regularized leader, the matrix multiplicative weights update,<br>and why recursive eigenvectors follow the leader</p>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
@@ -175,12 +175,12 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <h2>Plan</h2>
 <ul>
 <li><strong>§1 The game.</strong> Online linear optimization over density matrices; follow the leader fails.</li>
-<li><strong>§2 FTRL with von Neumann entropy.</strong> Gibbs, the MMWU, <strong>strong convexity <span class="math inline">\(\Rightarrow\)</span> smoothness</strong>, the regret bound.</li>
+<li><strong>§2 FTRL with von Neumann entropy.</strong> Gibbs, the MMWU, <strong>centers</strong>, <strong>strong convexity <span class="math inline">\(\Rightarrow\)</span> smoothness</strong>, the regret bound.</li>
 <li><strong>§3 Losses and the heat kernel.</strong> Eigenvector <span class="math inline">\(=\)</span> follow the leader, heat kernel <span class="math inline">\(=\)</span> regularized.</li>
 <li><strong>§4 Balanced separator.</strong> Fiedler finds whiskers; recursive eigenvectors; an SDP with a spread constraint.</li>
 </ul>
 <aside class="notes">
-<p>~1 min. Timing for the new material: §1 ~15 min, §2 ~19 min, §3 ~3 min, §4 ~16 min, takeaways ~2 min.</p>
+<p>~1 min. Timing for the new material: §1 ~15 min, §2 ~19 min, §3 ~3 min, §4 ~16 min, takeaways ~2 min. As delivered: §1 on 10/29; §2–§4 on 11/3 (~37 min, with the recursive-eigenvector slide cut to ~1 min), then the Lecture 11 deck.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -447,6 +447,31 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
       }</style></aside>
 </section>
 <section class="slide level2">
+<h2>FTRL with a center</h2>
+<p>Replace the entropy by the <strong>relative entropy to a center</strong> <span class="math inline">\(C\in\Delta_n\)</span> of full rank: <span class="math display">\[R_C(X)=D(X\Vert C)=\operatorname{tr}X\log X-\langle\log C,X\rangle\ \ge0,\qquad R_C(C)=0 .\]</span></p>
+<div class="thm">
+<p><strong>MMWU with center <span class="math inline">\(C\)</span></strong> (Gibbs with <span class="math inline">\(A=\log C+\eta S_{t-1}\)</span>): <span class="math display">\[X_t=\frac{\exp(\log C+\eta S_{t-1})}{\operatorname{tr}\exp(\log C+\eta S_{t-1})},\qquad\Psi_C(S)=\frac1\eta\log\operatorname{tr}e^{\log C+\eta S}.\]</span> <strong>Two facts:</strong> <span class="math inline">\(\ \Psi_C(0)=0\ \)</span> and <span class="math inline">\(\ \Psi_C(S)\ge\langle S,U\rangle-\frac1\eta D(U\Vert C)\ \)</span> for <strong>every</strong> <span class="math inline">\(U\in\Delta_n\)</span>.</p>
+</div>
+<ul>
+<li><span class="math inline">\(C=I/n\)</span>: <span class="math inline">\(D(X\Vert I/n)=\operatorname{tr}X\log X+\log n\)</span>, the plain MMWU. For <span class="math inline">\(U=uu^\top\)</span>, <span class="math inline">\(D(uu^\top\Vert I/n)=\log n\)</span>.</li>
+<li><strong>A center is a warm start.</strong> <span class="math inline">\(\log C+\eta S_{t-1}\)</span> is what the plain MMWU would play after an extra round-<span class="math inline">\(0\)</span> gain <span class="math inline">\(\frac1\eta\log C\)</span>. Example (L11): <span class="math inline">\(C\propto e^{-\tau_0\mathcal L}\)</span> starts the plays at the <strong>heat kernel at time <span class="math inline">\(\tau_0\)</span></strong>, for free.</li>
+<li><span class="math inline">\(R_C\)</span> differs from <span class="math inline">\(R\)</span> by a <strong>linear</strong> function: same strong convexity, same stability analysis.</li>
+</ul>
+<aside class="notes">
+<p>~3 min. The second fact is Gibbs again: Ψ_C(S) = max_X {⟨S,X⟩ − D(X‖C)/η} because ⟨ηS, X⟩ − D(X‖C) = ⟨log C + ηS, X⟩ − tr X log X. Plug in X = U. With C = I/n and U = uu^T this is Ψ(S) ≥ λ_max(S) − 0 after the log n shift. The point of the slide: the range term log n/η of the regret bound becomes D(U‖C)/η, which is small when the comparator U is “likely” under C. In Lecture 11 the comparator is a balanced cut, and D(U‖C) = τ₀ φ̄(S) + log Z: small exactly when the cut is sparse.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
 <h2>Strong convexity implies smoothness of the maximum</h2>
 <div class="lem">
 <p><strong>Lemma.</strong> Let <span class="math inline">\(R\)</span> be <strong><span class="math inline">\(\alpha\)</span>-strongly convex</strong> on a convex set <span class="math inline">\(K\)</span> w.r.t. a norm <span class="math inline">\(\|\cdot\|\)</span>: <span class="math display">\[R(Y)\ge R(X)+\langle\nabla R(X),Y-X\rangle+\tfrac\alpha2\|Y-X\|^2 .\]</span> Let <span class="math inline">\(\Psi(S)=\max_{X\in K}\{\langle S,X\rangle-R(X)\}\)</span> with maximizer <span class="math inline">\(X(S)\)</span>. Then, with <span class="math inline">\(\|\cdot\|_*\)</span> the dual norm, <span class="math display">\[\Psi(S+M)\ \le\ \Psi(S)+\langle X(S),M\rangle+\frac1{2\alpha}\|M\|_*^2 .\]</span></p>
@@ -498,14 +523,14 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <section class="slide level2">
 <h2>The regret bound</h2>
 <div class="thm">
-<p><strong>Theorem (MMWU regret).</strong> For any symmetric <span class="math inline">\(M_1,\dots,M_T\)</span> (chosen adaptively), the MMWU plays satisfy <span class="math display">\[\lambda_{\max}\Big(\sum_{t=1}^TM_t\Big)\ \le\ \sum_{t=1}^T\langle M_t,X_t\rangle+\frac\eta2\sum_{t=1}^T\|M_t\|^2+\frac{\log n}{\eta}.\]</span></p>
+<p><strong>Theorem (MMWU regret).</strong> For any symmetric <span class="math inline">\(M_1,\dots,M_T\)</span> (chosen adaptively), the MMWU plays with center <span class="math inline">\(C\)</span> satisfy, for <strong>every</strong> <span class="math inline">\(U\in\Delta_n\)</span>, <span class="math display">\[\Big\langle\sum_{t=1}^TM_t,\,U\Big\rangle\ \le\ \sum_{t=1}^T\langle M_t,X_t\rangle+\frac\eta2\sum_{t=1}^T\|M_t\|^2+\frac{D(U\Vert C)}{\eta}.\]</span> <strong>With <span class="math inline">\(C=I/n\)</span>:</strong> <span class="math inline">\(\ \lambda_{\max}\big(\sum_tM_t\big)\le\sum_t\langle M_t,X_t\rangle+\frac\eta2\sum_t\|M_t\|^2+\frac{\log n}\eta\)</span>.</p>
 </div>
 <div class="pf">
-<p><em>Proof.</em> Apply the lemma with <span class="math inline">\(R=\frac1\eta\operatorname{tr}X\log X\)</span>, which is <span class="math inline">\(\frac1\eta\)</span>-strongly convex w.r.t. <span class="math inline">\(\|\cdot\|_1\)</span>: for each <span class="math inline">\(t\)</span>, <span class="math display">\[\Psi(S_t)\le\Psi(S_{t-1})+\langle X_t,M_t\rangle+\tfrac\eta2\|M_t\|^2 .\]</span> Sum over <span class="math inline">\(t\)</span> and use the two facts: <span class="math inline">\(\ \lambda_{\max}(S_T)\le\Psi(S_T)\ \)</span> and <span class="math inline">\(\ \Psi(S_0)=\Psi(0)=\frac{\log n}\eta\)</span>. <span class="math inline">\(\square\)</span></p>
+<p><em>Proof.</em> Apply the lemma with <span class="math inline">\(R=\frac1\eta D(\cdot\Vert C)\)</span>, which is <span class="math inline">\(\frac1\eta\)</span>-strongly convex w.r.t. <span class="math inline">\(\|\cdot\|_1\)</span>: for each <span class="math inline">\(t\)</span>, <span class="math display">\[\Psi_C(S_t)\le\Psi_C(S_{t-1})+\langle X_t,M_t\rangle+\tfrac\eta2\|M_t\|^2 .\]</span> Sum over <span class="math inline">\(t\)</span> and use the two facts: <span class="math inline">\(\ \Psi_C(S_T)\ge\langle S_T,U\rangle-\frac1\eta D(U\Vert C)\ \)</span> and <span class="math inline">\(\ \Psi_C(0)=0\)</span>. For <span class="math inline">\(C=I/n\)</span> take <span class="math inline">\(U=uu^\top\)</span>, the top eigenvector. <span class="math inline">\(\square\)</span></p>
 </div>
 <p><strong>Tuning.</strong> If <span class="math inline">\(\|M_t\|\le\rho\)</span>, take <span class="math inline">\(\eta=\sqrt{2\log n/(T\rho^2)}\)</span>: <span class="math inline">\(\ \mathrm{Regret}_T\le\rho\sqrt{2T\log n}\)</span>. Average regret <span class="math inline">\(\to0\)</span>; diagonal case: Hedge’s <span class="math inline">\(\sqrt{T\log n}\)</span>.</p>
 <aside class="notes">
-<p>~4 min. Point at the two terms: log n/η is the range of the regularizer (FTL has η = ∞, so this term vanishes) and (η/2)Σ‖M_t‖² is the stability cost (for FTL it is unbounded, which is the two-experts example). In “averaged” form: (1/T) λ_max(S_T) ≤ average gain + ε after T = O(ρ² log n/ε²) rounds.</p>
+<p>~4 min. Point at the two terms: D(U‖C)/η, which is log n/η for the uniform center and the worst comparator, is the range of the regularizer (FTL has η = ∞, so this term vanishes) and (η/2)Σ‖M_t‖² is the stability cost (for FTL it is unbounded, which is the two-experts example). In “averaged” form: (1/T) λ_max(S_T) ≤ average gain + ε after T = O(ρ² log n/ε²) rounds.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -521,7 +546,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <section class="slide level2">
 <h2>A sharper bound: local norms</h2>
 <div class="thm">
-<p><strong>Theorem (local-norm MMWU; stated).</strong> If <span class="math inline">\(\eta M_t\preceq I\)</span> for all <span class="math inline">\(t\)</span>, then <span class="math display">\[\lambda_{\max}\Big(\sum_tM_t\Big)\ \le\ \sum_t\langle M_t,X_t\rangle+\eta\sum_t\langle M_t^2,X_t\rangle+\frac{\log n}{\eta}.\]</span></p>
+<p><strong>Theorem (local-norm MMWU; stated).</strong> If <span class="math inline">\(\eta M_t\preceq I\)</span> for all <span class="math inline">\(t\)</span>, then for every center <span class="math inline">\(C\)</span> and every <span class="math inline">\(U\in\Delta_n\)</span> <span class="math display">\[\Big\langle\sum_tM_t,\,U\Big\rangle\ \le\ \sum_t\langle M_t,X_t\rangle+\eta\sum_t\langle M_t^2,X_t\rangle+\frac{D(U\Vert C)}{\eta};\]</span> with <span class="math inline">\(C=I/n\)</span>: <span class="math inline">\(\ \lambda_{\max}(\sum_tM_t)\le\sum_t\langle M_t,X_t\rangle+\eta\sum_t\langle M_t^2,X_t\rangle+\frac{\log n}\eta\)</span>.</p>
 </div>
 <ul>
 <li><span class="math inline">\(\langle M^2,X\rangle\le\|M\|^2\)</span> always: never worse (up to the constant), often much better.</li>
@@ -552,12 +577,13 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 </section>
 <section class="slide level2">
 <h2>Losses: MMWU is a heat kernel</h2>
-<p>Apply the theorem to <span class="math inline">\(-M_t\)</span>: play <span class="math inline">\(X_t\propto\exp(-\eta S_{t-1})\)</span>, and <span class="math display">\[\lambda_{\min}\Big(\sum_tM_t\Big)\ \ge\ \sum_t\langle M_t,X_t\rangle-\frac\eta2\sum_t\|M_t\|^2-\frac{\log n}\eta .\]</span></p>
+<p>Apply the theorem to <span class="math inline">\(-M_t\)</span>: play <span class="math inline">\(X_t\propto\exp(-\eta S_{t-1})\)</span>, and <span class="math display">\[\lambda_{\min}\Big(\sum_tM_t\Big)\ \ge\ \sum_t\langle M_t,X_t\rangle-\frac\eta2\sum_t\|M_t\|^2-\frac{\log n}\eta .\]</span> With a center: <span class="math inline">\(X_t\propto\exp(\log C-\eta S_{t-1})\)</span> and <span class="math inline">\(\ \sum_t\langle M_t,X_t\rangle\le\langle\sum_tM_t,U\rangle+\frac\eta2\sum_t\|M_t\|^2+\frac{D(U\Vert C)}\eta\ \)</span> for every <span class="math inline">\(U\)</span>.</p>
 <div class="fragment">
 <p>If the losses are <strong>Laplacians</strong>, say <span class="math inline">\(S_{t-1}=s\,\mathcal L\)</span> with <span class="math inline">\(\mathcal L=D^{-1/2}LD^{-1/2}\)</span>: <span class="math display">\[X_t\ \propto\ e^{-\eta s\mathcal L}=D^{1/2}H_{\eta s}D^{-1/2}\qquad(\text{Lecture 2: }H_\tau=e^{-\tau L_{rw}}).\]</span></p>
 <ul>
 <li><span class="math inline">\(X_t\)</span> is the <strong>heat kernel</strong> at time <span class="math inline">\(\tau=\eta s\)</span>. Its diagonal is the <strong>return probability</strong> <span class="math inline">\(H_\tau(i,i)\)</span>: large where the walk gets stuck.</li>
 <li><span class="math inline">\(\eta\to\infty\)</span>: <span class="math inline">\(X_t\to\)</span> projector onto the bottom eigenvector. On <span class="math inline">\(\mathbf 1^\perp\)</span> (in the <span class="math inline">\(D\)</span> inner product): the <strong>Fiedler vector</strong>.</li>
+<li><strong>Center <span class="math inline">\(C\propto e^{-\tau_0\mathcal L}\)</span>:</strong> the plays are <span class="math inline">\(X_t\propto e^{-\tau_0\mathcal L-\eta S_{t-1}}\)</span>, heat kernels that start at time <span class="math inline">\(\tau_0\)</span> without any rounds of the loss <span class="math inline">\(\mathcal L\)</span>, and the range term becomes <span class="math inline">\(D(U\Vert C)/\eta\)</span>.</li>
 </ul>
 <div class="idea">
 <p><strong>Eigenvector <span class="math inline">\(=\)</span> follow the leader. Heat kernel <span class="math inline">\(=\)</span> follow the regularized leader.</strong></p>
@@ -635,20 +661,16 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 </section>
 <section class="slide level2">
 <h2>Recursive eigenvector partitioning</h2>
-<div class="defn">
-<p><strong>Recursive spectral partitioning.</strong> <span class="math inline">\(U\leftarrow\emptyset\)</span>. Repeat: compute the Fiedler vector of <span class="math inline">\(G[V\setminus U]\)</span> and its sweep cut <span class="math inline">\(C\)</span>; if <span class="math inline">\(C\)</span> is balanced, output it; otherwise <span class="math inline">\(U\leftarrow U\cup C\)</span>. Stop when <span class="math inline">\(\mathrm{vol}(U)\ge b\,\mathrm{vol}(V)\)</span> and output <span class="math inline">\(U\)</span>.</p>
-</div>
-<p>On the example (<span class="math inline">\(b=\frac14\)</span>): rounds 1–3 remove the whiskers of lengths <span class="math inline">\(22,20,18\)</span> (<span class="math inline">\(\Phi=0.023,0.026,0.029\)</span>); round 4 finds a balanced cut.</p>
-<div class="fragment">
+<p><strong>Fix:</strong> remove the sweep cut and recompute the Fiedler vector of what remains; repeat until a balanced cut appears or the removed volume reaches <span class="math inline">\(b\,\mathrm{vol}(V)\)</span>.</p>
 <ul>
-<li>The <strong>guarantee</strong> is Cheeger-type: each removed piece is sparse in what remains.</li>
-<li>The <strong>cost</strong>: with <span class="math inline">\(k\)</span> whiskers, up to <span class="math inline">\(k\)</span> rounds, each a full eigenvector computation. Worst case <span class="math inline">\(\Theta(n)\)</span> rounds: time <span class="math inline">\(\tilde\Omega(mn)\)</span>.</li>
+<li>On the example (<span class="math inline">\(b=\frac14\)</span>): rounds 1–3 remove the whiskers of lengths <span class="math inline">\(22,20,18\)</span>; round 4 finds a balanced cut.</li>
+<li>With <span class="math inline">\(k\)</span> whiskers: up to <span class="math inline">\(k\)</span> eigenvector computations. Worst case <span class="math inline">\(\Theta(n)\)</span> rounds, time <span class="math inline">\(\tilde\Omega(mn)\)</span>.</li>
 </ul>
 <div class="idea">
-<p>Each round plays the <strong>best response</strong> to everything removed so far, and the adversary (the graph) answers with the next whisker. <strong>Recursive eigenvectors are follow the leader.</strong></p>
+<p>Each round is the <strong>best response</strong> to everything removed so far, and the graph answers with the next whisker: <strong>recursive eigenvectors are follow the leader.</strong></p>
 </div>
 <aside class="notes">
-<p>~4 min. “Is FTL” is an analogy made precise by the SDP on the next slide: removing a set is a crude way of enforcing a constraint that the eigenvector violates. FTL makes progress one violation at a time; FTRL hedges against all of them at once.</p>
+<p>~1 min. Say it, don’t dwell: removing a set is a crude way of enforcing the constraint the eigenvector violates. FTL fixes one violation per round; FTRL (next lecture deck) penalizes all of them at once. Sweep Φ in rounds 1–3: 0.023, 0.026, 0.029.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -660,7 +682,6 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
           overflow: hidden!important;
           display:block!important;
       }</style></aside>
-</div>
 </section>
 <section class="slide level2">
 <h2>A relaxation with a spread constraint</h2>
@@ -690,57 +711,12 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
       }</style></aside>
 </section>
 <section class="slide level2">
-<h2>Two ways to enforce the spread constraint</h2>
-<table class="caption-top">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;"></th>
-<th style="text-align: left;">recursive eigenvector</th>
-<th style="text-align: left;">MMWU (Orecchia–Sachdeva–Vishnoi 2012)</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">each round plays</td>
-<td style="text-align: left;">eigenvector (<span class="math inline">\(\eta=\infty\)</span>)</td>
-<td style="text-align: left;">heat kernel (finite <span class="math inline">\(\eta\)</span>)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">a violation is handled by</td>
-<td style="text-align: left;">removing the heavy set</td>
-<td style="text-align: left;"><strong>penalizing</strong> it (adding a loss)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">rounds</td>
-<td style="text-align: left;">up to <span class="math inline">\(\Theta(n)\)</span></td>
-<td style="text-align: left;"><span class="math inline">\(\mathrm{polylog}(n)\)</span>, by the regret bound</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">cost per round</td>
-<td style="text-align: left;">one eigenvector</td>
-<td style="text-align: left;">a few <span class="math inline">\(e^{-\tau\mathcal L'}v\)</span>: <span class="math inline">\(\tilde O(m)\)</span> via solvers</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">total time</td>
-<td style="text-align: left;"><span class="math inline">\(\tilde O(mn)\)</span> worst case</td>
-<td style="text-align: left;"><span class="math inline">\(\tilde O(m)\)</span></td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li>Same guarantee: <span class="math inline">\(\Omega(b)\)</span>-balanced with <span class="math inline">\(\Phi=O(\sqrt\gamma)\)</span>, or a certificate.</li>
-<li>Context: ARV’s <span class="math inline">\(O(\sqrt{\log n})\)</span> uses the SDP with triangle inequalities (Lecture 6 §5); the cut-matching game is its combinatorial relative.</li>
-</ul>
+<h2>Next: the primal-dual loop</h2>
 <div class="idea">
-<p><strong>Next lecture:</strong> the primal-dual loop. Each round the heat-kernel embedding is either <strong>spread</strong> (round it with a sweep) or <strong>concentrated</strong> on a set (penalize it); the regret bound ends the loop.</p>
+<p><strong>Lecture 11</strong> solves <span class="math inline">\(\mathrm{SDP}(b)\)</span> approximately with the MMWU. Each round the heat-kernel embedding is either <strong>spread</strong> (round it with a sweep) or <strong>concentrated</strong> on a set (penalize it), and the regret bound ends the loop. The comparison with recursive eigenvectors is at the end of the Lecture 11 deck.</p>
 </div>
 <aside class="notes">
-<p>~3 min. The exact number of rounds and the form of the penalty graphs (stars) are for Lecture 11. Keep the table high-level here.</p>
+<p>In class on 11/3: skip this slide and switch to the Lecture 11 deck right after the SDP slide.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -758,7 +734,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <ol type="1">
 <li>Many spectral bounds are bounds on <span class="math inline">\(\lambda_{\max}\)</span> of a <strong>sum</strong>. Online learning over <span class="math inline">\(\Delta_n\)</span> reduces them to <strong>per-round scalars</strong> <span class="math inline">\(\langle M_t,X_t\rangle\)</span>.</li>
 <li><strong>FTL</strong> plays the top eigenvector and can have regret <span class="math inline">\(T/2\)</span>. <strong>FTRL with von Neumann entropy</strong> is the MMWU, <span class="math inline">\(X_t\propto e^{\eta S_{t-1}}\)</span> (Gibbs).</li>
-<li><strong>Strong convexity <span class="math inline">\(\Rightarrow\)</span> smoothness of the max:</strong> <span class="math inline">\(\ \lambda_{\max}(\sum M_t)\le\sum\langle M_t,X_t\rangle+\frac\eta2\sum\|M_t\|^2+\frac{\log n}\eta\)</span>. Entropy is <span class="math inline">\(1\)</span>-strongly convex in <span class="math inline">\(\|\cdot\|_1\)</span> (quantum Pinsker).</li>
+<li><strong>Strong convexity <span class="math inline">\(\Rightarrow\)</span> smoothness of the max:</strong> <span class="math inline">\(\ \lambda_{\max}(\sum M_t)\le\sum\langle M_t,X_t\rangle+\frac\eta2\sum\|M_t\|^2+\frac{\log n}\eta\)</span>. Entropy is <span class="math inline">\(1\)</span>-strongly convex in <span class="math inline">\(\|\cdot\|_1\)</span> (quantum Pinsker). With a center <span class="math inline">\(C\)</span>, <span class="math inline">\(\log n\)</span> becomes <span class="math inline">\(D(U\Vert C)\)</span> for any comparator <span class="math inline">\(U\)</span>.</li>
 <li><strong>Local norms</strong> replace <span class="math inline">\(\|M_t\|^2\)</span> by <span class="math inline">\(\langle M_t^2,X_t\rangle\)</span>: width linear, not squared.</li>
 <li>With Laplacian losses the plays are <strong>heat kernels</strong>; the eigenvector is the <span class="math inline">\(\eta=\infty\)</span> limit.</li>
 <li><strong>Balanced separator:</strong> Fiedler finds whiskers; recursive eigenvectors (FTL) may need <span class="math inline">\(\Theta(n)\)</span> rounds; the spread-constrained SDP and MMWU (FTRL) handle all whiskers at once.</li>
@@ -842,22 +818,26 @@ Reading: Lecture 10 notes; Arora–Hazan–Kale §§2, 5; Hazan, Ch. 5.
 <td style="text-align: left;"><span class="math inline">\(R(Y)\ge R(X)+\langle\nabla R(X),Y-X\rangle+\frac\alpha2\|Y-X\|^2\)</span></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">regret bound</td>
-<td style="text-align: left;"><span class="math inline">\(\lambda_{\max}(\sum M_t)\le\sum\langle M_t,X_t\rangle+\frac\eta2\sum\|M_t\|^2+\frac{\log n}\eta\)</span></td>
+<td style="text-align: left;">FTRL with center <span class="math inline">\(C\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(X_t\propto\exp(\log C+\eta S_{t-1})\)</span>; regularizer <span class="math inline">\(D(X\Vert C)\)</span>; <span class="math inline">\(\ \Psi_C(S)=\frac1\eta\log\operatorname{tr}e^{\log C+\eta S}\)</span></td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">regret bound</td>
+<td style="text-align: left;"><span class="math inline">\(\langle\sum M_t,U\rangle\le\sum\langle M_t,X_t\rangle+\frac\eta2\sum\|M_t\|^2+\frac{D(U\Vert C)}\eta\)</span>; <span class="math inline">\(\ C=I/n\)</span>: <span class="math inline">\(\lambda_{\max}\)</span> form with <span class="math inline">\(\frac{\log n}\eta\)</span></td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">local norms (<span class="math inline">\(\eta M_t\preceq I\)</span>)</td>
 <td style="text-align: left;"><span class="math inline">\(\lambda_{\max}(\sum M_t)\le\sum\langle M_t,X_t\rangle+\eta\sum\langle M_t^2,X_t\rangle+\frac{\log n}\eta\)</span></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">heat kernel</td>
 <td style="text-align: left;"><span class="math inline">\(e^{-\tau\mathcal L}=D^{1/2}H_\tau D^{-1/2}\)</span>, <span class="math inline">\(\ H_\tau=e^{-\tau L_{rw}}\)</span></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><span class="math inline">\(b\)</span>-balanced</td>
 <td style="text-align: left;"><span class="math inline">\(b\,\mathrm{vol}(V)\le\mathrm{vol}(S)\le(1-b)\,\mathrm{vol}(V)\)</span></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><span class="math inline">\(\mathrm{SDP}(b)\)</span></td>
 <td style="text-align: left;"><span class="math inline">\(\min\frac{\langle L,X\rangle}{\mathrm{vol}(V)}\)</span> s.t. <span class="math inline">\(X\pi=0\)</span>, <span class="math inline">\(\langle\Pi,X\rangle=1\)</span>, <span class="math inline">\(X_{ii}\le\frac1b\)</span>, <span class="math inline">\(X\succeq0\)</span></td>
 </tr>
@@ -901,7 +881,7 @@ Reading: Lecture 10 notes; Arora–Hazan–Kale §§2, 5; Hazan, Ch. 5.
 'autoAnimateDuration': 1,
 'autoAnimateUnmatched': true,
 'jumpToSlide': true,
-'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"\u003ci class=\"fas fa-gear\">\u003c/i>","content":"\u003cul class=\"slide-menu-items\">\n\u003cli class=\"slide-tool-item active\" data-item=\"0\">\u003ca href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\">\u003ckbd>f\u003c/kbd> Fullscreen\u003c/a>\u003c/li>\n\u003cli class=\"slide-tool-item\" data-item=\"1\">\u003ca href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\">\u003ckbd>s\u003c/kbd> Speaker View\u003c/a>\u003c/li>\n\u003cli class=\"slide-tool-item\" data-item=\"2\">\u003ca href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\">\u003ckbd>o\u003c/kbd> Slide Overview\u003c/a>\u003c/li>\n\u003cli class=\"slide-tool-item\" data-item=\"3\">\u003ca href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\">\u003ckbd>e\u003c/kbd> PDF Export Mode\u003c/a>\u003c/li>\n\u003cli class=\"slide-tool-item\" data-item=\"4\">\u003ca href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\">\u003ckbd>r\u003c/kbd> Scroll View Mode\u003c/a>\u003c/li>\n\u003cli class=\"slide-tool-item\" data-item=\"5\">\u003ca href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\">\u003ckbd>?\u003c/kbd> Keyboard Help\u003c/a>\u003c/li>\n\u003c/ul>"}],"openButton":true,"openButtonLabel":"Slide menu"},
 'smaller': false,
  
         // Display controls in the bottom right corner
@@ -1182,7 +1162,8 @@ Reading: Lecture 10 notes; Arora–Hazan–Kale §§2, 5; Hazan, Ch. 5.
               return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
           }
           // Inspect non-navigation links and adorn them if external
-         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          window.quartoDecorateExternalLinks = function (root) {
+         var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
           for (var i=0; i<links.length; i++) {
             const link = links[i];
             if (!isInternal(link.href)) {
@@ -1191,8 +1172,69 @@ Reading: Lecture 10 notes; Arora–Hazan–Kale §§2, 5; Hazan, Ch. 5.
               if (link.dataset.originalHref !== undefined) {
                 link.href = link.dataset.originalHref;
               }
+              if (!link.classList.contains('no-external-icon')) {
+              }
             }
           }
+          };
+          window.quartoDecorateExternalLinks(window.document);
+        // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+        // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+        const hideOnEscAndFocusOut = {
+          name: 'hideOnEscAndFocusOut',
+          defaultValue: true,
+          fn(instance) {
+            const dismiss = () => {
+              // A show scheduled by the trigger delay would otherwise reopen it
+              instance.clearDelayTimeouts();
+              instance.hide();
+            };
+            const onKeyDown = (event) => {
+              if (event.key !== 'Escape') {
+                return;
+              }
+              // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+              // except an open reveal.js slide menu, which Esc should close too.
+              // The menu handles keys only when its keyboard option is on.
+              const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+                window.Reveal.getConfig().menu?.keyboard !== false;
+              if (!menuHandlesEsc) {
+                event.stopPropagation();
+              }
+              if (instance.popper.contains(window.document.activeElement)) {
+                // Disabled while refocusing so the focus trigger does not reopen it
+                instance.disable();
+                instance.reference.focus();
+                instance.enable();
+              }
+              dismiss();
+            };
+            const onFocusOut = (event) => {
+              const target = event.relatedTarget;
+              if (target && !instance.reference.contains(target) &&
+                  !instance.popper.contains(target)) {
+                dismiss();
+              }
+            };
+            // On the trigger too: a click trigger (code-annotations: select) has no
+            // blur handling. Attached for the instance's lifetime so leaving the
+            // trigger also cancels a show still pending on the trigger delay.
+            instance.reference.addEventListener('focusout', onFocusOut);
+            return {
+              onShow() {
+                window.document.addEventListener('keydown', onKeyDown, true);
+                instance.popper.addEventListener('focusout', onFocusOut);
+              },
+              onHide() {
+                window.document.removeEventListener('keydown', onKeyDown, true);
+                instance.popper.removeEventListener('focusout', onFocusOut);
+              },
+              onDestroy() {
+                instance.reference.removeEventListener('focusout', onFocusOut);
+              },
+            };
+          },
+        };
         function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
           const config = {
             allowHTML: true,
@@ -1206,6 +1248,7 @@ Reading: Lecture 10 notes; Arora–Hazan–Kale §§2, 5; Hazan, Ch. 5.
             interactiveBorder: 10,
             theme: 'light-border',
             placement: 'bottom-start',
+            plugins: [hideOnEscAndFocusOut],
           };
           if (contentFn) {
             config.content = contentFn;
