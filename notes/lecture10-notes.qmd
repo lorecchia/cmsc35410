@@ -104,6 +104,10 @@ $$\lambda_{\max}\Big(\sum_tM_t\Big)\le\sum_t\langle M_t,X_t\rangle+\frac\eta2\su
 $$\lambda_{\max}\Big(\sum_tM_t\Big)\le\sum_t\langle M_t,X_t\rangle+\eta\sum_t\langle M_t^2,X_t\rangle+\frac{\log n}\eta .\tag{5.1}$$
 For $0\preceq M_t\preceq\rho I$ we have $M_t^2\preceq\rho M_t$, and (5.1) becomes $\lambda_{\max}(\sum_tM_t)\le(1+\eta\rho)\sum_t\langle M_t,X_t\rangle+\frac{\log n}\eta$: the width enters linearly. The proof is deferred to Lecture 12, where (5.1) drives spectral sparsification. Remark (iii) of §3 suggests a proof by a local version of Lemma 4.1.
 
+**Centers.** For a full-rank $C\in\Delta_n$, FTRL with $R_C(X)=D(X\Vert C)=\operatorname{tr}X\log X-\langle\log C,X\rangle$ plays $X_t=\exp(\log C+\eta S_{t-1})/\operatorname{tr}(\cdot)$ (Gibbs with $A=\log C+\eta S_{t-1}$), with value $\Psi_C(S)=\frac1\eta\log\operatorname{tr}e^{\log C+\eta S}$. Since $R_C-R$ is linear, $R_C$ is $1$-strongly convex w.r.t. $\|\cdot\|_1$ exactly as in §3, and Lemma 4.1 applies verbatim. Now $\Psi_C(0)=\max_X\{-\frac1\eta D(X\Vert C)\}=0$ and $\Psi_C(S)\ge\langle S,U\rangle-\frac1\eta D(U\Vert C)$ for every $U\in\Delta_n$, so the proof of Theorem 5.1 gives, for every $U$,
+$$\Big\langle\sum_tM_t,U\Big\rangle\le\sum_t\langle M_t,X_t\rangle+\frac\eta2\sum_t\|M_t\|^2+\frac{D(U\Vert C)}\eta ,\tag{5.2}$$
+and likewise for (5.1) with $\frac{\log n}\eta$ replaced by $\frac{D(U\Vert C)}\eta$ (the Golden–Thompson proof of (5.1) works for any $\log C$ added to the exponent). With $C=I/n$ and $U=uu^\top$, $D(U\Vert C)=\log n$ and (5.2) is Theorem 5.1. A center is a **warm start**: $X_t$ is the plain MMWU play after an extra round-$0$ gain $\frac1\eta\log C$. Lecture 11 uses $C\propto e^{-\tau_0\mathcal L}$ on $\sqrt\pi^\perp$, so that the plays are heat kernels from time $\tau_0$ on.
+
 ## 6. Balanced separator: the relaxation
 
 $S$ is $b$-balanced if $b\,\mathrm{vol}(V)\le\mathrm{vol}(S)\le(1-b)\,\mathrm{vol}(V)$. Consider

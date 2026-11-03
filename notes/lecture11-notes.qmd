@@ -1,0 +1,128 @@
+---
+title: "MMWU for Balanced Separator"
+subtitle: "A heat-kernel center, the primal-dual loop, O(log n) rounds, and computing the heat kernel"
+description: "Notes for Lecture 11 (11/3)."
+order: 7
+---
+
+These notes accompany the Lecture 11 deck. They give full proofs of the certificates and of the round count, a proof sketch of the rounding lemma, and the material on computing matrix exponentials that the slides only summarize. The algorithm follows the approach of Orecchia–Sachdeva–Vishnoi (STOC 2012); the constants ($16/b$, $2\gamma$, $\tau_0=8\ln n/\gamma$, $\eta=1/(4\gamma)$, $T=\lceil32\ln n\rceil$) are chosen to make each step a one-line calculation and differ from the paper's.
+
+**Notation.** $G=(V,E,w)$ with degrees $d$, $\mathrm{vol}(V)=\sum_id_i$, $\pi=d/\mathrm{vol}(V)$, $\Pi=\operatorname{diag}(\pi)$, and normalized Laplacian $\mathcal L=D^{-1/2}LD^{-1/2}$. Its bottom eigenvector is $\sqrt\pi$; $W=\sqrt\pi^\perp$ and $P$ is the orthogonal projector onto $W$. For $S\subseteq V$, $\Phi(S)=w(S,\bar S)/\min(\mathrm{vol}S,\mathrm{vol}\bar S)$ and $\bar\phi(S)=w(S,\bar S)\,\mathrm{vol}(V)/(\mathrm{vol}S\,\mathrm{vol}\bar S)\in[\Phi(S),2\Phi(S)]$. $S$ is $b$-balanced if $b\le\pi(S)\le1-b$. Throughout, $b\in(0,\frac12]$ and $\gamma\in(0,1]$.
+
+---
+
+## 1. The relaxation as a problem over density matrices
+
+Lecture 10 wrote $\mathrm{SDP}(b)$ in terms of vectors $v_i$ with Gram matrix $X$. With $Y=\Pi^{1/2}X\Pi^{1/2}$:
+
+- $\operatorname{tr}Y=\sum_i\pi_i\|v_i\|^2$, so the normalization is $\operatorname{tr}Y=1$;
+- $Y\sqrt\pi=\Pi^{1/2}X\pi$, so centering $\sum_i\pi_iv_i=0$ is $Y\sqrt\pi=0$, i.e. $Y$ lives on $W$;
+- $\langle L,X\rangle/\mathrm{vol}(V)=\langle\Pi^{-1/2}L\Pi^{-1/2},Y\rangle/\mathrm{vol}(V)=\langle\mathcal L,Y\rangle$;
+- the spread constraint $\|v_i\|^2\le1/b$ is $Y_{ii}\le\pi_i/b$.
+
+So $\mathrm{SDP}(b)=\min\{\langle\mathcal L,Y\rangle: Y\in\Delta(W),\ Y_{ii}\le\pi_i/b\}$, where $\Delta(W)$ is the set of density matrices supported on $W$. Lecture 10 showed $\mathrm{SDP}(b)\le\min\{\bar\phi(S):S\ b\text{-balanced}\}$ using the **cut embedding** $y=(\mathbf 1_S-p)/\sqrt{p(1-p)}$, $p=\pi(S)\in[b,\frac12]$, for which $\sum_i\pi_iy_i=0$, $\sum_i\pi_iy_i^2=1$, $y_i^2\le\max\{\frac{1-p}p,\frac p{1-p}\}\le\frac1b$, and $y^\top Ly/\mathrm{vol}(V)=\bar\phi(S)$.
+
+**The dual.** Attach $\alpha$ to $\operatorname{tr}Y=1$ and $\beta_i\ge0$ to $Y_{ii}\le\pi_i/b$. The dual is
+$$\max\Big\{\alpha-\frac1b\sum_i\beta_i\pi_i\ :\ \mathcal L+\operatorname{diag}(\beta)\succeq\alpha I\text{ on }W,\ \beta\ge0\Big\}.$$
+Weak duality: for feasible $Y$ and dual $(\alpha,\beta)$, $\langle\mathcal L,Y\rangle\ge\alpha\operatorname{tr}Y-\langle\operatorname{diag}\beta,Y\rangle\ge\alpha-\sum_i\beta_i\pi_i/b$.
+
+## 2. Penalties, the center, and the cut as a comparator
+
+For $H\subseteq V$ let $\Delta_H=P\operatorname{diag}(\mathbf 1_H)P$. For $x=\Pi^{1/2}y\in W$,
+$$x^\top\Delta_Hx=\sum_{i\in H}x_i^2=\sum_{i\in H}\pi_iy_i^2 .$$
+Since $\sum_i\pi_iy_i=0$, this is the energy of edges of weight $\pi_i$ joining each $i\in H$ to an extra vertex held at the mean value $0$ ("ground"). In particular $D^{1/2}\big(c\,\mathcal L+\sum_tc_t\operatorname{diag}(\mathbf 1_{H_t})\big)D^{1/2}=cL+\operatorname{diag}(\cdot)$ is a grounded Laplacian (SDD with nonpositive off-diagonal entries).
+
+**The center.** Let $Z=\operatorname{tr}_We^{-\tau_0\mathcal L}=\sum_{k\ge2}e^{-\tau_0\lambda_k}\le n-1$ and $C=e^{-\tau_0\mathcal L}/Z$ on $W$, a full-rank density matrix on $W$ with $\log C=-\tau_0\mathcal L-(\ln Z)I$ there. By Lecture 10 (notes §5, "Centers"), FTRL over density matrices on $W$ with regularizer $D(\cdot\Vert C)$ and losses $M_t$ plays $Y_t\propto\exp(\log C-\eta S_{t-1})\propto e^{-\tau_0\mathcal L-\eta S_{t-1}}$, and for every density matrix $U$ on $W$, if $-\eta M_t\preceq I$,
+$$\sum_t\langle M_t,Y_t\rangle\le\Big\langle\sum_tM_t,U\Big\rangle+\eta\sum_t\langle M_t^2,Y_t\rangle+\frac{D(U\Vert C)}\eta .\tag{2.1}$$
+
+**Lemma 2.1 (the cut as a comparator).** Let $S$ be $b$-balanced; replacing $S$ by $\bar S$ if needed, $p=\pi(S)\in[b,\frac12]$. Let $x=\Pi^{1/2}y$ with $y$ the cut embedding and $U_S=xx^\top$. Then $U_S$ is a density matrix on $W$ and
+
+(i) $\langle\mathcal L,U_S\rangle=\bar\phi(S)$; (ii) $\langle\Delta_H,U_S\rangle\le\pi(H)/b$ for every $H$; (iii) $D(U_S\Vert C)=\tau_0\bar\phi(S)+\ln Z\le\tau_0\bar\phi(S)+\ln n$.
+
+*Proof.* $x\in W$ and $\|x\|^2=\sum_i\pi_iy_i^2=1$. (i) is §1. (ii) $x^\top\Delta_Hx=\sum_{i\in H}\pi_iy_i^2\le\pi(H)\max_iy_i^2\le\pi(H)/b$. (iii) $U_S$ has eigenvalues $1,0,\dots,0$, so $\operatorname{tr}U_S\log U_S=0$ and $D(U_S\Vert C)=-\langle\log C,U_S\rangle=\tau_0x^\top\mathcal Lx+\ln Z$. $\square$
+
+## 3. The loop and its certificates
+
+**BalSep$(G,b,\gamma)$.** Set $\tau_0=8\ln n/\gamma$, $\eta=1/(4\gamma)$, $T=\lceil32\ln n\rceil$, $S_0=0$. For $t=1,\dots,T$: let $Y_t=e^{-\tau_0\mathcal L-\eta S_{t-1}}/\operatorname{tr}(\cdot)$, computed on $W$; let $\|v_i\|^2=(Y_t)_{ii}/\pi_i$ and $H_t=\{i:\|v_i\|^2\ge16/b\}$.
+
+- (a) If $\langle\mathcal L,Y_t\rangle\ge\gamma$, stop and certify.
+- (c) Else, if $\sum_{i\in H_t}\pi_i\|v_i\|^2\ge\frac12$, set $M_t=2\gamma\Delta_{H_t}$ and $S_t=S_{t-1}+M_t$.
+- (b) Else round $Y_t$ (§4) and stop.
+
+If all $T$ rounds are case (c), certify.
+
+**Lemma 3.1.** $\pi(H_t)\le b/16$; in case (c), $\langle M_t,Y_t\rangle\ge\gamma$; and $0\preceq M_t\preceq2\gamma I$.
+
+*Proof.* $\frac{16}b\pi(H_t)\le\sum_{i\in H_t}\pi_i\|v_i\|^2\le\operatorname{tr}Y_t=1$. Since $PY_tP=Y_t$, $\langle\Delta_{H_t},Y_t\rangle=\sum_{i\in H_t}(Y_t)_{ii}=\sum_{i\in H_t}\pi_i\|v_i\|^2\ge\frac12$. Finally $0\preceq P\operatorname{diag}(\mathbf 1_H)P\preceq P\preceq I$. $\square$
+
+In particular, by Lemma 2.1(ii), $\langle M_s,U_S\rangle\le2\gamma\cdot\frac1{16}=\frac\gamma8$ for every penalty and every $b$-balanced $S$.
+
+**Theorem 3.2 (case (a) certifies).** If $\langle\mathcal L,Y_t\rangle\ge\gamma$ for some $t\le T$, then every $b$-balanced $S$ has $\bar\phi(S)\ge\frac{3\gamma}4$.
+
+*Proof.* By Gibbs (Lecture 10, Lemma 2.1, with $A=\log C-\eta S_{t-1}$), $Y_t$ minimizes $F(Y)=\eta\langle S_{t-1},Y\rangle+D(Y\Vert C)$ over density matrices on $W$. Hence $F(Y_t)\le F(U_S)$. On the left, $\eta\langle S_{t-1},Y_t\rangle\ge0$ and $D(Y_t\Vert C)=\operatorname{tr}Y_t\log Y_t+\tau_0\langle\mathcal L,Y_t\rangle+\ln Z\ge-\ln n+\tau_0\langle\mathcal L,Y_t\rangle+\ln Z$. On the right, $\eta\langle S_{t-1},U_S\rangle\le\eta(t-1)\frac\gamma8=\frac{t-1}{32}\le\ln n$ (since $t-1\le T-1\le32\ln n$), and $D(U_S\Vert C)=\tau_0\bar\phi(S)+\ln Z$. Cancelling $\ln Z$,
+$$\tau_0\langle\mathcal L,Y_t\rangle\le\tau_0\bar\phi(S)+2\ln n,\qquad\text{i.e.}\qquad\langle\mathcal L,Y_t\rangle\le\bar\phi(S)+\frac\gamma4 .\ \square$$
+
+**Theorem 3.3 (running out certifies).** If all $T$ rounds are case (c), then every $b$-balanced $S$ has $\bar\phi(S)\ge\frac\gamma4$.
+
+*Proof.* Apply (2.1) with $U=U_S$; the condition $-\eta M_t\preceq I$ holds since $M_t\succeq0$. By Lemma 3.1, $M_t^2\preceq2\gamma M_t$, so $\eta\sum_t\langle M_t^2,Y_t\rangle\le\frac12\sum_t\langle M_t,Y_t\rangle$, and
+$$\frac12\sum_t\langle M_t,Y_t\rangle\le\sum_t\langle M_t,U_S\rangle+4\gamma\,D(U_S\Vert C).$$
+The left side is at least $\frac{T\gamma}2$; the right side is at most $\frac{T\gamma}8+4\gamma(\tau_0\bar\phi(S)+\ln n)=\frac{T\gamma}8+32\ln n\,\bar\phi(S)+4\gamma\ln n$. Since $T\ge32\ln n$, $\frac{3T\gamma}8\ge12\gamma\ln n$, hence $32\ln n\,\bar\phi(S)\ge8\gamma\ln n$. $\square$
+
+Since $\Phi\ge\bar\phi/2$, any certificate gives $\Phi(S)\ge\gamma/8$ for every $b$-balanced $S$.
+
+**As a dual solution.** Apply (2.1) instead with $U=uu^\top$, $u$ a bottom eigenvector of $A_T=\tau_0\mathcal L+\eta S_T$ on $W$: then $D(U\Vert C)=\tau_0u^\top\mathcal Lu+\ln Z$ and $\frac{\eta T\gamma}2\le\eta u^\top S_Tu+\tau_0u^\top\mathcal Lu+\ln Z=\lambda_{\min}(A_T)+\ln Z$, so $\lambda_{\min}(A_T)\ge\frac T8-\ln n\ge3\ln n$. Dividing by $\tau_0$: $\mathcal L+\operatorname{diag}(\beta)\succeq\frac{3\gamma}8I$ on $W$ with $\beta=\frac{2\gamma\eta}{\tau_0}\sum_t\mathbf 1_{H_t}$ (quadratic forms of $P\operatorname{diag}(\beta)P$ and $\operatorname{diag}(\beta)$ agree on $W$). Its dual value is at least $\frac{3\gamma}8-\frac{2\gamma\eta}{\tau_0}\cdot\frac{T}{16}=\frac{3\gamma}8-\frac{\gamma T}{256\ln n}\ge\frac\gamma4-\frac\gamma{256\ln n}$ (using $T\le32\ln n+1$), matching Theorem 3.3 up to the rounding of $T$.
+
+**Why the center.** Without it ($C=I/n$, plays $e^{-\eta S_{t-1}}$), a high-energy round cannot be turned into a certificate, because $D(U_S\Vert I/n)=\ln n$ carries no information about $\bar\phi(S)$. It must instead be played as the loss $\mathcal L$, which has width $2$ and gain only $\gamma$. The local-norm bound then needs $\eta\le\frac14$ and $T=\Theta(\ln n/\gamma)$ rounds, and the plays reach heat-kernel time $\tau=\eta T_a=\Theta(\ln n/\gamma)$ only after those rounds. The center starts the plays at that time for free and charges $D(U_S\Vert C)/\eta=4\gamma(\tau_0\bar\phi(S)+\ln Z)$, which is $O(\gamma\ln n)$, i.e. the gain of $O(\ln n)$ rounds, exactly when $\bar\phi(S)=O(\gamma)$ (equivalently, $D(U_S\Vert C)=O(\ln n)$ iff $\bar\phi(S)=O(\gamma)$). The remaining losses (penalties) have gain/width ratio $\frac12$, so $O(\ln n)$ rounds suffice, independently of $\gamma$.
+
+**What the plays are.** $Y_t\propto\exp\big(-\tau_0(\mathcal L+\frac{2\gamma\eta}{\tau_0}\sum_{s<t}\Delta_{H_s})\big)$: the ($\sqrt\pi$-projected) heat kernel at time $\tau_0$ of $G$ with extra edges to ground of weight $\frac{2\gamma\eta}{\tau_0}|\{s<t:i\in H_s\}|\,\pi_i=\frac{|\{s<t:i\in H_s\}|}{16\ln n}\,\gamma\,\pi_i$ at vertex $i$ (in the scaling of the quadratic form). The walk is killed at a rate that grows each time a vertex is heavy.
+
+## 4. Rounding a spread play (sketch)
+
+**Lemma 4.1 (rounding).** Suppose $\langle\mathcal L,Y\rangle<\gamma$ and the light vertices $\{i:\|v_i\|^2<16/b\}$ carry at least half of $\sum_i\pi_i\|v_i\|^2=1$. Let $g$ be a standard Gaussian vector and $y_i=\langle v_i,g\rangle$. With constant probability, some sweep cut of $y$ is $\Omega(b)$-balanced with $\Phi=O(\sqrt{\gamma})$, where the constants depend only on $b$.
+
+*Sketch.* This is the step where we have not optimized constants, and the argument below should be checked against OSV §3 (and Orecchia–Vishnoi 2011) before it is relied on.
+
+1. *Projection.* $\mathbb E\,y_i^2=\|v_i\|^2$ and $\mathbb E(y_i-y_j)^2=\|v_i-v_j\|^2$. So $\mathbb E\sum_{ij}w_{ij}(y_i-y_j)^2=\mathrm{vol}(V)\langle\mathcal L,Y\rangle$ and $\mathbb E\sum_i\pi_iy_i^2=1$; also $\sum_i\pi_iy_i=0$ exactly. By Markov on the energy and a second-moment (Paley–Zygmund) bound on the light part of the variance, with constant probability the energy is $O(\gamma)\mathrm{vol}(V)$ and the light vertices carry $\Omega(1)$ of $\sum\pi_iy_i^2$, while $\sum_{\text{light}}\pi_iy_i^2\mathbf 1[y_i^2>C/b]$ is a small fraction of it for a large constant $C$ (Gaussian tails, since $\mathbb E y_i^2<16/b$ there).
+2. *Truncation.* Let $z_i=\max(-a,\min(y_i,a))$ with $a=\sqrt{C/b}$. Truncation is $1$-Lipschitz, so the energy of $z$ is at most that of $y$, and $\sum_i\pi_iz_i^2=\Omega(1)$ by step 1. Shifting $z$ by a median-type constant $\theta$ (chosen so that $\pi\{z>\theta\}\le\frac12$ and $\pi\{z<\theta\}\le\frac12$) keeps a constant fraction of the variance.
+3. *Volume.* Since $|z_i-\theta|\le2a$, the set where $(z_i-\theta)^2\ge c$ has volume at least $(\Omega(1)-c)/(4a^2)=\Omega(b)$ for a small constant $c$.
+4. *Sweep.* Apply the co-area/Cauchy–Schwarz argument of Cheeger's inequality (Lecture 6) to the positive and negative parts of $z-\theta$, but only over thresholds $r$ with $r^2\ge c$. The level sets over that range have volume between $\Omega(b)$ (step 3) and $\frac12$ (choice of $\theta$), and the argument produces one with $\Phi=O(\sqrt{\text{energy}/\text{variance}})=O(\sqrt\gamma)$, with the constant depending on $b$ through $a$ and $c$.
+
+On the whisker example (script `lectures/lecture11/scripts/loop_figure.py`, $b=\frac14$) the first play is already spread and 20 projections give, for $\gamma=0.02$, a cut with $\Phi=0.0235$ and balance $0.49$, and for $\gamma=0.05$ a two-whisker cut with $\Phi=0.024$ and balance $0.095$.
+
+## 5. Computing the plays
+
+**What is needed.** Each round uses $\|v_i\|^2$ for all $i$, the energy $\langle\mathcal L,Y_t\rangle=\frac1{\mathrm{vol}(V)}\sum_{ij}w_{ij}\|v_i-v_j\|^2$, and, in case (b), the projections $y_i=\langle v_i,g\rangle$. With $A=\tau_0\mathcal L+\eta S_{t-1}$ (on $W$) and $Y_t^{1/2}=e^{-A/2}/\sqrt{\operatorname{tr}e^{-A}}$, a valid choice of vectors is $v_i=\pi_i^{-1/2}\,e_i^\top Y_t^{1/2}$.
+
+**Johnson–Lindenstrauss.** Let $U$ be $n\times k$ with i.i.d. $N(0,1/k)$ entries, $k=O(\log n/\varepsilon^2)$. With high probability the vectors $\tilde v_i=\pi_i^{-1/2}e_i^\top Y_t^{1/2}U$ satisfy $\|\tilde v_i\|^2=(1\pm\varepsilon)\|v_i\|^2$ and $\|\tilde v_i-\tilde v_j\|^2=(1\pm\varepsilon)\|v_i-v_j\|^2$ for all the $O(n+m)$ pairs needed. The trace is estimated the same way: $\operatorname{tr}e^{-A}=\|e^{-A/2}\|_F^2$. Each round therefore needs $k=O(\log n)$ products $e^{-A/2}u$; an approximation error $\delta$ in these products perturbs the gains by $O(\delta)$, which is absorbed by running the oracle with $\gamma/2$ in place of $\gamma$.
+
+**The matrix.** $A=\tau_0\mathcal L+\eta S_{t-1}$, so $\|A\|\le2\tau_0+2\gamma\eta T=\frac{16\ln n}\gamma+\frac T2=O(\log n/\gamma)$. On $W$, $A=PA'P$ with $A'=\tau_0\mathcal L+\operatorname{diag}(\beta')$, $\beta'\ge0$, and $D^{1/2}A'D^{1/2}=\tau_0L+D\operatorname{diag}(\beta')$ is a grounded Laplacian. Note $Pe^{-A'}P\ne e^{-PA'P}$ in general (the penalties break the eigenvector $\sqrt\pi$), so the projection must be handled inside each solve. For $u\in W$, the solution $z\in W$ of $(I+PA'P/k)z=u$ is $z=B^{-1}u+cB^{-1}\sqrt\pi$ with $B=I+A'/k$ and $c=-\langle\sqrt\pi,B^{-1}u\rangle/\langle\sqrt\pi,B^{-1}\sqrt\pi\rangle$: then $z\perp\sqrt\pi$ and $PBz=u$. So each solve costs two SDD solves with $B$, $\tilde O(m)$ time (Lecture 9). (OSV instead use star penalties, whose Laplacians annihilate $\sqrt\pi$, which avoids the issue.)
+
+**Polynomial approximation.** For $x\in[0,\beta]$ there is a polynomial of degree $O\big(\sqrt{\max(\beta,\log\frac1\delta)\log\frac1\delta}\big)$ with $|e^{-x}-p(x)|\le\delta$ (Chebyshev; see Sachdeva–Vishnoi). Lanczos finds an approximation at least as good without knowing $p$. With $\beta=\|A\|=O(\log n/\gamma)$ this is $\tilde O(1/\sqrt\gamma)$ matrix-vector products, i.e. $\tilde O(m/\sqrt\gamma)$ per product $e^{-A/2}u$.
+
+**Rational approximation.** Saff–Schönhage–Varga: there are polynomials $p_k$ of degree $k$ with
+$$\sup_{x\ge0}\big|e^{-x}-p_k\big((1+x/k)^{-1}\big)\big|\le2^{-\Omega(k)} .$$
+So $k=O(\log\frac1\delta)$ suffices **uniformly on $[0,\infty)$**, independently of $\|A\|$. Evaluating $p_k((I+A/k)^{-1})u$ takes $k$ solves with $I+A/k$ on $W$, each two SDD solves by the bordered system above; OSV run Lanczos on $(I+A/k)^{-1}$ and show that approximate solves suffice. Cost: $\tilde O(m)$ per product. *Precision.* The plays are normalized by $\operatorname{tr}e^{-A}\ge e^{-\lambda_{\min}(A)}$, so we need $\delta\le n^{-O(1)}e^{-\lambda_{\min}(A)}$. Before any penalty $\lambda_{\min}(A)=\tau_0\lambda_2$, and if $\lambda_2\ge\gamma$ then $\langle\mathcal L,Y_1\rangle\ge\lambda_2\ge\gamma$ and case (a) certifies in round 1; otherwise $\lambda_{\min}(A)\le\tau_0\gamma+\frac T2=O(\ln n)$ throughout (penalties add at most $2\gamma\eta T=\frac T2$), so $k=O(\log n)$ suffices.
+
+**Total.** $T=O(\log n)$ rounds, $O(\log n)$ products per round, $\tilde O(m)$ per product: $\tilde O(m)$, independent of $\gamma$. With the polynomial approximation instead, the large starting time $\tau_0$ costs a factor $\sqrt{\|A\|}$: $\tilde O(m/\sqrt\gamma)$. Without the center (§3, "Why the center") the round count alone would add a factor $1/\gamma$.
+
+## 6. What to check against the paper
+
+- The paper's oracle and penalty normalization (stars vs. the diagonal penalties $\Delta_H$ used here), its heavy-set threshold, and whether it also uses radial sweeps to find unbalanced sparse cuts.
+- The exact statement of the rounding lemma and its constants (§4).
+- How the paper initializes the walk (our center $e^{-\tau_0\mathcal L}$ with $\tau_0=\Theta(\log n/\gamma)$) and its iteration count (ours is $\lceil32\ln n\rceil$).
+
+## 7. Exercises
+
+1. Show $\bar\phi(S)\in[\Phi(S),2\Phi(S)]$, and that the cut embedding satisfies $y_i^2\le1/b$ when $\pi(S)\in[b,\frac12]$.
+2. Verify the dual of $\mathrm{SDP}(b)$ in §1 and the dual solution extracted from the certificate.
+3. Redo Theorems 3.2 and 3.3 with heavy threshold $c/b$, penalty weight $\kappa\gamma$, starting time $\tau_0=\alpha\ln n/\gamma$ and step size $\eta=\theta/\gamma$. For which parameters do both go through, and how do $T$ and the certificate constant depend on them?
+4. Run the loop without a center ($C=I/n$), playing high-energy rounds as losses $\mathcal L$. Prove a round bound of $O(\log n/\gamma)$ with the local-norm bound, and show that the uncentered regret bound cannot give $O(\log n)$.
+5. Construct a family of graphs on which case (c) occurs in BalSep. (Half of the variance of a low-energy heat kernel must sit on vertices with $\|v_i\|^2\ge16/b$.)
+6. Prove the Johnson–Lindenstrauss claim in §5, including the estimate of $\operatorname{tr}e^{-A}$.
+## References
+
+- L. Orecchia, S. Sachdeva, N. K. Vishnoi. Approximating the exponential, the Lanczos method and an $\tilde O(m)$-time spectral algorithm for balanced separator. *STOC* 2012 (arXiv:1111.1491).
+- L. Orecchia, N. K. Vishnoi. Towards an SDP-based approach to spectral methods: a nearly-linear-time algorithm for graph partitioning and decomposition. *SODA* 2011.
+- S. Arora, S. Kale. A combinatorial, primal-dual approach to semidefinite programs. *STOC* 2007; *J. ACM* 2016.
+- E. B. Saff, A. Schönhage, R. S. Varga. Geometric convergence to $e^{-z}$ by rational functions with real poles. *Numer. Math.* 1975.
+- S. Sachdeva, N. K. Vishnoi. Faster algorithms via approximation theory. *Foundations and Trends in TCS* 2014.

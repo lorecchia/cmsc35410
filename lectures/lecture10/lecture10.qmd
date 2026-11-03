@@ -1,7 +1,6 @@
 ---
 title: "Lecture 10 · Online Learning over Density Matrices and the Balanced Separator Problem"
-subtitle: "Follow the regularized leader, the matrix multiplicative weights update,<br>
-and why recursive eigenvectors follow the leader"
+subtitle: "Follow the regularized leader, the matrix multiplicative weights update,<br>and why recursive eigenvectors follow the leader"
 author: "CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis"
 format:
   revealjs:
@@ -33,12 +32,12 @@ format:
 ## Plan
 
 - **§1 The game.** Online linear optimization over density matrices; follow the leader fails.
-- **§2 FTRL with von Neumann entropy.** Gibbs, the MMWU, **strong convexity $\Rightarrow$ smoothness**, the regret bound.
+- **§2 FTRL with von Neumann entropy.** Gibbs, the MMWU, **centers**, **strong convexity $\Rightarrow$ smoothness**, the regret bound.
 - **§3 Losses and the heat kernel.** Eigenvector $=$ follow the leader, heat kernel $=$ regularized.
 - **§4 Balanced separator.** Fiedler finds whiskers; recursive eigenvectors; an SDP with a spread constraint.
 
 ::: notes
-~1 min. Timing for the new material: §1 ~15 min, §2 ~19 min, §3 ~3 min, §4 ~16 min, takeaways ~2 min.
+~1 min. Timing for the new material: §1 ~15 min, §2 ~19 min, §3 ~3 min, §4 ~16 min, takeaways ~2 min. As delivered: §1 on 10/29; §2–§4 on 11/3 (~37 min, with the recursive-eigenvector slide cut to ~1 min), then the Lecture 11 deck.
 :::
 
 # §1 · The game {background-color="#1c1b19"}
@@ -210,6 +209,25 @@ FTRL with $R(X)=\operatorname{tr}X\log X$, by Gibbs with $A=\eta S_{t-1}$:
 ~3 min. Ψ is the "soft max" of the eigenvalues: λ_max(S) ≤ Ψ(S) ≤ λ_max(S) + log n / η. The whole regret analysis is: Ψ starts at log n/η, ends above λ_max(S_T), and grows by about ⟨M_t, X_t⟩ each round.
 :::
 
+## FTRL with a center
+
+Replace the entropy by the **relative entropy to a center** $C\in\Delta_n$ of full rank:
+$$R_C(X)=D(X\Vert C)=\operatorname{tr}X\log X-\langle\log C,X\rangle\ \ge0,\qquad R_C(C)=0 .$$
+
+::: {.thm}
+**MMWU with center $C$** (Gibbs with $A=\log C+\eta S_{t-1}$):
+$$X_t=\frac{\exp(\log C+\eta S_{t-1})}{\operatorname{tr}\exp(\log C+\eta S_{t-1})},\qquad\Psi_C(S)=\frac1\eta\log\operatorname{tr}e^{\log C+\eta S}.$$
+**Two facts:** $\ \Psi_C(0)=0\ $ and $\ \Psi_C(S)\ge\langle S,U\rangle-\frac1\eta D(U\Vert C)\ $ for **every** $U\in\Delta_n$.
+:::
+
+- $C=I/n$: $D(X\Vert I/n)=\operatorname{tr}X\log X+\log n$, the plain MMWU. For $U=uu^\top$, $D(uu^\top\Vert I/n)=\log n$.
+- **A center is a warm start.** $\log C+\eta S_{t-1}$ is what the plain MMWU would play after an extra round-$0$ gain $\frac1\eta\log C$. Example (L11): $C\propto e^{-\tau_0\mathcal L}$ starts the plays at the **heat kernel at time $\tau_0$**, for free.
+- $R_C$ differs from $R$ by a **linear** function: same strong convexity, same stability analysis.
+
+::: notes
+~3 min. The second fact is Gibbs again: Ψ_C(S) = max_X {⟨S,X⟩ − D(X‖C)/η} because ⟨ηS, X⟩ − D(X‖C) = ⟨log C + ηS, X⟩ − tr X log X. Plug in X = U. With C = I/n and U = uu^T this is Ψ(S) ≥ λ_max(S) − 0 after the log n shift. The point of the slide: the range term log n/η of the regret bound becomes D(U‖C)/η, which is small when the comparator U is "likely" under C. In Lecture 11 the comparator is a balanced cut, and D(U‖C) = τ₀ φ̄(S) + log Z: small exactly when the cut is sparse.
+:::
+
 ## Strong convexity implies smoothness of the maximum
 
 ::: {.lem}
@@ -251,27 +269,29 @@ $$R(Y)\ \ge\ R(X)+\langle\log X+I,\,Y-X\rangle+\tfrac12\|Y-X\|_1^2 .$$
 ## The regret bound
 
 ::: {.thm}
-**Theorem (MMWU regret).** For any symmetric $M_1,\dots,M_T$ (chosen adaptively), the MMWU plays satisfy
-$$\lambda_{\max}\Big(\sum_{t=1}^TM_t\Big)\ \le\ \sum_{t=1}^T\langle M_t,X_t\rangle+\frac\eta2\sum_{t=1}^T\|M_t\|^2+\frac{\log n}{\eta}.$$
+**Theorem (MMWU regret).** For any symmetric $M_1,\dots,M_T$ (chosen adaptively), the MMWU plays with center $C$ satisfy, for **every** $U\in\Delta_n$,
+$$\Big\langle\sum_{t=1}^TM_t,\,U\Big\rangle\ \le\ \sum_{t=1}^T\langle M_t,X_t\rangle+\frac\eta2\sum_{t=1}^T\|M_t\|^2+\frac{D(U\Vert C)}{\eta}.$$
+**With $C=I/n$:** $\ \lambda_{\max}\big(\sum_tM_t\big)\le\sum_t\langle M_t,X_t\rangle+\frac\eta2\sum_t\|M_t\|^2+\frac{\log n}\eta$.
 :::
 
 ::: {.pf}
-*Proof.* Apply the lemma with $R=\frac1\eta\operatorname{tr}X\log X$, which is $\frac1\eta$-strongly convex w.r.t. $\|\cdot\|_1$: for each $t$,
-$$\Psi(S_t)\le\Psi(S_{t-1})+\langle X_t,M_t\rangle+\tfrac\eta2\|M_t\|^2 .$$
-Sum over $t$ and use the two facts: $\ \lambda_{\max}(S_T)\le\Psi(S_T)\ $ and $\ \Psi(S_0)=\Psi(0)=\frac{\log n}\eta$. $\square$
+*Proof.* Apply the lemma with $R=\frac1\eta D(\cdot\Vert C)$, which is $\frac1\eta$-strongly convex w.r.t. $\|\cdot\|_1$: for each $t$,
+$$\Psi_C(S_t)\le\Psi_C(S_{t-1})+\langle X_t,M_t\rangle+\tfrac\eta2\|M_t\|^2 .$$
+Sum over $t$ and use the two facts: $\ \Psi_C(S_T)\ge\langle S_T,U\rangle-\frac1\eta D(U\Vert C)\ $ and $\ \Psi_C(0)=0$. For $C=I/n$ take $U=uu^\top$, the top eigenvector. $\square$
 :::
 
 **Tuning.** If $\|M_t\|\le\rho$, take $\eta=\sqrt{2\log n/(T\rho^2)}$: $\ \mathrm{Regret}_T\le\rho\sqrt{2T\log n}$. Average regret $\to0$; diagonal case: Hedge's $\sqrt{T\log n}$.
 
 ::: notes
-~4 min. Point at the two terms: log n/η is the range of the regularizer (FTL has η = ∞, so this term vanishes) and (η/2)Σ‖M_t‖² is the stability cost (for FTL it is unbounded, which is the two-experts example). In "averaged" form: (1/T) λ_max(S_T) ≤ average gain + ε after T = O(ρ² log n/ε²) rounds.
+~4 min. Point at the two terms: D(U‖C)/η, which is log n/η for the uniform center and the worst comparator, is the range of the regularizer (FTL has η = ∞, so this term vanishes) and (η/2)Σ‖M_t‖² is the stability cost (for FTL it is unbounded, which is the two-experts example). In "averaged" form: (1/T) λ_max(S_T) ≤ average gain + ε after T = O(ρ² log n/ε²) rounds.
 :::
 
 ## A sharper bound: local norms
 
 ::: {.thm}
-**Theorem (local-norm MMWU; stated).** If $\eta M_t\preceq I$ for all $t$, then
-$$\lambda_{\max}\Big(\sum_tM_t\Big)\ \le\ \sum_t\langle M_t,X_t\rangle+\eta\sum_t\langle M_t^2,X_t\rangle+\frac{\log n}{\eta}.$$
+**Theorem (local-norm MMWU; stated).** If $\eta M_t\preceq I$ for all $t$, then for every center $C$ and every $U\in\Delta_n$
+$$\Big\langle\sum_tM_t,\,U\Big\rangle\ \le\ \sum_t\langle M_t,X_t\rangle+\eta\sum_t\langle M_t^2,X_t\rangle+\frac{D(U\Vert C)}{\eta};$$
+with $C=I/n$: $\ \lambda_{\max}(\sum_tM_t)\le\sum_t\langle M_t,X_t\rangle+\eta\sum_t\langle M_t^2,X_t\rangle+\frac{\log n}\eta$.
 :::
 
 - $\langle M^2,X\rangle\le\|M\|^2$ always: never worse (up to the constant), often much better.
@@ -293,6 +313,7 @@ The **width** $\rho$ enters linearly, not quadratically. In sparsification $\rho
 
 Apply the theorem to $-M_t$: play $X_t\propto\exp(-\eta S_{t-1})$, and
 $$\lambda_{\min}\Big(\sum_tM_t\Big)\ \ge\ \sum_t\langle M_t,X_t\rangle-\frac\eta2\sum_t\|M_t\|^2-\frac{\log n}\eta .$$
+With a center: $X_t\propto\exp(\log C-\eta S_{t-1})$ and $\ \sum_t\langle M_t,X_t\rangle\le\langle\sum_tM_t,U\rangle+\frac\eta2\sum_t\|M_t\|^2+\frac{D(U\Vert C)}\eta\ $ for every $U$.
 
 . . .
 
@@ -301,6 +322,7 @@ $$X_t\ \propto\ e^{-\eta s\mathcal L}=D^{1/2}H_{\eta s}D^{-1/2}\qquad(\text{Lect
 
 - $X_t$ is the **heat kernel** at time $\tau=\eta s$. Its diagonal is the **return probability** $H_\tau(i,i)$: large where the walk gets stuck.
 - $\eta\to\infty$: $X_t\to$ projector onto the bottom eigenvector. On $\mathbf 1^\perp$ (in the $D$ inner product): the **Fiedler vector**.
+- **Center $C\propto e^{-\tau_0\mathcal L}$:** the plays are $X_t\propto e^{-\tau_0\mathcal L-\eta S_{t-1}}$, heat kernels that start at time $\tau_0$ without any rounds of the loss $\mathcal L$, and the range term becomes $D(U\Vert C)/\eta$.
 
 ::: {.idea}
 **Eigenvector $=$ follow the leader. Heat kernel $=$ follow the regularized leader.**
@@ -341,23 +363,17 @@ $S$ is **$b$-balanced** if $\ b\,\mathrm{vol}(V)\le\mathrm{vol}(S)\le(1-b)\,\mat
 
 ## Recursive eigenvector partitioning
 
-::: {.defn}
-**Recursive spectral partitioning.** $U\leftarrow\emptyset$. Repeat: compute the Fiedler vector of $G[V\setminus U]$ and its sweep cut $C$; if $C$ is balanced, output it; otherwise $U\leftarrow U\cup C$. Stop when $\mathrm{vol}(U)\ge b\,\mathrm{vol}(V)$ and output $U$.
-:::
+**Fix:** remove the sweep cut and recompute the Fiedler vector of what remains; repeat until a balanced cut appears or the removed volume reaches $b\,\mathrm{vol}(V)$.
 
-On the example ($b=\frac14$): rounds 1–3 remove the whiskers of lengths $22,20,18$ ($\Phi=0.023,0.026,0.029$); round 4 finds a balanced cut.
-
-. . .
-
-- The **guarantee** is Cheeger-type: each removed piece is sparse in what remains.
-- The **cost**: with $k$ whiskers, up to $k$ rounds, each a full eigenvector computation. Worst case $\Theta(n)$ rounds: time $\tilde\Omega(mn)$.
+- On the example ($b=\frac14$): rounds 1–3 remove the whiskers of lengths $22,20,18$; round 4 finds a balanced cut.
+- With $k$ whiskers: up to $k$ eigenvector computations. Worst case $\Theta(n)$ rounds, time $\tilde\Omega(mn)$.
 
 ::: {.idea}
-Each round plays the **best response** to everything removed so far, and the adversary (the graph) answers with the next whisker. **Recursive eigenvectors are follow the leader.**
+Each round is the **best response** to everything removed so far, and the graph answers with the next whisker: **recursive eigenvectors are follow the leader.**
 :::
 
 ::: notes
-~4 min. "Is FTL" is an analogy made precise by the SDP on the next slide: removing a set is a crude way of enforcing a constraint that the eigenvector violates. FTL makes progress one violation at a time; FTRL hedges against all of them at once.
+~1 min. Say it, don't dwell: removing a set is a crude way of enforcing the constraint the eigenvector violates. FTL fixes one violation per round; FTRL (next lecture deck) penalizes all of them at once. Sweep Φ in rounds 1–3: 0.023, 0.026, 0.029.
 :::
 
 ## A relaxation with a spread constraint
@@ -380,32 +396,21 @@ Embed $v_i\in\mathbb R^n$ and minimize the Dirichlet energy:
 ~4 min. Check the cut embedding: Σπ_i v_i = 0 and Σπ_i v_i² = 1 by construction; v_i² = (1−p)/p on S and p/(1−p) ≤ 1 off S; (1−p)/p ≤ 1/b iff p ≥ b/(1+b), so p ≥ b suffices. Objective: w(S, S̄)/(vol(V) p(1−p)) = w(S, S̄) vol(V)/(vol(S) vol(S̄)) = φ̄(S). The dual (Lecture 11) has one multiplier per spread constraint: a certificate that λ₂ of G plus a penalty graph on heavy vertices is large.
 :::
 
-## Two ways to enforce the spread constraint
-
-| | recursive eigenvector | MMWU (Orecchia–Sachdeva–Vishnoi 2012) |
-|:--|:--|:--|
-| each round plays | eigenvector ($\eta=\infty$) | heat kernel (finite $\eta$) |
-| a violation is handled by | removing the heavy set | **penalizing** it (adding a loss) |
-| rounds | up to $\Theta(n)$ | $\mathrm{polylog}(n)$, by the regret bound |
-| cost per round | one eigenvector | a few $e^{-\tau\mathcal L'}v$: $\tilde O(m)$ via solvers |
-| total time | $\tilde O(mn)$ worst case | $\tilde O(m)$ |
-
-- Same guarantee: $\Omega(b)$-balanced with $\Phi=O(\sqrt\gamma)$, or a certificate.
-- Context: ARV's $O(\sqrt{\log n})$ uses the SDP with triangle inequalities (Lecture 6 §5); the cut-matching game is its combinatorial relative.
+## Next: the primal-dual loop
 
 ::: {.idea}
-**Next lecture:** the primal-dual loop. Each round the heat-kernel embedding is either **spread** (round it with a sweep) or **concentrated** on a set (penalize it); the regret bound ends the loop.
+**Lecture 11** solves $\mathrm{SDP}(b)$ approximately with the MMWU. Each round the heat-kernel embedding is either **spread** (round it with a sweep) or **concentrated** on a set (penalize it), and the regret bound ends the loop. The comparison with recursive eigenvectors is at the end of the Lecture 11 deck.
 :::
 
 ::: notes
-~3 min. The exact number of rounds and the form of the penalty graphs (stars) are for Lecture 11. Keep the table high-level here.
+In class on 11/3: skip this slide and switch to the Lecture 11 deck right after the SDP slide.
 :::
 
 ## Takeaways
 
 1. Many spectral bounds are bounds on $\lambda_{\max}$ of a **sum**. Online learning over $\Delta_n$ reduces them to **per-round scalars** $\langle M_t,X_t\rangle$.
 2. **FTL** plays the top eigenvector and can have regret $T/2$. **FTRL with von Neumann entropy** is the MMWU, $X_t\propto e^{\eta S_{t-1}}$ (Gibbs).
-3. **Strong convexity $\Rightarrow$ smoothness of the max:** $\ \lambda_{\max}(\sum M_t)\le\sum\langle M_t,X_t\rangle+\frac\eta2\sum\|M_t\|^2+\frac{\log n}\eta$. Entropy is $1$-strongly convex in $\|\cdot\|_1$ (quantum Pinsker).
+3. **Strong convexity $\Rightarrow$ smoothness of the max:** $\ \lambda_{\max}(\sum M_t)\le\sum\langle M_t,X_t\rangle+\frac\eta2\sum\|M_t\|^2+\frac{\log n}\eta$. Entropy is $1$-strongly convex in $\|\cdot\|_1$ (quantum Pinsker). With a center $C$, $\log n$ becomes $D(U\Vert C)$ for any comparator $U$.
 4. **Local norms** replace $\|M_t\|^2$ by $\langle M_t^2,X_t\rangle$: width linear, not squared.
 5. With Laplacian losses the plays are **heat kernels**; the eigenvector is the $\eta=\infty$ limit.
 6. **Balanced separator:** Fiedler finds whiskers; recursive eigenvectors (FTL) may need $\Theta(n)$ rounds; the spread-constrained SDP and MMWU (FTRL) handle all whiskers at once.
@@ -450,7 +455,8 @@ Embed $v_i\in\mathbb R^n$ and minimize the Dirichlet energy:
 | MMWU | $X_t=e^{\eta S_{t-1}}/\operatorname{tr}e^{\eta S_{t-1}}$; value $\Psi(S)=\frac1\eta\log\operatorname{tr}e^{\eta S}$ |
 | norms | $\|H\|_1=\sum_k|\lambda_k(H)|$ (trace), $\ \|M\|=\max_k|\lambda_k(M)|$ (operator), dual to each other |
 | strong convexity | $R(Y)\ge R(X)+\langle\nabla R(X),Y-X\rangle+\frac\alpha2\|Y-X\|^2$ |
-| regret bound | $\lambda_{\max}(\sum M_t)\le\sum\langle M_t,X_t\rangle+\frac\eta2\sum\|M_t\|^2+\frac{\log n}\eta$ |
+| FTRL with center $C$ | $X_t\propto\exp(\log C+\eta S_{t-1})$; regularizer $D(X\Vert C)$; $\ \Psi_C(S)=\frac1\eta\log\operatorname{tr}e^{\log C+\eta S}$ |
+| regret bound | $\langle\sum M_t,U\rangle\le\sum\langle M_t,X_t\rangle+\frac\eta2\sum\|M_t\|^2+\frac{D(U\Vert C)}\eta$; $\ C=I/n$: $\lambda_{\max}$ form with $\frac{\log n}\eta$ |
 | local norms ($\eta M_t\preceq I$) | $\lambda_{\max}(\sum M_t)\le\sum\langle M_t,X_t\rangle+\eta\sum\langle M_t^2,X_t\rangle+\frac{\log n}\eta$ |
 | heat kernel | $e^{-\tau\mathcal L}=D^{1/2}H_\tau D^{-1/2}$, $\ H_\tau=e^{-\tau L_{rw}}$ |
 | $b$-balanced | $b\,\mathrm{vol}(V)\le\mathrm{vol}(S)\le(1-b)\,\mathrm{vol}(V)$ |
