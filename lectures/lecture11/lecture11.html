@@ -150,15 +150,19 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <section class="slide level2">
 <h2>Where we are</h2>
 <ul>
-<li><strong>Lecture 10 deck (first half of today):</strong> the MMWU, <strong>centers</strong>, and the local-norm regret bound; with Laplacian losses the plays are <strong>heat kernels</strong>; Fiedler finds whiskers; <span class="math inline">\(\mathrm{SDP}(b)\)</span> adds a <strong>spread constraint</strong>.</li>
-<li><strong>Now:</strong> solve <span class="math inline">\(\mathrm{SDP}(b)\)</span> approximately by playing the MMWU against an <strong>oracle</strong>, and read off either a balanced sparse cut or a <strong>certificate</strong> that none exists.</li>
+<li><strong>Today:</strong> solve the <strong>feasibility version</strong> of <span class="math inline">\(\mathrm{SDP}(b)\)</span> approximately by playing the MMWU against an <strong>oracle</strong>, and read off either a balanced sparse cut or a <strong>certificate</strong> that none exists.</li>
 </ul>
 <div class="defn">
-<p><strong>In density-matrix form.</strong> With <span class="math inline">\(\Pi=\operatorname{diag}(\pi)\)</span> and the Gram matrix <span class="math inline">\(X\)</span> of the <span class="math inline">\(v_i\)</span>, set <span class="math inline">\(Y=\Pi^{1/2}X\Pi^{1/2}\)</span>. Then <span class="math display">\[\begin{align*}
-\mathrm{SDP}(b) : &amp;\min\ \langle\mathcal L,Y\rangle \\
-\text{s.t.}&amp; Y\succeq0,\ \operatorname{tr}Y=1,\ Y\sqrt\pi=0\\
-&amp; \|v_i\|^2=\frac{Y_{ii}}{\pi_i}\le\frac1b .
-\end{align*}\]</span> The plays are density matrices on <span class="math inline">\(W=\sqrt\pi^{\perp}\)</span>, the space where <span class="math inline">\(\mathcal L\succeq\lambda_2 I\)</span>.</p>
+<p><strong>Is <span class="math inline">\(\mathrm{SDP}(b)\le\gamma\)</span>?</strong> With <span class="math inline">\(\Pi=\operatorname{diag}(\pi)\)</span> and the Gram matrix <span class="math inline">\(X\)</span> of the <span class="math inline">\(v_i\)</span>, set <span class="math inline">\(Y=\Pi^{1/2}X\Pi^{1/2}\)</span>.</p>
+<p><span class="math display">\[\begin{alignat*}{2}
+&amp;\textbf{Vector form} &amp;\qquad\qquad&amp;\textbf{Density-matrix form}\\[4pt]
+\text{find}\ &amp;v_1,\dots,v_n\in\mathbb R^n &amp;\qquad\qquad\text{find}\ &amp;Y\succeq0\\
+\text{s.t.}\ &amp;\frac1{\mathrm{vol}(V)}\sum_{\{i,j\}\in E}w_{ij}\|v_i-v_j\|^2\le\gamma, &amp;\text{s.t.}\ &amp;\langle\mathcal L,Y\rangle\le\gamma,\\
+&amp;\sum_i\pi_iv_i=0, &amp;&amp;Y\sqrt\pi=0,\\
+&amp;\sum_i\pi_i\|v_i\|^2=1, &amp;&amp;\operatorname{tr}Y=1,\\
+&amp;\|v_i\|^2\le\tfrac1b\ \ \forall i, &amp;&amp;\frac{Y_{ii}}{\pi_i}\le\tfrac1b\ \ \forall i.
+\end{alignat*}\]</span></p>
+<p>The plays are density matrices on <span class="math inline">\(W=\sqrt\pi^{\perp}\)</span>, the space where <span class="math inline">\(\mathcal L\succeq\lambda_2 I\)</span>.</p>
 </div>
 <aside class="notes">
 <p>~2 min. Check the translation: tr Y = Σπ_i‖v_i‖² = 1; Y√π = 0 iff Σπ_i v_i = 0; ⟨L, X⟩/vol(V) = ⟨D^{-1/2} L D^{-1/2}, Y⟩ = ⟨𝓛, Y⟩ because Π = D/vol(V). From here on “the embedding” means the v_i read off from Y.</p>
@@ -175,11 +179,56 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
       }</style></aside>
 </section>
 <section class="slide level2">
+<h2>A first candidate: the heat kernel at <span class="math inline">\(\tau_0\)</span></h2>
+<p>Try <span class="math inline">\(\ Y=\dfrac{e^{-\tau_0\mathcal L}}{\operatorname{tr}e^{-\tau_0\mathcal L}}\)</span> on <span class="math inline">\(W\)</span>, <span class="math inline">\(\ \tau_0=\dfrac{8\ln n}\gamma\)</span>, and check the constraints:</p>
+<ul>
+<li><span class="math inline">\(Y\sqrt\pi=0\)</span>, <span class="math inline">\(Y\succeq0\)</span>: by construction. <strong>Variance</strong> <span class="math inline">\(\operatorname{tr}Y=\sum_i\pi_i\|v_i\|^2=1\)</span>: just a <strong>normalization</strong>, since an embedding’s scale is arbitrary.</li>
+<li><strong>Energy</strong> <span class="math inline">\(\langle\mathcal L,Y\rangle\le\gamma\)</span>: large <span class="math inline">\(\tau_0\)</span> keeps only the directions of energy <span class="math inline">\(\approx\lambda_2\)</span>.</li>
+<li><strong>Spread</strong> <span class="math inline">\(\|v_i\|^2\le\frac1b\)</span>: <strong>every vector is short</strong>, so no small set can hold much of the variance. This is the constraint that fails.</li>
+<li><strong>Heavy and light sets.</strong> <span class="math inline">\(\ H=\{i:\|v_i\|^2\ge\frac{16}b\}\)</span>, <span class="math inline">\(\ L=V\setminus H\)</span>. The algorithm asks less than spread: is <strong>most of the variance on <span class="math inline">\(L\)</span></strong>?</li>
+</ul>
+<iframe class="demo-frame" style="height:410px" src="demos/heat-candidate-demo.html">
+</iframe>
+<p class="tiny muted">
+Standalone: <a href="demos/heat-candidate-demo.html" target="_blank">demos/heat-candidate-demo.html</a>. Data: <code>scripts/heat_candidate_demo.py</code>.
+</p>
+<aside class="notes">
+<p>~4 min. Go through the graphs in order (b = 1/4, γ = 0.02, so 1/b = 4; heavy threshold c/b with c = 16 as in the algorithm).</p>
+<ul>
+<li>Two expanders: Y ≈ the Fiedler vector, ‖v_i‖² ≈ 1 everywhere, energy λ₂ = 0.011: feasible. Round.</li>
+<li>Lecture 10 graph: energy 0.003 is fine, but max ‖v_i‖² = 27 &gt; 1/b: infeasible. The heat kernel mixes all the near-λ₂ whisker modes. With c = 16 nothing is heavy (27 &lt; 64), so the oracle rounds (round 1 of the example later). Switch to c = 4: the tip of one long whisker becomes heavy (2.2% of the volume, 51% of the variance), and the oracle penalizes instead.</li>
+<li>8-regular expander + one whisker: Y is essentially the whisker’s own mode, max ‖v_i‖² = 119. Heavy even at c = 16: 0.7% of the volume, 75% of the variance. Penalize.</li>
+<li>Expander: energy ≈ λ₂ = 0.15 &gt; γ, and every Y on W has ⟨𝓛,Y⟩ ≥ λ₂, so SDP(b) &gt; γ: certify. (Slide γ above 0.15 to see the energy constraint hold.)</li>
+<li>Grid: feasible, max ‖v_i‖² ≈ 1.9. Round.</li>
+</ul>
+<p>Takeaway: centering, normalization, and energy come for free from the heat kernel; spread is the only constraint we have to work for, and we never enforce it exactly. The oracle only compares the heavy share to ½. The constant c = 16 is chosen for the proofs and is pessimistic: on these graphs only a very concentrated play gets penalized.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2 scrollable">
 <h2>Plan</h2>
 <ul>
-<li><strong>§1 The loop.</strong> Start at a heat kernel; three cases: high energy <strong>certifies</strong>, concentrated is <strong>penalized</strong>, spread is <strong>rounded</strong>.</li>
-<li><strong>§2 Why it ends.</strong> A center <span class="math inline">\(+\)</span> local norms <span class="math inline">\(\Rightarrow\)</span> <span class="math inline">\(O(\log n)\)</span> rounds, independent of <span class="math inline">\(\gamma\)</span>.</li>
-<li><strong>§3 Computing the plays.</strong> <span class="math inline">\(e^{-A}v\)</span> in <span class="math inline">\(\tilde O(m)\)</span>.</li>
+<li><strong>§1 The loop.</strong>
+<ul>
+<li>Start at a heat kernel with <span class="math inline">\(t = \tau_0 = \frac{8\ln n}{\gamma}\)</span>;</li>
+<li>Given current heat-kernel embeddings, three cases:
+<ol type="1">
+<li>high energy <strong>certifies</strong> <span class="math inline">\(\mathrm{SDP}(b) \geq \gamma\)</span>,</li>
+<li>if the heavy set <span class="math inline">\(H_t\)</span> has high variance, it is <strong>penalized</strong>,</li>
+<li>if the light set <span class="math inline">\(L_t\)</span> has high variance, it is <strong>rounded</strong>.</li>
+</ol></li>
+</ul></li>
+<li><strong>§2 Why it ends.</strong> Centered local-norm regret bound for MMWU yields <span class="math inline">\(T = O(\log n)\)</span> rounds, independent of <span class="math inline">\(\gamma\)</span>.</li>
+<li><strong>§3 Computing the plays.</strong> <span class="math inline">\(e^{- \tau_0 L + M}v\)</span> in <span class="math inline">\(\tilde O(m)\)</span> for diagonal M.</li>
 </ul>
 <aside class="notes">
 <p>~1 min. Throughout: b ∈ (0, ½] is a constant, γ ∈ (0, 1]. Constants (16/b, 2γ, τ₀ = 8 ln n/γ, η = 1/(4γ), T = ⌈32 ln n⌉) are chosen to make the proofs one line each, not to be optimal.</p>
@@ -206,7 +255,12 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <div class="defn">
 <p><strong>BalSep<span class="math inline">\((G,b,\gamma)\)</span>.</strong> <span class="math inline">\(\ \tau_0=\frac{8\ln n}\gamma\)</span>, <span class="math inline">\(\ \eta=\frac1{4\gamma}\)</span>, <span class="math inline">\(\ T=\lceil32\ln n\rceil\)</span>, <span class="math inline">\(\ S_0=0\)</span>. For <span class="math inline">\(t=1,\dots,T\)</span>:</p>
 <ol type="1">
-<li><strong>Play</strong> <span class="math inline">\(\ Y_t=\dfrac{e^{-\tau_0\mathcal L-\eta S_{t-1}}}{\operatorname{tr}e^{-\tau_0\mathcal L-\eta S_{t-1}}}\)</span> on <span class="math inline">\(W\)</span>: <strong>FTRL with center <span class="math inline">\(C\propto e^{-\tau_0\mathcal L}\)</span></strong>.<br> Read off <span class="math inline">\(\|v_i\|^2=(Y_t)_{ii}/\pi_i\)</span>, the <strong>heavy set</strong> <span class="math inline">\(H_t=\{i:\|v_i\|^2\ge\frac{16}b\}\)</span> and the light set <span class="math inline">\(L_t=V\setminus H_t\)</span>.</li>
+<li><strong>FTRL with center <span class="math inline">\(C\propto e^{-\tau_0\mathcal L}\)</span></strong>.<br> <strong>Play</strong> <span class="math inline">\(\ Y_t=\dfrac{e^{-\tau_0\mathcal L-\eta S_{t-1}}}{\operatorname{tr}e^{-\tau_0\mathcal L-\eta S_{t-1}}}\)</span> on <span class="math inline">\(W\)</span>.</li>
+<li>Read off <span class="math inline">\(\|v_i\|^2=(Y_t)_{ii}/\pi_i\)</span> to define:
+<ul>
+<li>the <strong>heavy set</strong> <span class="math inline">\(H_t=\{i:\|v_i\|^2\ge\frac{16}b\}\)</span>,</li>
+<li>and the light set <span class="math inline">\(L_t=V\setminus H_t\)</span>.</li>
+</ul></li>
 <li><strong>Oracle:</strong>
 <ol type="a">
 <li>if <span class="math inline">\(\ \langle\mathcal L,Y_t\rangle\ge\gamma\)</span>: <strong>stop</strong>, certify;</li>
@@ -239,7 +293,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <p>A play <span class="math inline">\(Y\)</span> is an embedding with <strong>total variance</strong> <span class="math inline">\(\operatorname{tr}Y=\sum_i\pi_i\|v_i\|^2=1\)</span>. For any partition <span class="math inline">\(V=H\cup L\)</span>: <span class="math display">\[1=\underbrace{\langle\Delta_H,Y\rangle}_{\text{variance on }H}+\underbrace{\langle\Delta_L,Y\rangle}_{\text{variance on }L},\qquad\langle\Delta_H,Y\rangle=\sum_{i\in H}\pi_i\|v_i\|^2 .\]</span></p>
 <ul>
 <li><strong>Spread constraint</strong> <span class="math inline">\(\|v_i\|^2\le\frac1b\)</span>, in these terms: every set <span class="math inline">\(H\)</span> holds at most <span class="math inline">\(\frac{\pi(H)}b\)</span> of the variance.</li>
-<li>The oracle splits <span class="math inline">\(V\)</span> into <strong>heavy</strong> <span class="math inline">\(H_t=\{i:\|v_i\|^2\ge\frac{16}b\}\)</span> and <strong>light</strong> <span class="math inline">\(L_t=V\setminus H_t\)</span>.</li>
+<li>Recall the <strong>heavy</strong> set <span class="math inline">\(H_t=\{i:\|v_i\|^2\ge\frac{16}b\}\)</span> and the <strong>light</strong> set <span class="math inline">\(L_t=V\setminus H_t\)</span> of the play <span class="math inline">\(Y_t\)</span>.</li>
 </ul>
 <div class="lem">
 <p><strong>Heavy sets are small (Markov).</strong> <span class="math inline">\(\ \frac{16}b\,\pi(H_t)\le\langle\Delta_{H_t},Y_t\rangle\le1\)</span>, so <span class="math inline">\(\ \pi(H_t)\le\frac b{16}\)</span>.</p>
@@ -267,15 +321,15 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <td style="text-align: left;"><strong>certify</strong></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">(c)</td>
+<td style="text-align: left;">(b)</td>
 <td style="text-align: left;"><span class="math inline">\(&lt;\gamma\)</span></td>
 <td style="text-align: left;">heavy share <span class="math inline">\(\ge\frac12\)</span>: half the variance on volume <span class="math inline">\(\le\frac b{16}\)</span></td>
 <td style="text-align: left;"><strong>penalize</strong> <span class="math inline">\(H_t\)</span></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">(b)</td>
+<td style="text-align: left;">(c)</td>
 <td style="text-align: left;"><span class="math inline">\(&lt;\gamma\)</span></td>
-<td style="text-align: left;">light share <span class="math inline">\(&gt;\frac12\)</span>: variance spread over volume <span class="math inline">\(\Omega(b)\)</span></td>
+<td style="text-align: left;">light share <span class="math inline">\(&gt;\frac12\)</span>: variance spread over volume <span class="math inline">\(1 - O(b)\)</span></td>
 <td style="text-align: left;"><strong>round</strong></td>
 </tr>
 </tbody>
@@ -351,10 +405,10 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <p><strong>Claim.</strong> If <span class="math inline">\(\langle\mathcal L,Y_t\rangle\ge\gamma\)</span> for some <span class="math inline">\(t\le T\)</span>, then every <span class="math inline">\(b\)</span>-balanced <span class="math inline">\(S\)</span> has <span class="math inline">\(\bar\phi(S)\ge\frac{3\gamma}4\)</span>.</p>
 </div>
 <div class="pf">
-<p><em>Proof.</em> <span class="math inline">\(Y_t\)</span> minimizes <span class="math inline">\(F(Y)=\eta\langle S_{t-1},Y\rangle+D(Y\Vert C)\)</span> over density matrices on <span class="math inline">\(W\)</span> (Gibbs), so <span class="math inline">\(F(Y_t)\le F(U_S)\)</span>. Expand both sides with <span class="math inline">\(\log C=-\tau_0\mathcal L-\ln Z\)</span>: <span class="math display">\[\underbrace{\eta\langle S_{t-1},Y_t\rangle}_{\ge0}+\underbrace{\operatorname{tr}Y_t\log Y_t}_{\ge-\ln n}+\tau_0\langle\mathcal L,Y_t\rangle+\ln Z\ \le\ \underbrace{\eta\langle S_{t-1},U_S\rangle}_{\le\eta(t-1)\frac{2\gamma}{16}\le\ln n}+\tau_0\,\bar\phi(S)+\ln Z .\]</span> So <span class="math inline">\(\langle\mathcal L,Y_t\rangle\le\bar\phi(S)+\frac{2\ln n}{\tau_0}=\bar\phi(S)+\frac\gamma4\)</span>. <span class="math inline">\(\square\)</span></p>
+<p><em>Proof.</em> <strong>Softmin</strong> (Gibbs): <span class="math inline">\(\ \operatorname{softmin}(A):=-\ln\operatorname{tr}_We^{-A}=\min_Y\big\{\langle A,Y\rangle+\operatorname{tr}Y\log Y\big\}\)</span>, attained at <span class="math inline">\(Y\propto e^{-A}\)</span>. The play is <span class="math inline">\(Y_t\propto e^{-A_t}\)</span> with <span class="math inline">\(A_t=\tau_0\mathcal L+\eta S_{t-1}\)</span>, and <span class="math inline">\(U_S\)</span> is pure (entropy <span class="math inline">\(0\)</span>), so <span class="math display">\[\tau_0\langle\mathcal L,Y_t\rangle-\ln n\ \le\ \operatorname{softmin}(A_t)\ \le\ \langle A_t,U_S\rangle=\tau_0\,\bar\phi(S)+\underbrace{\eta\langle S_{t-1},U_S\rangle}_{\le\eta(t-1)\frac{2\gamma}{16}\le\ln n},\]</span> using <span class="math inline">\(S_{t-1}\succeq0\)</span> and <span class="math inline">\(\operatorname{tr}Y\log Y\ge-\ln n\)</span> on the left. So <span class="math inline">\(\langle\mathcal L,Y_t\rangle\le\bar\phi(S)+\frac{2\ln n}{\tau_0}=\bar\phi(S)+\frac\gamma4\)</span>. <span class="math inline">\(\square\)</span></p>
 </div>
 <ul>
-<li><span class="math inline">\(\ln Z\)</span> cancels: the center only enters through <strong>energies</strong>.</li>
+<li>The center enters only through the exponent <span class="math inline">\(\tau_0\mathcal L\)</span>: no <span class="math inline">\(\ln Z\)</span> or <span class="math inline">\(D(\cdot\Vert C)\)</span> needed.</li>
 <li>Read it as: <strong>the play’s energy is at most the best balanced cut’s, plus <span class="math inline">\(\gamma/4\)</span></strong>.</li>
 </ul>
 <aside class="notes">
@@ -372,7 +426,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
       }</style></aside>
 </section>
 <section class="slide level2">
-<h2>Case (c): concentrated plays are penalized</h2>
+<h2>Case (b): concentrated plays are penalized</h2>
 <p><strong>Low energy, heavy share <span class="math inline">\(\ge\frac12\)</span>:</strong> half the variance sits on <span class="math inline">\(H_t\)</span>, a set of volume <span class="math inline">\(\le\frac b{16}\)</span>. The loss <span class="math inline">\(M_t=2\gamma\,\Delta_{H_t}\)</span> <strong>taxes the variance on <span class="math inline">\(H_t\)</span></strong>: <span class="math display">\[\langle M_t,Y_t\rangle=2\gamma\cdot\underbrace{\langle\Delta_{H_t},Y_t\rangle}_{\text{heavy share}}\ \ge\ \gamma,\qquad 0\preceq M_t\preceq2\gamma I .\]</span></p>
 <ul>
 <li>The next play is the heat kernel of <span class="math inline">\(G\)</span> <strong>plus edges to ground at <span class="math inline">\(H_t\)</span></strong>: the walk leaks out at the heavy vertices, and their return probability drops.</li>
@@ -418,7 +472,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
       }</style></aside>
 </section>
 <section class="slide level2 scrollable">
-<h2>Case (b): spread plays are rounded</h2>
+<h2>Case (c): spread plays are rounded</h2>
 <div class="lem">
 <p><strong>Rounding (stated).</strong> If <span class="math inline">\(\langle\mathcal L,Y\rangle&lt;\gamma\)</span> and the light share is at least <span class="math inline">\(\frac12\)</span> (the light vertices, <span class="math inline">\(\|v_i\|^2&lt;\frac{16}b\)</span>, hold at least half the variance), then for a Gaussian <span class="math inline">\(g\)</span>, with constant probability, a sweep cut of <span class="math inline">\(y_i=\langle v_i,g\rangle\)</span> is <span class="math inline">\(\Omega(b)\)</span>-balanced with <span class="math inline">\(\Phi=O(\sqrt\gamma)\)</span> (constants depend on <span class="math inline">\(b\)</span>).</p>
 </div>
