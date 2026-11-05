@@ -17,16 +17,21 @@ format:
 
 ## Where we are
 
-- **Lecture 10 deck (first half of today):** the MMWU, **centers**, and the local-norm regret bound; with Laplacian losses the plays are **heat kernels**; Fiedler finds whiskers; $\mathrm{SDP}(b)$ adds a **spread constraint**.
-- **Now:** solve $\mathrm{SDP}(b)$ approximately by playing the MMWU against an **oracle**, and read off either a balanced sparse cut or a **certificate** that none exists.
+
+- **Today:** solve the **feasibility version** of $\mathrm{SDP}(b)$ approximately by playing the MMWU against an **oracle**, and read off either a balanced sparse cut or a **certificate** that none exists.
 
 ::: {.defn}
-**In density-matrix form.** With $\Pi=\operatorname{diag}(\pi)$ and the Gram matrix $X$ of the $v_i$, set $Y=\Pi^{1/2}X\Pi^{1/2}$. Then
-\begin{align*}
-\mathrm{SDP}(b) : &\min\ \langle\mathcal L,Y\rangle \\
- \text{s.t.}& Y\succeq0,\ \operatorname{tr}Y=1,\ Y\sqrt\pi=0\\ 
-& \|v_i\|^2=\frac{Y_{ii}}{\pi_i}\le\frac1b .
-\end{align*}
+**Is $\mathrm{SDP}(b)\le\gamma$?** With $\Pi=\operatorname{diag}(\pi)$ and the Gram matrix $X$ of the $v_i$, set $Y=\Pi^{1/2}X\Pi^{1/2}$.
+
+\begin{alignat*}{2}
+&\textbf{Vector form} &\qquad\qquad&\textbf{Density-matrix form}\\[4pt]
+\text{find}\ &v_1,\dots,v_n\in\mathbb R^n &\qquad\qquad\text{find}\ &Y\succeq0\\
+\text{s.t.}\ &\frac1{\mathrm{vol}(V)}\sum_{\{i,j\}\in E}w_{ij}\|v_i-v_j\|^2\le\gamma, &\text{s.t.}\ &\langle\mathcal L,Y\rangle\le\gamma,\\
+&\sum_i\pi_iv_i=0, &&Y\sqrt\pi=0,\\
+&\sum_i\pi_i\|v_i\|^2=1, &&\operatorname{tr}Y=1,\\
+&\|v_i\|^2\le\tfrac1b\ \ \forall i, &&\frac{Y_{ii}}{\pi_i}\le\tfrac1b\ \ \forall i.
+\end{alignat*}
+
 The plays are density matrices on $W=\sqrt\pi^{\perp}$, the space where $\mathcal L\succeq\lambda_2 I$.
 :::
 
@@ -34,11 +39,42 @@ The plays are density matrices on $W=\sqrt\pi^{\perp}$, the space where $\mathca
 ~2 min. Check the translation: tr Y = Σπ_i‖v_i‖² = 1; Y√π = 0 iff Σπ_i v_i = 0; ⟨L, X⟩/vol(V) = ⟨D^{-1/2} L D^{-1/2}, Y⟩ = ⟨𝓛, Y⟩ because Π = D/vol(V). From here on "the embedding" means the v_i read off from Y.
 :::
 
+## A first candidate: the heat kernel at $\tau_0$
+
+Try $\ Y=\dfrac{e^{-\tau_0\mathcal L}}{\operatorname{tr}e^{-\tau_0\mathcal L}}$ on $W$, $\ \tau_0=\dfrac{8\ln n}\gamma$, and check the constraints:
+
+- $Y\sqrt\pi=0$, $Y\succeq0$: by construction. **Variance** $\operatorname{tr}Y=\sum_i\pi_i\|v_i\|^2=1$: just a **normalization**, since an embedding's scale is arbitrary.
+- **Energy** $\langle\mathcal L,Y\rangle\le\gamma$: large $\tau_0$ keeps only the directions of energy $\approx\lambda_2$.
+- **Spread** $\|v_i\|^2\le\frac1b$: **every vector is short**, so no small set can hold much of the variance. This is the constraint that fails.
+- **Heavy and light sets.** $\ H=\{i:\|v_i\|^2\ge\frac{16}b\}$, $\ L=V\setminus H$. The algorithm asks less than spread: is **most of the variance on $L$**?
+
+<iframe class="demo-frame" style="height:410px" src="demos/heat-candidate-demo.html"></iframe>
+
+<p class="tiny muted">Standalone: <a href="demos/heat-candidate-demo.html" target="_blank">demos/heat-candidate-demo.html</a>. Data: <code>scripts/heat_candidate_demo.py</code>.</p>
+
+::: notes
+~4 min. Go through the graphs in order (b = 1/4, γ = 0.02, so 1/b = 4; heavy threshold c/b with c = 16 as in the algorithm).
+
+- Two expanders: Y ≈ the Fiedler vector, ‖v_i‖² ≈ 1 everywhere, energy λ₂ = 0.011: feasible. Round.
+- Lecture 10 graph: energy 0.003 is fine, but max ‖v_i‖² = 27 > 1/b: infeasible. The heat kernel mixes all the near-λ₂ whisker modes. With c = 16 nothing is heavy (27 < 64), so the oracle rounds (round 1 of the example later). Switch to c = 4: the tip of one long whisker becomes heavy (2.2% of the volume, 51% of the variance), and the oracle penalizes instead.
+- 8-regular expander + one whisker: Y is essentially the whisker's own mode, max ‖v_i‖² = 119. Heavy even at c = 16: 0.7% of the volume, 75% of the variance. Penalize.
+- Expander: energy ≈ λ₂ = 0.15 > γ, and every Y on W has ⟨𝓛,Y⟩ ≥ λ₂, so SDP(b) > γ: certify. (Slide γ above 0.15 to see the energy constraint hold.)
+- Grid: feasible, max ‖v_i‖² ≈ 1.9. Round.
+
+Takeaway: centering, normalization, and energy come for free from the heat kernel; spread is the only constraint we have to work for, and we never enforce it exactly. The oracle only compares the heavy share to ½. The constant c = 16 is chosen for the proofs and is pessimistic: on these graphs only a very concentrated play gets penalized.
+:::
+
 ## Plan
 
-- **§1 The loop.** Start at a heat kernel; three cases: high energy **certifies**, concentrated is **penalized**, spread is **rounded**.
-- **§2 Why it ends.** A center $+$ local norms $\Rightarrow$ $O(\log n)$ rounds, independent of $\gamma$.
-- **§3 Computing the plays.** $e^{-A}v$ in $\tilde O(m)$.
+- **§1 The loop.** 
+  - Start at a heat kernel with $t = \tau_0 = \frac{8\ln n}{\gamma}$;
+  - Given current heat-kernel embeddings, three cases:
+    1. high energy **certifies** $\mathrm{SDP}(b) \geq \gamma$,
+    2. if the heavy set $H_t$ has high variance, it is **penalized**,
+    3. if the light set $L_t$ has high variance, it is **rounded**.
+
+- **§2 Why it ends.** Centered local-norm regret bound for MMWU yields $T = O(\log n)$ rounds, independent of $\gamma$.
+- **§3 Computing the plays.** $e^{- \tau_0 L + M}v$ in $\tilde O(m)$ for diagonal M.
 
 ::: notes
 ~1 min. Throughout: b ∈ (0, ½] is a constant, γ ∈ (0, 1]. Constants (16/b, 2γ, τ₀ = 8 ln n/γ, η = 1/(4γ), T = ⌈32 ln n⌉) are chosen to make the proofs one line each, not to be optimal.
@@ -53,13 +89,16 @@ Notation: $P$ projects onto $W$; $\ \Delta_H=P\operatorname{diag}(\mathbf 1_H)P$
 ::: {.defn}
 **BalSep$(G,b,\gamma)$.** $\ \tau_0=\frac{8\ln n}\gamma$, $\ \eta=\frac1{4\gamma}$, $\ T=\lceil32\ln n\rceil$, $\ S_0=0$. For $t=1,\dots,T$:
 
-1. **Play** $\ Y_t=\dfrac{e^{-\tau_0\mathcal L-\eta S_{t-1}}}{\operatorname{tr}e^{-\tau_0\mathcal L-\eta S_{t-1}}}$ on $W$: **FTRL with center $C\propto e^{-\tau_0\mathcal L}$**.<br>
-Read off $\|v_i\|^2=(Y_t)_{ii}/\pi_i$, the **heavy set** $H_t=\{i:\|v_i\|^2\ge\frac{16}b\}$ and the light set $L_t=V\setminus H_t$.
-2. **Oracle:**
+1.  **FTRL with center $C\propto e^{-\tau_0\mathcal L}$**.<br>
+**Play** $\ Y_t=\dfrac{e^{-\tau_0\mathcal L-\eta S_{t-1}}}{\operatorname{tr}e^{-\tau_0\mathcal L-\eta S_{t-1}}}$ on $W$.
+2. Read off $\|v_i\|^2=(Y_t)_{ii}/\pi_i$ to define:
+    - the **heavy set** $H_t=\{i:\|v_i\|^2\ge\frac{16}b\}$,
+    - and the light set $L_t=V\setminus H_t$.
+3. **Oracle:**
    (a) if $\ \langle\mathcal L,Y_t\rangle\ge\gamma$: **stop**, certify;
-   (c) else if the heavy share $\ \langle\Delta_{H_t},Y_t\rangle\ge\frac12$: $\ M_t=2\gamma\,\Delta_{H_t}$;
-   (b) else (light share $\langle\Delta_{L_t},Y_t\rangle>\frac12$): **round** $Y_t$, output the cut, **stop**.
-3. $S_t=S_{t-1}+M_t$.
+   (b) else if the heavy share $\ \langle\Delta_{H_t},Y_t\rangle\ge\frac12$: $\ M_t=2\gamma\,\Delta_{H_t}$;
+   (c) else (light share $\langle\Delta_{L_t},Y_t\rangle>\frac12$): **round** $Y_t$, output the cut, **stop**.
+4. $S_t=S_{t-1}+M_t$.
 
 If the loop finishes, **certify**: every $b$-balanced $S$ has $\Phi(S)\ge\gamma/8$.
 :::
@@ -76,7 +115,7 @@ A play $Y$ is an embedding with **total variance** $\operatorname{tr}Y=\sum_i\pi
 $$1=\underbrace{\langle\Delta_H,Y\rangle}_{\text{variance on }H}+\underbrace{\langle\Delta_L,Y\rangle}_{\text{variance on }L},\qquad\langle\Delta_H,Y\rangle=\sum_{i\in H}\pi_i\|v_i\|^2 .$$
 
 - **Spread constraint** $\|v_i\|^2\le\frac1b$, in these terms: every set $H$ holds at most $\frac{\pi(H)}b$ of the variance.
-- The oracle splits $V$ into **heavy** $H_t=\{i:\|v_i\|^2\ge\frac{16}b\}$ and **light** $L_t=V\setminus H_t$.
+- Recall the **heavy** set $H_t=\{i:\|v_i\|^2\ge\frac{16}b\}$ and the **light** set $L_t=V\setminus H_t$ of the play $Y_t$.
 
 ::: {.lem}
 **Heavy sets are small (Markov).** $\ \frac{16}b\,\pi(H_t)\le\langle\Delta_{H_t},Y_t\rangle\le1$, so $\ \pi(H_t)\le\frac b{16}$.
@@ -85,8 +124,8 @@ $$1=\underbrace{\langle\Delta_H,Y\rangle}_{\text{variance on }H}+\underbrace{\la
 | | energy $\langle\mathcal L,Y_t\rangle$ | variance split | action |
 |:--|:--|:--|:--|
 | (a) | $\ge\gamma$ | — | **certify** |
-| (c) | $<\gamma$ | heavy share $\ge\frac12$: half the variance on volume $\le\frac b{16}$ | **penalize** $H_t$ |
-| (b) | $<\gamma$ | light share $>\frac12$: variance spread over volume $\Omega(b)$ | **round** |
+| (b) | $<\gamma$ | heavy share $\ge\frac12$: half the variance on volume $\le\frac b{16}$ | **penalize** $H_t$ |
+| (c) | $<\gamma$ | light share $>\frac12$: variance spread over volume $1 - O(b)$ | **round** |
 
 ::: notes
 ~3 min. Energy is per unit variance: since tr Y = 1, ⟨𝓛, Y⟩ is the Rayleigh quotient of the embedding. Heavy vertices violate the spread constraint by a factor 16. The penalty 2γΔ_{H_t} is a tax on the variance held by H_t. The comparator table on the next slide uses the same language: a balanced cut satisfies the spread constraint, so a small set holds little of its variance.
@@ -117,19 +156,20 @@ So $D(U_S\Vert C)=O(\log n)$ exactly when $\bar\phi(S)=O(\gamma)$: with the heat
 :::
 
 ::: {.pf}
-*Proof.* $Y_t$ minimizes $F(Y)=\eta\langle S_{t-1},Y\rangle+D(Y\Vert C)$ over density matrices on $W$ (Gibbs), so $F(Y_t)\le F(U_S)$. Expand both sides with $\log C=-\tau_0\mathcal L-\ln Z$:
-$$\underbrace{\eta\langle S_{t-1},Y_t\rangle}_{\ge0}+\underbrace{\operatorname{tr}Y_t\log Y_t}_{\ge-\ln n}+\tau_0\langle\mathcal L,Y_t\rangle+\ln Z\ \le\ \underbrace{\eta\langle S_{t-1},U_S\rangle}_{\le\eta(t-1)\frac{2\gamma}{16}\le\ln n}+\tau_0\,\bar\phi(S)+\ln Z .$$
-So $\langle\mathcal L,Y_t\rangle\le\bar\phi(S)+\frac{2\ln n}{\tau_0}=\bar\phi(S)+\frac\gamma4$. $\square$
+*Proof.* **Softmin** (Gibbs): $\ \operatorname{softmin}(A):=-\ln\operatorname{tr}_We^{-A}=\min_Y\big\{\langle A,Y\rangle+\operatorname{tr}Y\log Y\big\}$, attained at $Y\propto e^{-A}$.
+The play is $Y_t\propto e^{-A_t}$ with $A_t=\tau_0\mathcal L+\eta S_{t-1}$, and $U_S$ is pure (entropy $0$), so
+$$\tau_0\langle\mathcal L,Y_t\rangle-\ln n\ \le\ \operatorname{softmin}(A_t)\ \le\ \langle A_t,U_S\rangle=\tau_0\,\bar\phi(S)+\underbrace{\eta\langle S_{t-1},U_S\rangle}_{\le\eta(t-1)\frac{2\gamma}{16}\le\ln n},$$
+using $S_{t-1}\succeq0$ and $\operatorname{tr}Y\log Y\ge-\ln n$ on the left. So $\langle\mathcal L,Y_t\rangle\le\bar\phi(S)+\frac{2\ln n}{\tau_0}=\bar\phi(S)+\frac\gamma4$. $\square$
 :::
 
-- $\ln Z$ cancels: the center only enters through **energies**.
+- The center enters only through the exponent $\tau_0\mathcal L$: no $\ln Z$ or $D(\cdot\Vert C)$ needed.
 - Read it as: **the play's energy is at most the best balanced cut's, plus $\gamma/4$**.
 
 ::: notes
 ~4 min. The penalty bound uses the comparator table (penalty row) and the heavy-set lemma ("Reading a play" slide): π(H_s) ≤ b/16, so ⟨Δ_{H_s}, U_S⟩ ≤ 1/16, and η(t−1)·2γ/16 = (t−1)/32 ≤ T/32 ≈ ln n. With τ₀ = 8 ln n/γ, 2 ln n/τ₀ = γ/4. In the uncentered loop, a high-energy round was a loss 𝓛 with width 2 and gain only γ, which is what cost log n/γ rounds.
 :::
 
-## Case (c): concentrated plays are penalized
+## Case (b): concentrated plays are penalized
 
 **Low energy, heavy share $\ge\frac12$:** half the variance sits on $H_t$, a set of volume $\le\frac b{16}$. The loss $M_t=2\gamma\,\Delta_{H_t}$ **taxes the variance on $H_t$**:
 $$\langle M_t,Y_t\rangle=2\gamma\cdot\underbrace{\langle\Delta_{H_t},Y_t\rangle}_{\text{heavy share}}\ \ge\ \gamma,\qquad 0\preceq M_t\preceq2\gamma I .$$
@@ -158,7 +198,7 @@ $$x^\top\Delta_Hx=\sum_{i\in H}\pi_i\,(y_i-0)^2 .$$
 ~2 min. Dual solution when the loop runs out (notes §3): the regret bound with U = the bottom eigenvector of τ₀𝓛 + ηΣM_t gives τ₀𝓛 + ηΣ_t M_t ⪰ 3 ln n·I on W; divide by τ₀ to get 𝓛 + diag(β) ⪰ (3/8)γ with dual value ≥ γ/4 − γ/(256 ln n) (T = ⌈32 ln n⌉ may exceed 32 ln n). Compare Lecture 9: grounding a vertex is a Dirichlet boundary condition.
 :::
 
-## Case (b): spread plays are rounded
+## Case (c): spread plays are rounded
 
 ::: {.lem}
 **Rounding (stated).** If $\langle\mathcal L,Y\rangle<\gamma$ and the light share is at least $\frac12$ (the light vertices, $\|v_i\|^2<\frac{16}b$, hold at least half the variance), then for a Gaussian $g$, with constant probability, a sweep cut of $y_i=\langle v_i,g\rangle$ is $\Omega(b)$-balanced with $\Phi=O(\sqrt\gamma)$ (constants depend on $b$).
