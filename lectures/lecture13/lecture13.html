@@ -151,7 +151,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <h2>Variance and entropy</h2>
 <p>For <span class="math inline">\(f:\Omega\to\mathbb R\)</span> and a probability measure <span class="math inline">\(\pi\)</span>:</p>
 <div class="defn">
-<p><span class="math display">\[\operatorname{Var}_\pi(f)=\mathbb E_\pi[f^2]-(\mathbb E_\pi f)^2,\qquad\qquad\operatorname{Ent}_\pi(f)=\mathbb E_\pi[f\log f]-\mathbb E_\pi f\,\log\mathbb E_\pi f\quad(f\ge0).\]</span></p>
+<p><span class="math display">\[\operatorname{Var}_\pi(f)=\mathbb E_\pi[f^2]-(\mathbb E_\pi f)^2,\]</span> <span class="math display">\[\operatorname{Ent}_\pi(f)=\mathbb E_\pi[f\log f]-\mathbb E_\pi f\,\log\mathbb E_\pi f\qquad(f\ge0).\]</span></p>
 </div>
 <ul>
 <li><strong>Same shape:</strong> both are <span class="math inline">\(\ \mathbb E_\pi\,\phi(f)-\phi(\mathbb E_\pi f)\)</span>, with <span class="math inline">\(\phi(x)=x^2\)</span> and <span class="math inline">\(\phi(x)=x\log x\)</span>. Both are <span class="math inline">\(\ge0\)</span> by <strong>Jensen</strong>, and <span class="math inline">\(=0\)</span> iff <span class="math inline">\(f\)</span> is constant.</li>
@@ -178,14 +178,17 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <p>From Lecture 4, for the continuous-time walk <span class="math inline">\(h_t=H_th_0\)</span>, <span class="math inline">\(\ H_t=e^{-tL_{rw}}\)</span>:</p>
 <ul>
 <li><strong>Entropy dissipation:</strong> <span class="math inline">\(\ \dfrac d{dt}\operatorname{Ent}_\pi(h_t)=-\mathcal E(h_t,\log h_t)\)</span>.</li>
-<li><strong>MLSI</strong> <span class="math inline">\(\ \rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)\)</span> gives <span class="math inline">\(\ D(\mu_t\Vert\pi)\le e^{-\rho_0t}D(\mu_0\Vert\pi)\)</span> and <span class="math display">\[t_{\rm mix}(\varepsilon)\le\frac1{\rho_0}\Big(\log\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon^2}\Big)\qquad\text{vs.}\qquad\frac1\lambda\Big(\frac12\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon}\Big).\]</span></li>
+<li><strong>MLSI</strong> <span class="math inline">\(\ \rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)\)</span> gives <span class="math inline">\(\ D(\mu_t\Vert\pi)\le e^{-\rho_0t}D(\mu_0\Vert\pi)\)</span> and <span class="math display">\[t_{\rm mix}(\varepsilon)\le\frac1{\rho_0}\Big(\log\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon^2}\Big),\]</span> versus the gap bound <span class="math inline">\(\ t_{\rm mix}(\varepsilon)\le\frac1\lambda\big(\frac12\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon}\big)\)</span>.</li>
 <li><strong>The price:</strong> <span class="math inline">\(\ \rho_0\le2\lambda\)</span> (linearize at <span class="math inline">\(\pi\)</span>).</li>
 </ul>
 <div class="idea">
-<p><strong>Open since Lecture 4:</strong> how do we bound <span class="math inline">\(\rho_0\)</span> <strong>from below</strong>? Today: by reducing a big chain to small ones.</p>
+<p><strong>Open since Lecture 4:</strong> how do we bound <span class="math inline">\(\rho_0\)</span> <strong>from below</strong>? Today: by reducing a big chain to small ones (<strong>tensorization</strong>).</p>
+</div>
+<div class="warn">
+<p><strong>Why bother, when the hypercube can be solved exactly?</strong> Exact formulas need exact independence. We want a <strong>method</strong> that also works for chains we cannot solve: other edge rates, non-product <span class="math inline">\(\pi\)</span>, Glauber dynamics. The hypercube is the <strong>test case</strong>: the method should recover its cutoff, constant included.</p>
 </div>
 <aside class="notes">
-<p>~2 min. Keep this short; everything here was proved in Lecture 4. Lecture 5’s table ended with an “entropy + LSI” entry for the hypercube that we never justified: today we do.</p>
+<p>~3 min. Keep the recap short; everything here was proved in Lecture 4. Lecture 5’s table ended with an “entropy + LSI” entry for the hypercube that we never justified: today we do. Say the “why bother” box out loud, because students will notice it on their own: on the hypercube, the distribution from a vertex is a product, so TV, KL and χ² can all be computed in closed form, and that already proves the cutoff. LSI earns its place because it is an inequality for every test function. It transfers by comparison of Dirichlet forms, survives bounded changes of π, extends to weakly dependent coordinates, and gives concentration and hypercontractivity. Exact formulas do none of this.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -201,7 +204,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <section class="slide level2">
 <h2>Plan</h2>
 <ul>
-<li><strong>§1 Why tensorize.</strong> The hypercube resists our tools; independence suggests the answer; Gross’s log-Sobolev inequality.</li>
+<li><strong>§1 Why tensorize.</strong> The hypercube resists our tools; independence gives the answer, but only for exact products; Gross’s log-Sobolev inequality.</li>
 <li><strong>§2 Tensorization.</strong> Product chains; variance (Efron–Stein) and entropy tensorize.</li>
 <li><strong>§3 The hypercube, solved.</strong> The two-point inequality, <span class="math inline">\(\rho_0=4/d\)</span>, mixing at the cutoff.</li>
 <li><strong>§4 Payoffs and limits.</strong> Concentration, hypercontractivity, where LSI is weak, the continuum.</li>
@@ -321,10 +324,15 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <td style="text-align: left;">needs <span class="math inline">\(\rho_0\)</span> of a chain with <span class="math inline">\(2^d\)</span> states</td>
 <td style="text-align: left;"><strong>?</strong></td>
 </tr>
+<tr class="even">
+<td style="text-align: left;">exact computation (bits independent)</td>
+<td style="text-align: left;"><span class="math inline">\(\frac d4\log d\)</span> (next slide)</td>
+<td style="text-align: left;">exact, <strong>only for exact products</strong></td>
+</tr>
 </tbody>
 </table>
 <div class="idea">
-<p>The geometric tools see <strong>one big graph</strong>. The truth comes from <strong>structure</strong>: <span class="math inline">\(d\)</span> independent bits, each updated at rate <span class="math inline">\(\frac1d\)</span>.</p>
+<p>The geometric tools see <strong>one big graph</strong>. The truth comes from <strong>structure</strong>: <span class="math inline">\(d\)</span> independent bits, each updated at rate <span class="math inline">\(\frac1d\)</span>. Exact computation uses that structure but breaks once the bits are not exactly independent. <strong>Goal:</strong> an <em>inequality</em> that captures it.</p>
 </div>
 <aside class="notes">
 <p>~3 min. Canonical paths: bit-fixing, every edge carries 2^d ordered pairs, paths of length ≤ d, so κ ≤ d·2^d and λ₂(L) ≥ 2n/κ = 2/d; the graph is d-regular so λ = λ₂(L)/d ≥ 2/d². Cheeger: the half-cube {x₁ = 0} has Φ = 1/d; the Cheeger upper side λ ≤ 2Φ = 2/d is tight here, the lower side loses d.&nbsp;χ²: π_min = 2^{−d}, so ½ log(1/π_min) = (d log 2)/2 and the bound is (d/2)·(d log 2)/2 ≈ 0.17 d².</p>
@@ -341,18 +349,48 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
       }</style></aside>
 </section>
 <section class="slide level2">
-<h2>Independence suggests the answer</h2>
-<p>From a vertex, <span class="math inline">\(\delta_xH_t\)</span> is a <strong>product measure</strong>: each bit is flipped independently with probability <span class="math inline">\(p_t=\frac12(1-e^{-2t/d})\)</span>.</p>
+<h2>Independence gives the answer</h2>
+<p><strong>Why a product.</strong> Flipping a uniform coordinate at rate <span class="math inline">\(1\)</span> <span class="math inline">\(=\)</span> giving each coordinate its own rate-<span class="math inline">\(\frac1d\)</span> Poisson clock. Bit <span class="math inline">\(i\)</span> is flipped iff its clock rang an odd number of times, independently over <span class="math inline">\(i\)</span>: <span class="math display">\[\mu_t=\delta_xH_t:\quad y_i=x_i\oplus\xi_i,\quad\xi_i\overset{\text{iid}}\sim\mathrm{Bern}(p_t),\quad p_t=\Pr\big[\mathrm{Poi}(\tfrac td)\ \text{odd}\big]=\tfrac12\big(1-e^{-2t/d}\big).\]</span> So the density factors: <span class="math inline">\(\ h_t=\frac{d\mu_t}{d\pi}=\prod_ih_i(y_i)\)</span>, with <span class="math inline">\(h_i\in\{2p_t,\ 2(1-p_t)\}\)</span>.</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">combines by</th>
+<th style="text-align: left;">one coordinate</th>
+<th style="text-align: left;">from a vertex</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(D=\mathbb E_{\mu_t}[\log h_t]\)</span></td>
+<td style="text-align: left;"><strong>adds</strong> (<span class="math inline">\(\log\)</span> of a product)</td>
+<td style="text-align: left;"><span class="math inline">\(\mathrm{KL}_i\in\big[\frac12,\log2\big]\cdot e^{-4t/d}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\frac d2e^{-4t/d}\le D\le(d\log2)\,e^{-4t/d}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(1+\chi^2=\mathbb E_\pi[h_t^2]\)</span></td>
+<td style="text-align: left;"><strong>multiplies</strong> (independence under <span class="math inline">\(\pi\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(\chi_i^2=(1-2p_t)^2=e^{-4t/d}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(1+\chi^2=(1+e^{-4t/d})^d\)</span></td>
+</tr>
+</tbody>
+</table>
 <ul>
-<li><strong>Relative entropy adds</strong> (chain rule): <span class="math display">\[D(\delta_xH_t\Vert\pi)=d\cdot\mathrm{KL}\big(\mathrm{Bern}(p_t)\Vert\mathrm{Bern}(\tfrac12)\big)\approx\frac d2\,e^{-4t/d},\qquad O(1)\ \text{at}\ t\approx\frac d4\log d .\]</span></li>
-<li><strong><span class="math inline">\(\chi^2\)</span> multiplies:</strong> <span class="math inline">\(\ 1+\chi^2=\prod_i(1+\chi_i^2)=(1+e^{-4t/d})^d\)</span>. Its burn-in is <span class="math inline">\(\log\frac1{\pi_{\min}}=d\log2\)</span>: the lost factor of <span class="math inline">\(d\)</span>.</li>
+<li><strong>Exact values:</strong> both are <span class="math inline">\(O(1)\)</span> once <span class="math inline">\(de^{-4t/d}=O(1)\)</span>, i.e.&nbsp;at <span class="math inline">\(t\approx\frac d4\log d\)</span> (use <span class="math inline">\((1+x)^d\le e^{dx}\)</span>). This is the cutoff.</li>
+<li><strong>Generic bounds</strong> <span class="math inline">\(e^{-\rho_0t}D(0)\)</span> and <span class="math inline">\(e^{-2\lambda t}\chi^2(0)\)</span> (both at rate <span class="math inline">\(\frac4d\)</span> here, §3) pay <span class="math inline">\(\log(\text{start})\)</span> as burn-in: <span class="math inline">\(\ \log D(0)=\log(d\log2)\)</span> vs.&nbsp;<span class="math inline">\(\log\chi^2(0)\approx d\log2=\log\frac1{\pi_{\min}}\)</span>. <strong>Additive vs.&nbsp;multiplicative is the lost factor <span class="math inline">\(\frac d{\log d}\)</span>.</strong></li>
 </ul>
 <div class="fragment">
 <div class="warn">
-<p><strong>But this used a product start.</strong> A general initial distribution, or the test function <span class="math inline">\(h\)</span> in a functional inequality, is <strong>not</strong> a product. We need: <em>if each coordinate satisfies an inequality with constant <span class="math inline">\(c\)</span>, the product satisfies it with constant <span class="math inline">\(c/d\)</span>, for every <span class="math inline">\(h\)</span>.</em> That is <strong>tensorization</strong>.</p>
+<p><strong>But this used exact independence of the dynamics.</strong> Change the edge rates, tilt <span class="math inline">\(\pi\)</span>, or couple the coordinates, and there’s no formula left. We want an <em>inequality</em>, valid for every <span class="math inline">\(h\)</span>, that holds for each coordinate with constant <span class="math inline">\(c\)</span> and for the product with constant <span class="math inline">\(c/d\)</span>, and that survives comparison and perturbation. That is <strong>tensorization</strong>.</p>
 </div>
 <aside class="notes">
-<p>~3 min. KL(Bern(½ − δ) ‖ Bern(½)) ≈ 2δ² with δ = e^{−2t/d}/2. Entropy is additive and χ² is multiplicative; that is the whole difference between the two burn-ins. The heuristic already gives the right answer, constant included; §2–§3 make it a theorem.</p>
+<p>~4 min. Poisson thinning: a rate-1 clock whose rings pick a uniform coordinate is the same as d independent rate-1/d clocks, one per coordinate. Pr[Poi(s) odd] = e^{−s} sinh s = (1 − e^{−2s})/2. Density: h_i = 2(1 − p_t) at y_i = x_i and 2p_t otherwise. χ²: 𝔼h_i² = 2(p² + (1−p)²) = 1 + (1−2p)². KL with u = 1 − 2p_t = e^{−2t/d}: KL_i = ½[(1+u)log(1+u) + (1−u)log(1−u)] = Σ_{k≥1} u^{2k}/(2k(2k−1)), which lies between u²/2 (first term) and u² log 2 (since Σ 1/(2k(2k−1)) = log 2). The upper bound d log 2 · e^{−4t/d} is exactly the MLSI bound with ρ₀ = 4/d from §3. D = d·KL is an equality because μ_t is itself a product, so the chain rule has no correlation term. Make sure the class sees that the exact χ² also gives the cutoff. What loses the factor is the generic bound: χ²(0) = 2^d − 1, and in Fourier terms χ²_t = Σ_k C(d,k) e^{−4kt/d}. Most of that mass sits on characters of degree ≈ d/2, which decay at rate ≈ 2, but the gap bound charges all of it the slowest rate 4/d.&nbsp;Be upfront: for the hypercube this computation is already a complete proof of the cutoff. TV, KL and χ² are convex in the initial distribution, so the worst start is a point mass, and every δ_xH_t is a product (the same holds for any product chain with independent clocks). LSI is not needed for this chain. What we want is the robust tool: an inequality for every h that transfers by comparison of Dirichlet forms, survives bounded perturbations of π (Holley–Stroock), extends to approximate tensorization for Glauber dynamics, and yields concentration and hypercontractivity. The hypercube is the calibration case: §2–§3 show that this route recovers the exact answer, constant included, so it loses nothing where we can check it. Also note that Poincaré tensorizes perfectly (λ = 2/d exactly), yet χ² + gap still loses d/log d.&nbsp;The loss comes from χ²(0) = 2^d − 1, not from the constant, which is why we tensorize entropy.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -369,7 +407,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <section class="slide level2">
 <h2>Which inequality should we tensorize?</h2>
 <p>Two candidates for bounding <span class="math inline">\(\rho_0\)</span> (both tensorize once <strong>entropy</strong> does, §2):</p>
-<p><span class="math display">\[\textbf{MLSI:}\ \ \rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)\qquad\qquad\textbf{LSI (Gross 1975):}\ \ \alpha\operatorname{Ent}_\pi(f^2)\le\mathcal E(f,f)\]</span></p>
+<p><span class="math display">\[\textbf{MLSI:}\ \ \rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)\]</span> <span class="math display">\[\textbf{LSI (Gross 1975):}\ \ \alpha\operatorname{Ent}_\pi(f^2)\le\mathcal E(f,f)\]</span></p>
 <p><strong>Why LSI:</strong> its right side is the <strong>quadratic form</strong> <span class="math inline">\(\mathcal E(f,f)\)</span>.</p>
 <ul>
 <li><strong>Base cases are calculus</strong> on a quadratic form: the two-point space in one slide (§3).</li>
@@ -498,7 +536,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <p><strong>Tensorization of entropy.</strong> For product <span class="math inline">\(\pi\)</span> and <span class="math inline">\(f\ge0\)</span>: <span class="math inline">\(\qquad\operatorname{Ent}_\pi f\ \le\ \sum_{i=1}^d\mathbb E_\pi\big[\operatorname{Ent}_if\big].\)</span></p>
 </div>
 <div class="pf">
-<p><em>Proof.</em> Same martingale: <span class="math inline">\(f_i=\mathbb E[f\mid x_1,\dots,x_i]\)</span>, and <span class="math inline">\(g_i=\log\frac{f_i}{f_{i-1}}\)</span>. Then <span class="math inline">\(\sum_ig_i=\log\frac f{\mathbb Ef}\)</span>, so by the equality case of the Lemma <span class="math display">\[\operatorname{Ent}_\pi f=\mathbb E\Big[f\sum_ig_i\Big]=\sum_i\mathbb E[fg_i].\]</span> Freeze all coordinates but <span class="math inline">\(x_i\)</span>. <span class="math inline">\(g_i\)</span> depends on <span class="math inline">\(x_1,\dots,x_i\)</span>, and by <strong>independence</strong> <span class="math inline">\(\ \mathbb E_i f_i=f_{i-1}\)</span>, so <span class="math display">\[\mathbb E_i\,e^{g_i}=\frac{\mathbb E_if_i}{f_{i-1}}=1\qquad\Longrightarrow\qquad\mathbb E_i[fg_i]\le\operatorname{Ent}_if\quad\text{(Lemma, in coordinate }i).\]</span> Average over the frozen coordinates and sum over <span class="math inline">\(i\)</span>. <span class="math inline">\(\square\)</span></p>
+<p><em>Proof.</em> Same martingale: <span class="math inline">\(f_i=\mathbb E[f\mid x_1,\dots,x_i]\)</span>, and <span class="math inline">\(g_i=\log\frac{f_i}{f_{i-1}}\)</span>. Then <span class="math inline">\(\sum_ig_i=\log\frac f{\mathbb Ef}\)</span>, so by the equality case of the Lemma <span class="math display">\[\operatorname{Ent}_\pi f=\mathbb E\Big[f\sum_ig_i\Big]=\sum_i\mathbb E[fg_i].\]</span> Freeze all coordinates but <span class="math inline">\(x_i\)</span>. <span class="math inline">\(g_i\)</span> depends on <span class="math inline">\(x_1,\dots,x_i\)</span>, and by <strong>independence</strong> <span class="math inline">\(\ \mathbb E_i f_i=f_{i-1}\)</span>, so <span class="math display">\[\mathbb E_i\,e^{g_i}=\frac{\mathbb E_if_i}{f_{i-1}}=1\qquad\Longrightarrow\qquad\mathbb E_i[fg_i]\le\operatorname{Ent}_if\]</span> by the Lemma, applied in coordinate <span class="math inline">\(i\)</span>. Average over the frozen coordinates and sum over <span class="math inline">\(i\)</span>. <span class="math inline">\(\square\)</span></p>
 </div>
 <aside class="notes">
 <p>~6 min. This is the key slide. The structure is identical to Efron–Stein: decompose along the martingale, then bound each increment by a one-coordinate quantity, using independence exactly once (𝔼_i f_i = f_{i−1}: integrating x_i out of 𝔼[f | x_1..x_i] gives 𝔼[f | x_1..x_{i−1}] because x_i is independent of the others). Where Efron–Stein used orthogonality and Jensen, this uses the variational formula. Without independence, the inequality can fail; with weak dependence it holds up to a constant (“approximate tensorization”).</p>
