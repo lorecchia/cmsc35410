@@ -50,3 +50,10 @@
 .reveal .tip { background: #eef8f6; border-left: 6px solid #1f9e89; border-radius: 6px; padding: 0.38em 0.7em; margin: 0.45em 0; }
 .reveal .tip > p:first-child { margin-top: 0.1em; } .reveal .tip > p:last-child { margin-bottom: 0.1em; }
 .reveal .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2em; }
+
+/* boxed environments: scroll horizontally instead of clipping wide content */
+.reveal .thm, .reveal .lem, .reveal .defn, .reveal .idea, .reveal .pf, .reveal .warn, .reveal .tip {
+  max-width: 100%; overflow-x: auto; }
+
+/* Quarto wraps display math in <span class="math display">: scroll that wrapper too */
+.reveal span.math.display { display: block; max-width: 100%; overflow-x: auto; overflow-y: hidden; }

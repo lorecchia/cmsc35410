@@ -67,17 +67,19 @@ For $v_1,\dots,v_m\in\mathbb R^n$ with $M=\sum_iv_iv_i^\top$ (rows of $A$, $M=A^
 **Three readings:**
 
 - **Size in isotropic position:** $u_i=M^{+/2}v_i$ satisfy $\sum_iu_iu_i^\top=\Pi_{\operatorname{im}M}$, and $\ell_i=\|u_i\|^2$.
-- **Hat matrix:** $\ell_i=\big(A(A^\top A)^+A^\top\big)_{ii}$; in least squares, $\ell_i=\partial\hat y_i/\partial y_i$.
+- **Statistics (hat matrix):** in least squares $\hat y=Hy$, $H=A(A^\top A)^+A^\top$, and $\ell_i=H_{ii}=\partial\hat y_i/\partial y_i$, the **self-influence** of observation $i$. With noise variance $\sigma^2$: $\operatorname{Var}\hat y_i=\sigma^2\ell_i$, $\ \operatorname{Var}(y_i-\hat y_i)=\sigma^2(1-\ell_i)$. At $\ell_i=1$ the fit passes through $y_i$: no other observation checks it.
 - **Dominance:** $\ \ell_i=\max_x\dfrac{(v_i^\top x)^2}{x^\top Mx}$: the largest share of the quadratic form that term $i$ can carry.
 
 **Properties:** $0\le\ell_i\le1$; $\ \sum_i\ell_i=\operatorname{rank}M=:r$; $\ \ell_i=1$ iff removing $v_i$ drops the rank.
 
 ::: {.thm}
 **Graphs.** $A=W^{1/2}B$, $M=L$, $v_e=\sqrt{w_e}\,b_e$: $\ \ell_e=w_e\,R_{\rm eff}(e)$. Foster's theorem is $\sum_e\ell_e=n-1$; $\ \ell_e=1$ iff $e$ is a bridge.
+
+*Statistically:* each edge measures a potential difference, $y_e=x_u-x_v+\text{noise}$ of variance $\frac1{w_e}$; the fit solves $Lx=B^\top Wy$, and $\ell_e$ is how much edge $e$'s own measurement fixes its fitted difference. A bridge is **unchecked**; an edge in a dense region is **corroborated** by many paths. Sampling by leverage keeps the measurements the others cannot predict.
 :::
 
 ::: notes
-~4 min. Dominance: Cauchy–Schwarz in the M-norm, (v_i^T x)² = (u_i^T M^{1/2}x)² ≤ ‖u_i‖² x^T M x for v_i ∈ im M, with equality at x = M^+ v_i. ℓ_i ≤ 1 because v_i v_i^T ⪯ M. Σℓ_i = tr(M^+ M) = rank. Lecture 9's reading for graphs: ℓ_e is the fraction of the unit u–v electrical flow that uses the edge e itself. A bridge carries all of it.
+~4 min. Dominance: Cauchy–Schwarz in the M-norm, (v_i^T x)² = (u_i^T M^{1/2}x)² ≤ ‖u_i‖² x^T M x for v_i ∈ im M, with equality at x = M^+ v_i. ℓ_i ≤ 1 because v_i v_i^T ⪯ M. Σℓ_i = tr(M^+ M) = rank. Lecture 9's reading for graphs: ℓ_e is the fraction of the unit u–v electrical flow that uses the edge e itself. A bridge carries all of it. More statistics, if asked: the leave-one-out residual is (y_i − ŷ_i)/(1 − ℓ_i) (the PRESS/LOOCV shortcut); Cook's distance is D_i = e_i² ℓ_i/(p s² (1 − ℓ_i)²); the average leverage is r/m, and the usual rule of thumb flags ℓ_i > 2r/m; with an intercept, ℓ_i = 1/m + MD_i²/(m − 1) (Mahalanobis distance of the design point). Ridge leverage x_i^T(A^TA + λI)^{-1}x_i sums to the effective degrees of freedom and drives Nyström/kernel sampling. Graph examples of the measurement model: ranking from pairwise comparisons, angular synchronization.
 :::
 
 ## A sparsifier is a sum close to the identity
@@ -99,11 +101,14 @@ $$(1-\varepsilon)M\preceq\widetilde M\preceq(1+\varepsilon)M\iff(1-\varepsilon)\
 
 ::: {.defn}
 **Leverage sampling** (Spielman–Srivastava 2008). Draw $i_1,\dots,i_q$ i.i.d. with $p_i=\ell_i/r$. Output
-$$\widetilde M=\sum_{t=1}^q\frac{v_{i_t}v_{i_t}^\top}{q\,p_{i_t}} .\qquad\text{Graphs: keep edge }e\text{ with weight }w_e\cdot\frac{\#\{t:i_t=e\}}{q\,p_e},\ \ p_e=\frac{w_eR_{\rm eff}(e)}{n-1}.$$
+$$\widetilde M=\sum_{t=1}^q\frac{v_{i_t}v_{i_t}^\top}{q\,p_{i_t}} .$$
+**Graphs:** sample edge $e$ with $p_e=\frac{w_eR_{\rm eff}(e)}{n-1}$,<br>
+ and keep it with weight $\ w_e\cdot\frac{\#\{t:i_t=e\}}{q\,p_e}$.
 :::
 
 In isotropic coordinates the samples are $Y_t=\dfrac{u_{i_t}u_{i_t}^\top}{q\,p_{i_t}}$:
-$$\mathbb EY_t=\frac\Pi q,\qquad 0\preceq Y_t\preceq\rho\,\Pi\ \ \text{with}\ \ \rho=\|Y_t\|=\frac{\ell_i}{q\,\ell_i/r}=\frac rq,\qquad\operatorname{tr}\sum_tY_t=r\ \text{exactly}.$$
+$$\mathbb EY_t=\frac\Pi q,\qquad 0\preceq Y_t\preceq\rho\,\Pi,\qquad\rho=\|Y_t\|=\frac{\ell_i}{q\,\ell_i/r}=\frac rq .$$
+Moreover $\operatorname{tr}\sum_tY_t=r$ **exactly**, for every sample.
 
 ::: {.thm}
 **Theorem.** For $\varepsilon\le1$ and $r\ge2$: with $q=36\,r\ln r/\varepsilon^2$ samples, with probability $\ge\frac13$, $\ (1-\varepsilon)M\preceq\widetilde M\preceq(1+\varepsilon)M$. Graphs: $O(n\log n/\varepsilon^2)$ edges.
@@ -166,7 +171,8 @@ $$\lambda_{\max}\Big(\sum_tY_t\Big)\ \le\ (1+\eta\rho)\sum_t\langle Y_t,X_t\rang
 **Take expectations.** $X_t$ depends only on $Y_1,\dots,Y_{t-1}$, and $Y_t$ is a fresh sample:
 $$\mathbb E\big[\langle Y_t,X_t\rangle\,\big|\,Y_{<t}\big]=\Big\langle\frac\Pi q,X_t\Big\rangle=\frac1q .$$
 So
-$$\mathbb E\,\lambda_{\max}\Big(\sum_tY_t\Big)\ \le\ 1+\varepsilon+\frac{\rho\ln r}\varepsilon=1+\varepsilon+\frac{r\ln r}{q\,\varepsilon}\ \le\ 1+2\varepsilon\quad\text{for }q\ge\frac{r\ln r}{\varepsilon^2}.$$
+$$\mathbb E\,\lambda_{\max}\Big(\sum_tY_t\Big)\ \le\ 1+\varepsilon+\frac{\rho\ln r}\varepsilon=1+\varepsilon+\frac{r\ln r}{q\,\varepsilon}\ \le\ 1+2\varepsilon\quad$$
+for $q\ge\frac{r\ln r}{\varepsilon^2}$
 
 ::: {.idea}
 The regret bound is **deterministic**; randomness enters only through one conditional expectation per round. The width enters as $\rho\ln r$: linear, thanks to local norms.

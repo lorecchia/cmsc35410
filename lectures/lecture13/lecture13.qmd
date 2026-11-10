@@ -20,7 +20,8 @@ format:
 For $f:\Omega\to\mathbb R$ and a probability measure $\pi$:
 
 ::: {.defn}
-$$\operatorname{Var}_\pi(f)=\mathbb E_\pi[f^2]-(\mathbb E_\pi f)^2,\qquad\qquad\operatorname{Ent}_\pi(f)=\mathbb E_\pi[f\log f]-\mathbb E_\pi f\,\log\mathbb E_\pi f\quad(f\ge0).$$
+$$\operatorname{Var}_\pi(f)=\mathbb E_\pi[f^2]-(\mathbb E_\pi f)^2,$$
+$$\operatorname{Ent}_\pi(f)=\mathbb E_\pi[f\log f]-\mathbb E_\pi f\,\log\mathbb E_\pi f\qquad(f\ge0).$$
 :::
 
 - **Same shape:** both are $\ \mathbb E_\pi\,\phi(f)-\phi(\mathbb E_\pi f)$, with $\phi(x)=x^2$ and $\phi(x)=x\log x$. Both are $\ge0$ by **Jensen**, and $=0$ iff $f$ is constant.
@@ -39,20 +40,25 @@ From Lecture 4, for the continuous-time walk $h_t=H_th_0$, $\ H_t=e^{-tL_{rw}}$:
 
 - **Entropy dissipation:** $\ \dfrac d{dt}\operatorname{Ent}_\pi(h_t)=-\mathcal E(h_t,\log h_t)$.
 - **MLSI** $\ \rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)$ gives $\ D(\mu_t\Vert\pi)\le e^{-\rho_0t}D(\mu_0\Vert\pi)$ and
-$$t_{\rm mix}(\varepsilon)\le\frac1{\rho_0}\Big(\log\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon^2}\Big)\qquad\text{vs.}\qquad\frac1\lambda\Big(\frac12\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon}\Big).$$
+$$t_{\rm mix}(\varepsilon)\le\frac1{\rho_0}\Big(\log\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon^2}\Big),$$
+  versus the gap bound $\ t_{\rm mix}(\varepsilon)\le\frac1\lambda\big(\frac12\log\frac1{\pi_{\min}}+\log\frac1{2\varepsilon}\big)$.
 - **The price:** $\ \rho_0\le2\lambda$ (linearize at $\pi$).
 
 ::: {.idea}
-**Open since Lecture 4:** how do we bound $\rho_0$ **from below**? Today: by reducing a big chain to small ones.
+**Open since Lecture 4:** how do we bound $\rho_0$ **from below**? Today: by reducing a big chain to small ones (**tensorization**).
+:::
+
+::: {.warn}
+**Why bother, when the hypercube can be solved exactly?** Exact formulas need exact independence. We want a **method** that also works for chains we cannot solve: other edge rates, non-product $\pi$, Glauber dynamics. The hypercube is the **test case**: the method should recover its cutoff, constant included.
 :::
 
 ::: notes
-~2 min. Keep this short; everything here was proved in Lecture 4. Lecture 5's table ended with an "entropy + LSI" entry for the hypercube that we never justified: today we do.
+~3 min. Keep the recap short; everything here was proved in Lecture 4. Lecture 5's table ended with an "entropy + LSI" entry for the hypercube that we never justified: today we do. Say the "why bother" box out loud, because students will notice it on their own: on the hypercube, the distribution from a vertex is a product, so TV, KL and χ² can all be computed in closed form, and that already proves the cutoff. LSI earns its place because it is an inequality for every test function. It transfers by comparison of Dirichlet forms, survives bounded changes of π, extends to weakly dependent coordinates, and gives concentration and hypercontractivity. Exact formulas do none of this.
 :::
 
 ## Plan
 
-- **§1 Why tensorize.** The hypercube resists our tools; independence suggests the answer; Gross's log-Sobolev inequality.
+- **§1 Why tensorize.** The hypercube resists our tools; independence gives the answer, but only for exact products; Gross's log-Sobolev inequality.
 - **§2 Tensorization.** Product chains; variance (Efron–Stein) and entropy tensorize.
 - **§3 The hypercube, solved.** The two-point inequality, $\rho_0=4/d$, mixing at the cutoff.
 - **§4 Payoffs and limits.** Concentration, hypercontractivity, where LSI is weak, the continuum.
@@ -91,38 +97,46 @@ $\{0,1\}^d$, $n=2^d$, flip a uniform coordinate at rate $1$: $\ \lambda=\frac2d$
 | Cheeger, $\Phi=\frac1d$ (Lecture 6) | $\lambda\ge\frac{\Phi^2}2=\frac1{2d^2}$ | off by $d$ |
 | $\chi^2$ + gap (Lecture 4) | $t_{\rm mix}\le\frac d2\big(\frac{d\log2}2+\log\frac1{2\varepsilon}\big)=\Theta(d^2)$ | off by $\frac d{\log d}$ |
 | entropy + MLSI | needs $\rho_0$ of a chain with $2^d$ states | **?** |
+| exact computation (bits independent) | $\frac d4\log d$ (next slide) | exact, **only for exact products** |
 
 ::: {.idea}
-The geometric tools see **one big graph**. The truth comes from **structure**: $d$ independent bits, each updated at rate $\frac1d$.
+The geometric tools see **one big graph**. The truth comes from **structure**: $d$ independent bits, each updated at rate $\frac1d$. Exact computation uses that structure but breaks once the bits are not exactly independent. **Goal:** an *inequality* that captures it.
 :::
 
 ::: notes
 ~3 min. Canonical paths: bit-fixing, every edge carries 2^d ordered pairs, paths of length ≤ d, so κ ≤ d·2^d and λ₂(L) ≥ 2n/κ = 2/d; the graph is d-regular so λ = λ₂(L)/d ≥ 2/d². Cheeger: the half-cube {x₁ = 0} has Φ = 1/d; the Cheeger upper side λ ≤ 2Φ = 2/d is tight here, the lower side loses d. χ²: π_min = 2^{−d}, so ½ log(1/π_min) = (d log 2)/2 and the bound is (d/2)·(d log 2)/2 ≈ 0.17 d².
 :::
 
-## Independence suggests the answer
+## Independence gives the answer
 
-From a vertex, $\delta_xH_t$ is a **product measure**: each bit is flipped independently with probability $p_t=\frac12(1-e^{-2t/d})$.
+**Why a product.** Flipping a uniform coordinate at rate $1$ $=$ giving each coordinate its own rate-$\frac1d$ Poisson clock. Bit $i$ is flipped iff its clock rang an odd number of times, independently over $i$:
+$$\mu_t=\delta_xH_t:\quad y_i=x_i\oplus\xi_i,\quad\xi_i\overset{\text{iid}}\sim\mathrm{Bern}(p_t),\quad p_t=\Pr\big[\mathrm{Poi}(\tfrac td)\ \text{odd}\big]=\tfrac12\big(1-e^{-2t/d}\big).$$
+So the density factors: $\ h_t=\frac{d\mu_t}{d\pi}=\prod_ih_i(y_i)$, with $h_i\in\{2p_t,\ 2(1-p_t)\}$.
 
-- **Relative entropy adds** (chain rule):
-$$D(\delta_xH_t\Vert\pi)=d\cdot\mathrm{KL}\big(\mathrm{Bern}(p_t)\Vert\mathrm{Bern}(\tfrac12)\big)\approx\frac d2\,e^{-4t/d},\qquad O(1)\ \text{at}\ t\approx\frac d4\log d .$$
-- **$\chi^2$ multiplies:** $\ 1+\chi^2=\prod_i(1+\chi_i^2)=(1+e^{-4t/d})^d$. Its burn-in is $\log\frac1{\pi_{\min}}=d\log2$: the lost factor of $d$.
+| | combines by | one coordinate | from a vertex |
+|:--|:--|:--|:--|
+| $D=\mathbb E_{\mu_t}[\log h_t]$ | **adds** ($\log$ of a product) | $\mathrm{KL}_i\in\big[\frac12,\log2\big]\cdot e^{-4t/d}$ | $\frac d2e^{-4t/d}\le D\le(d\log2)\,e^{-4t/d}$ |
+| $1+\chi^2=\mathbb E_\pi[h_t^2]$ | **multiplies** (independence under $\pi$) | $\chi_i^2=(1-2p_t)^2=e^{-4t/d}$ | $1+\chi^2=(1+e^{-4t/d})^d$ |
+
+- **Exact values:** both are $O(1)$ once $de^{-4t/d}=O(1)$, i.e. at $t\approx\frac d4\log d$ (use $(1+x)^d\le e^{dx}$). This is the cutoff.
+- **Generic bounds** $e^{-\rho_0t}D(0)$ and $e^{-2\lambda t}\chi^2(0)$ (both at rate $\frac4d$ here, §3) pay $\log(\text{start})$ as burn-in: $\ \log D(0)=\log(d\log2)$ vs. $\log\chi^2(0)\approx d\log2=\log\frac1{\pi_{\min}}$. **Additive vs. multiplicative is the lost factor $\frac d{\log d}$.**
 
 . . .
 
 ::: {.warn}
-**But this used a product start.** A general initial distribution, or the test function $h$ in a functional inequality, is **not** a product. We need: *if each coordinate satisfies an inequality with constant $c$, the product satisfies it with constant $c/d$, for every $h$.* That is **tensorization**.
+**But this used exact independence of the dynamics.** Change the edge rates, tilt $\pi$, or couple the coordinates, and there's no formula left. We want an *inequality*, valid for every $h$, that holds for each coordinate with constant $c$ and for the product with constant $c/d$, and that survives comparison and perturbation. That is **tensorization**.
 :::
 
 ::: notes
-~3 min. KL(Bern(½ − δ) ‖ Bern(½)) ≈ 2δ² with δ = e^{−2t/d}/2. Entropy is additive and χ² is multiplicative; that is the whole difference between the two burn-ins. The heuristic already gives the right answer, constant included; §2–§3 make it a theorem.
+~4 min. Poisson thinning: a rate-1 clock whose rings pick a uniform coordinate is the same as d independent rate-1/d clocks, one per coordinate. Pr[Poi(s) odd] = e^{−s} sinh s = (1 − e^{−2s})/2. Density: h_i = 2(1 − p_t) at y_i = x_i and 2p_t otherwise. χ²: 𝔼h_i² = 2(p² + (1−p)²) = 1 + (1−2p)². KL with u = 1 − 2p_t = e^{−2t/d}: KL_i = ½[(1+u)log(1+u) + (1−u)log(1−u)] = Σ_{k≥1} u^{2k}/(2k(2k−1)), which lies between u²/2 (first term) and u² log 2 (since Σ 1/(2k(2k−1)) = log 2). The upper bound d log 2 · e^{−4t/d} is exactly the MLSI bound with ρ₀ = 4/d from §3. D = d·KL is an equality because μ_t is itself a product, so the chain rule has no correlation term. Make sure the class sees that the exact χ² also gives the cutoff. What loses the factor is the generic bound: χ²(0) = 2^d − 1, and in Fourier terms χ²_t = Σ_k C(d,k) e^{−4kt/d}. Most of that mass sits on characters of degree ≈ d/2, which decay at rate ≈ 2, but the gap bound charges all of it the slowest rate 4/d. Be upfront: for the hypercube this computation is already a complete proof of the cutoff. TV, KL and χ² are convex in the initial distribution, so the worst start is a point mass, and every δ_xH_t is a product (the same holds for any product chain with independent clocks). LSI is not needed for this chain. What we want is the robust tool: an inequality for every h that transfers by comparison of Dirichlet forms, survives bounded perturbations of π (Holley–Stroock), extends to approximate tensorization for Glauber dynamics, and yields concentration and hypercontractivity. The hypercube is the calibration case: §2–§3 show that this route recovers the exact answer, constant included, so it loses nothing where we can check it. Also note that Poincaré tensorizes perfectly (λ = 2/d exactly), yet χ² + gap still loses d/log d. The loss comes from χ²(0) = 2^d − 1, not from the constant, which is why we tensorize entropy.
 :::
 
 ## Which inequality should we tensorize?
 
 Two candidates for bounding $\rho_0$ (both tensorize once **entropy** does, §2):
 
-$$\textbf{MLSI:}\ \ \rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)\qquad\qquad\textbf{LSI (Gross 1975):}\ \ \alpha\operatorname{Ent}_\pi(f^2)\le\mathcal E(f,f)$$
+$$\textbf{MLSI:}\ \ \rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)$$
+$$\textbf{LSI (Gross 1975):}\ \ \alpha\operatorname{Ent}_\pi(f^2)\le\mathcal E(f,f)$$
 
 **Why LSI:** its right side is the **quadratic form** $\mathcal E(f,f)$.
 
@@ -213,7 +227,8 @@ $$\mathbb E_\pi[fg]=\mathbb E_\pi f\cdot\mathbb E_\mu g\ \le\ \mathbb E_\pi f\cd
 *Proof.* Same martingale: $f_i=\mathbb E[f\mid x_1,\dots,x_i]$, and $g_i=\log\frac{f_i}{f_{i-1}}$. Then $\sum_ig_i=\log\frac f{\mathbb Ef}$, so by the equality case of the Lemma
 $$\operatorname{Ent}_\pi f=\mathbb E\Big[f\sum_ig_i\Big]=\sum_i\mathbb E[fg_i].$$
 Freeze all coordinates but $x_i$. $g_i$ depends on $x_1,\dots,x_i$, and by **independence** $\ \mathbb E_i f_i=f_{i-1}$, so
-$$\mathbb E_i\,e^{g_i}=\frac{\mathbb E_if_i}{f_{i-1}}=1\qquad\Longrightarrow\qquad\mathbb E_i[fg_i]\le\operatorname{Ent}_if\quad\text{(Lemma, in coordinate }i).$$
+$$\mathbb E_i\,e^{g_i}=\frac{\mathbb E_if_i}{f_{i-1}}=1\qquad\Longrightarrow\qquad\mathbb E_i[fg_i]\le\operatorname{Ent}_if$$
+by the Lemma, applied in coordinate $i$.
 Average over the frozen coordinates and sum over $i$. $\square$
 :::
 
