@@ -137,6 +137,7 @@ Two candidates for bounding $\rho_0$ (both tensorize once **entropy** does, §2)
 
 $$\textbf{MLSI:}\ \ \rho_0\operatorname{Ent}_\pi(h)\le\mathcal E(h,\log h)$$
 $$\textbf{LSI (Gross 1975):}\ \ \alpha\operatorname{Ent}_\pi(f^2)\le\mathcal E(f,f)$$
+$\rho_0,\alpha$ (like $\lambda$) denote the **largest** constants for which these hold for all $h>0$, resp. all $f$.
 
 **Why LSI:** its right side is the **quadratic form** $\mathcal E(f,f)$.
 
@@ -239,11 +240,11 @@ Average over the frozen coordinates and sum over $i$. $\square$
 ## Constants of products
 
 ::: {.thm}
-**Corollary.** $\qquad\alpha(\text{product})=\frac1d\min_i\alpha_i,\qquad\rho_0(\text{product})\ \ge\ \frac1d\min_i\rho_0^{(i)} .$
+**Corollary.** With $\alpha_i,\rho_0^{(i)}$ the constants of factor $i$: $\qquad\alpha(\text{product})=\frac1d\min_i\alpha_i,\qquad\rho_0(\text{product})=\frac1d\min_i\rho_0^{(i)} .$
 :::
 
 ::: {.pf}
-*Proof of $\ge$ for LSI.* $\ \operatorname{Ent}f^2\le\sum_i\mathbb E\operatorname{Ent}_if^2\le\sum_i\frac{\mathbb E\,\mathcal E_i(f)}{\alpha_i}\le\frac d{\min_i\alpha_i}\,\mathcal E(f,f)$. MLSI: the same with $h$ and $\mathcal E_i(h,\log h)$. *$\le$:* test functions of one coordinate. $\square$
+*Proof of $\ge$ for LSI.* $\ \operatorname{Ent}f^2\le\sum_i\mathbb E\operatorname{Ent}_if^2\le\sum_i\frac{\mathbb E\,\mathcal E_i(f)}{\alpha_i}\le\frac d{\min_i\alpha_i}\,\mathcal E(f,f)$. MLSI: the same with $h$ and $\mathcal E_i(h,\log h)$. *$\le$ (both):* test functions of one coordinate. $\square$
 :::
 
 - The constant of a chain with $\prod_i|\Omega_i|$ states comes from chains with $|\Omega_i|$ states, and **no factor is lost**.
@@ -254,7 +255,7 @@ Average over the frozen coordinates and sum over $i$. $\square$
 :::
 
 ::: notes
-~4 min. The ≤ direction: for f depending only on coordinate i, Ent f² = Ent_i f² and 𝓔(f,f) = (1/d)𝓔_i(f), so α ≤ α_i/d. For MLSI the matching upper bound also holds by the same test functions; we only need ≥. Approximate tensorization: the constant C replaces "1"; it is O(1) under spectral-independence-type conditions, which gives O(n log n) mixing of Glauber dynamics in those models. Keep the citations at that level.
+~4 min. The ≤ direction: for f depending only on coordinate i, Ent f² = Ent_i f² and 𝓔(f,f) = (1/d)𝓔_i(f), so α ≤ α_i/d; the same test functions give ρ₀ ≤ ρ₀^(i)/d. Why the MLSI ≥ proof is "the same": (1) entropy tensorization holds for any h ≥ 0, not just squares; (2) the product identity holds for the bilinear form, 𝓔(f,g) = ⟨f, Lg⟩ = (1/d)Σ_i 𝔼 𝓔_i(f,g), so it applies to 𝓔(h, log h); (3) the slice of log h is the log of the slice of h, and both sides of MLSI are 1-homogeneous in h (𝓔(h, const) = 0), so factor i's MLSI applies to unnormalized slices. Approximate tensorization: the constant C replaces "1"; it is O(1) under spectral-independence-type conditions, which gives O(n log n) mixing of Glauber dynamics in those models. Keep the citations at that level.
 :::
 
 # §3 · The hypercube, solved {background-color="#1c1b19"}
@@ -418,7 +419,7 @@ $$\operatorname{Ent}_\gamma(f^2)\ \le\ 2\,\mathbb E_\gamma|\nabla f|^2,\qquad\te
 | entropy | $\operatorname{Ent}_\pi(f)=\mathbb E_\pi[f\log f]-\mathbb E_\pi f\log\mathbb E_\pi f$; $\ D(\mu\Vert\pi)=\operatorname{Ent}_\pi(d\mu/d\pi)$ |
 | Poincaré, LSI, MLSI | $\lambda\operatorname{Var}f\le\mathcal E(f,f)$; $\ \alpha\operatorname{Ent}(f^2)\le\mathcal E(f,f)$; $\ \rho_0\operatorname{Ent}(h)\le\mathcal E(h,\log h)$ |
 | sandwich | $4\alpha\le\rho_0\le2\lambda$, $\ \alpha\le\lambda/2$ |
-| product chain | $L=\frac1d\sum_iL_i$, $\ \mathcal E=\frac1d\sum_i\mathbb E\,\mathcal E_i$; $\ \lambda,\alpha=\frac1d\min_i(\cdot)$ |
+| product chain | $L=\frac1d\sum_iL_i$, $\ \mathcal E=\frac1d\sum_i\mathbb E\,\mathcal E_i$; $\ \lambda,\alpha,\rho_0=\frac1d\min_i(\cdot)$ |
 | tensorization | $\operatorname{Var}f\le\sum_i\mathbb E\operatorname{Var}_if$; $\ \operatorname{Ent}f\le\sum_i\mathbb E\operatorname{Ent}_if$ |
 | variational formula | $\operatorname{Ent}_\pi(f)=\sup\{\mathbb E_\pi[fg]:\mathbb E_\pi e^g\le1\}$ |
 | hypercube | $\lambda=\frac2d$, $\ \alpha=\frac1d$, $\ \rho_0=\frac4d$; $\ t_{\rm mix}\le\frac d4\log d+O(d)$ |

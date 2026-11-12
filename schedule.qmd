@@ -21,7 +21,7 @@ Tentative and updated as the quarter goes. Slides open in presentation mode (pre
 | 11 | 11/3 | FTRL and the MMWU (cont.); the Matrix Multiplicative Weights Update for Balanced Separator: Certificates, the Primal-Dual Loop, and Computing the Heat Kernel | [Lecture 10 slides](lectures/lecture10/lecture10.qmd) (§2–§4) · [Slides](lectures/lecture11/lecture11.qmd) | [Lecture 11 notes](notes/lecture11-notes.qmd) |  |
 | 12 | 11/5 | Spectral Sparsification by Effective Resistances: Leverage Scores, a Regret-Bound Proof of Matrix Concentration, Linear-Size Sparsifiers | [Slides](lectures/lecture12/lecture12.qmd) |  |  |
 | 13 | 11/10 | Log-Sobolev Inequalities and Tensorization: Gross's Inequality, the Hypercube at the Cutoff, Concentration and Hypercontractivity | [Slides](lectures/lecture13/lecture13.qmd) |  |  |
-| 14 | 11/12 | Sturm–Liouville Theory and Spectral Collocation |  | [LA Review II](notes/la-review-part2.qmd) |  |
+| 14 | 11/12 | From Graphs to Operators: Sturm–Liouville Theory (spectral collocation next time) | [Slides](lectures/lecture14/lecture14.qmd) | [LA Review II](notes/la-review-part2.qmd) |  |
 | 15 | 11/17 | Markov Processes in Continuous Space: Generators, Dirichlet Forms, Brownian Motion and the Laplacian |  |  |  |
 | 16 | 11/19 | Langevin Dynamics and the Fokker–Planck Equation: Ornstein–Uhlenbeck, Poincaré for Log-Concave Measures |  |  |  |
 | 17 | 12/1 | Bakry–Émery Theory: Curvature, Log-Sobolev, and Mixing |  |  |  |

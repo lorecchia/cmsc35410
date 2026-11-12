@@ -171,8 +171,8 @@ $$\lambda_{\max}\Big(\sum_tY_t\Big)\ \le\ (1+\eta\rho)\sum_t\langle Y_t,X_t\rang
 **Take expectations.** $X_t$ depends only on $Y_1,\dots,Y_{t-1}$, and $Y_t$ is a fresh sample:
 $$\mathbb E\big[\langle Y_t,X_t\rangle\,\big|\,Y_{<t}\big]=\Big\langle\frac\Pi q,X_t\Big\rangle=\frac1q .$$
 So
-$$\mathbb E\,\lambda_{\max}\Big(\sum_tY_t\Big)\ \le\ 1+\varepsilon+\frac{\rho\ln r}\varepsilon=1+\varepsilon+\frac{r\ln r}{q\,\varepsilon}\ \le\ 1+2\varepsilon\quad$$
-for $q\ge\frac{r\ln r}{\varepsilon^2}$
+$$\mathbb E\,\lambda_{\max}\Big(\sum_tY_t\Big)\ \le\ 1+\varepsilon+\frac{\rho\ln r}\varepsilon=1+\varepsilon+\frac{r\ln r}{q\,\varepsilon}\ \le\ 1+2\varepsilon$$
+for $q\ge\frac{r\ln r}{\varepsilon^2}$.
 
 ::: {.idea}
 The regret bound is **deterministic**; randomness enters only through one conditional expectation per round. The width enters as $\rho\ln r$: linear, thanks to local norms.
