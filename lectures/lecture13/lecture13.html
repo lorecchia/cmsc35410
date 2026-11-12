@@ -590,12 +590,12 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <h2>The two-point space (Gross)</h2>
 <p>Uniform <span class="math inline">\(\pi\)</span> on <span class="math inline">\(\{0,1\}\)</span>, flips at rate <span class="math inline">\(1\)</span>: <span class="math inline">\(\ \mathcal E(f,f)=\frac12(a-b)^2\)</span> for <span class="math inline">\(f=(a,b)\)</span>, <span class="math inline">\(\ \lambda=2\)</span>.</p>
 <div class="thm">
-<p><strong>Theorem.</strong> <span class="math inline">\(\ \operatorname{Ent}_\pi(f^2)\le\frac12(a-b)^2\)</span>, i.e.&nbsp;<span class="math inline">\(\alpha=1=\frac\lambda2\)</span>.</p>
+<p><strong>Theorem.</strong> <span class="math inline">\(\ \operatorname{Ent}_\pi(f^2)\le\frac12(a-b)^2\)</span>, i.e.&nbsp;<span class="math inline">\(\alpha\ge1\)</span>. With <span class="math inline">\(\alpha\le\frac\lambda2=1\)</span>: <span class="math inline">\(\ \alpha=1\)</span>.</p>
 </div>
 <div class="cols2">
 <div>
 <div class="pf">
-<p><em>Proof.</em> WLOG <span class="math inline">\(a\ge b\ge0\)</span> (replacing <span class="math inline">\(f\)</span> by <span class="math inline">\(|f|\)</span> only lowers the right side), and by homogeneity <span class="math inline">\(a=1+s\)</span>, <span class="math inline">\(b=1-s\)</span>, <span class="math inline">\(s\in[0,1]\)</span>. Let <span class="math inline">\(\varphi(s)=\operatorname{Ent}(f^2)\)</span>; we need <span class="math inline">\(\varphi(s)\le2s^2\)</span>, and <span class="math inline">\(\varphi(0)=0\)</span>. Differentiating, <span class="math display">\[\varphi'(s)=2(1+s)\log(1+s)-2(1-s)\log(1-s)-2s\log(1+s^2)\]</span> <span class="math display">\[=4s-4\sum_{j\ \text{odd}\ \ge3}\frac{s^j}{j(j-1)}-2s\log(1+s^2)\ \le\ 4s .\ \ \square\]</span></p>
+<p><em>Proof.</em> WLOG <span class="math inline">\(a\ge b\ge0\)</span> (replacing <span class="math inline">\(f\)</span> by <span class="math inline">\(|f|\)</span> only lowers the right side), and by homogeneity <span class="math inline">\(a=1+s\)</span>, <span class="math inline">\(b=1-s\)</span>, <span class="math inline">\(s\in[0,1]\)</span>. Then <span class="math inline">\(\mathcal E(f,f)=2s^2\)</span>, <span class="math inline">\(\ \mathbb Ef^2=1+s^2\)</span>, and <span class="math display">\[\varphi(s):=\operatorname{Ent}(f^2)=(1+s)^2\log(1+s)+(1-s)^2\log(1-s)-(1+s^2)\log(1+s^2).\]</span> As <span class="math inline">\(\varphi(0)=0\)</span>, it suffices that <span class="math inline">\(\varphi'(s)\le4s\)</span>. Differentiating (the terms without <span class="math inline">\(\log\)</span> cancel), <span class="math display">\[\varphi'(s)=2(1+s)\log(1+s)-2(1-s)\log(1-s)-2s\log(1+s^2)\]</span> <span class="math display">\[=4s-4\sum_{j\ \text{odd}\ \ge3}\frac{s^j}{j(j-1)}-2s\log(1+s^2)\ \le\ 4s .\ \ \square\]</span></p>
 </div>
 </div>
 <div>
@@ -607,7 +607,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <li><strong>MLSI:</strong> <span class="math inline">\(4\alpha\le\rho_0\le2\lambda\)</span> gives <span class="math inline">\(\rho_0=4\)</span> here.</li>
 </ul>
 <aside class="notes">
-<p>~5 min. Series: (1+s)log(1+s) = s + Σ_{j≥2} (−1)^j s^j/(j(j−1)) and (1−s)log(1−s) = −s + Σ_{j≥2} s^j/(j(j−1)); the even terms cancel in the difference and the odd ones come with a minus sign. The derivative formula and the inequality are checked numerically in scripts/make_figures.py, along with ρ₀ = 4 by direct minimization.</p>
+<p>~5 min. Upper bound: λ = 2 from f = (1, −1), Var f = 1, 𝓔 = ½·4 = 2, so α ≤ λ/2 = 1 and the proof gives the matching α ≥ 1. In φ’, the product rule produces extra terms (1+s) − (1−s) − 2s = 0. Series: (1+s)log(1+s) = s + Σ_{j≥2} (−1)^j s^j/(j(j−1)) and (1−s)log(1−s) = −s + Σ_{j≥2} s^j/(j(j−1)); the even terms cancel in the difference and the odd ones come with a minus sign. The derivative formula and the inequality are checked numerically in scripts/make_figures.py, along with ρ₀ = 4 by direct minimization.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
