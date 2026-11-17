@@ -66,6 +66,44 @@ def fig_bottleneck():
     fig.tight_layout(); fig.savefig(os.path.join(OUT, "bottleneck.svg"), bbox_inches="tight")
     if os.environ.get("PREVIEW"): fig.savefig(os.environ["PREVIEW"] + "-bottle.png", dpi=70, bbox_inches="tight")
 
+def fig_green():
+    xx = np.linspace(0, 1, 401)
+    fig, ax = plt.subplots(figsize=(5.6, 3.9))
+    for y, c in zip((0.25, 0.5, 0.8), (BLUE, GREEN, ORANGE)):
+        ax.plot(xx, np.minimum(xx, y) - xx * y, color=c, lw=2.2, label=f"$y={y}$")
+        ax.plot([y], [y * (1 - y)], "o", color=c, ms=6)
+        ax.axvline(y, color=c, ls=":", lw=1)
+    ax.set_xlabel("$x$"); ax.set_ylim(0, 0.3); ax.legend(frameon=False, fontsize=11)
+    ax.set_title(r"$G(\cdot,y)$: string pinned at $0,1$, unit load at $y$", fontsize=12)
+    fig.tight_layout(); fig.savefig(os.path.join(OUT, "green.svg"), bbox_inches="tight")
+    if os.environ.get("PREVIEW"): fig.savefig(os.environ["PREVIEW"] + "-green.png", dpi=70, bbox_inches="tight")
+    xs = np.linspace(0, 1, 2001); X, Y = np.meshgrid(xs, xs); G = np.minimum(X, Y) - X * Y
+    print("Green: trace int G(x,x) =", round(np.trapezoid(xs - xs ** 2, xs), 6), " vs sum 1/(pi j)^2 = 1/6;",
+          " int int G^2 =", round(np.trapezoid(np.trapezoid(G ** 2, xs), xs), 6), " vs sum 1/(pi j)^4 = 1/90 =", round(1 / 90, 6))
+
+def fig_green_sl():
+    """Green's function of -(p u')' = f, u(0) = u(1) = 0, with p = 1 + 0.8 sin(2 pi x): u_a = s(x) = int_0^x 1/p,
+    u_b = R - s(x), C = R, so G(x,y) = s(x_<) (R - s(x_>)) / R (a tent in the resistance coordinate s)."""
+    p = lambda x: 1 + 0.8 * np.sin(2 * np.pi * x)
+    xx = np.linspace(0, 1, 4001); s = np.concatenate([[0], np.cumsum(np.diff(xx) * (1 / p(xx[1:]) + 1 / p(xx[:-1])) / 2)]); R = s[-1]
+    G = lambda iy: np.where(xx <= xx[iy], s * (R - s[iy]), s[iy] * (R - s)) / R
+    fig, ax = plt.subplots(figsize=(5.6, 3.9))
+    for y, c in zip((0.25, 0.5, 0.8), (BLUE, GREEN, ORANGE)):
+        iy = int(round(y * (len(xx) - 1))); g = G(iy)
+        ax.plot(xx, g, color=c, lw=2.2, label=f"$y={y}$, kink $1/p(y)={1 / p(y):.2f}$")
+        ax.plot([y], [g[iy]], "o", color=c, ms=6); ax.axvline(y, color=c, ls=":", lw=1)
+    ax.plot(xx, 0.1 * p(xx), color=GREY, lw=1.2, ls="--", label=r"$p(x)/10$")
+    ax.set_xlabel("$x$"); ax.set_ylim(0, 0.36); ax.legend(frameon=False, fontsize=9.5, loc="upper left")
+    ax.set_title(r"$G(\cdot,y)$ for $-(pu')'$, $p=1+0.8\sin 2\pi x$, Dirichlet", fontsize=12)
+    fig.tight_layout(); fig.savefig(os.path.join(OUT, "green-sl.svg"), bbox_inches="tight")
+    if os.environ.get("PREVIEW"): fig.savefig(os.environ["PREVIEW"] + "-green-sl.png", dpi=70, bbox_inches="tight")
+    # check against the grounded weighted path: nodes x_i = i h, conductance p(x_{i+1/2})/h, Dirichlet at 0 and 1
+    N = 400; h = 1 / N; xn = np.arange(1, N) * h; c = p((np.arange(N) + 0.5) * h) / h
+    K = np.diag(c[:-1] + c[1:]) - np.diag(c[1:-1], 1) - np.diag(c[1:-1], -1)
+    sn = np.concatenate([[0], np.cumsum(1 / c)]); Rn = sn[-1]; S = sn[1:-1]
+    Gn = np.where(np.less_equal.outer(xn, xn), np.outer(S, Rn - S), np.outer(Rn - S, S)) / Rn
+    print(f"SL Green's function: R = int 1/p = {R:.4f}; grounded weighted path max |K^-1 - G| = {np.abs(np.linalg.inv(K) - Gn).max():.1e}")
+
 def green_check():
     N = 400; h = 1 / N; x = (np.arange(1, N)) * h        # interior nodes, Dirichlet
     T = (2 * np.eye(N - 1) - np.eye(N - 1, k=1) - np.eye(N - 1, k=-1)) / h ** 2
@@ -73,4 +111,5 @@ def green_check():
     print("Green's function check: max |T^{-1} - G h^{-1}... | =", np.abs(np.linalg.inv(T) - G * h).max())
 
 if __name__ == "__main__":
-    fig_path(); fig_bottleneck(); green_check(); print("wrote figures/path-vs-continuum.svg, figures/bottleneck.svg")
+    fig_path(); fig_bottleneck(); fig_green(); fig_green_sl(); green_check()
+    print("wrote figures/path-vs-continuum.svg, figures/bottleneck.svg, figures/green.svg, figures/green-sl.svg")
