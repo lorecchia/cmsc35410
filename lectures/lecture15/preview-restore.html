@@ -1,0 +1,26 @@
+<script>
+// Preview-only: remember the current slide across live reloads (the editor
+// preview pane drops the URL hash). Does nothing on the published site.
+(function () {
+  if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return;
+  var key = 'reveal-pos:' + location.pathname;
+  function save() {
+    var i = Reveal.getIndices();
+    try { sessionStorage.setItem(key, JSON.stringify({h: i.h, v: i.v, f: i.f})); } catch (e) {}
+  }
+  var timer = setInterval(function () {
+    if (!window.Reveal || !Reveal.isReady || !Reveal.isReady()) return;
+    clearInterval(timer);
+    try {
+      var s = sessionStorage.getItem(key);
+      if (s && !location.hash) {
+        var p = JSON.parse(s);
+        Reveal.slide(p.h, p.v, p.f);
+      }
+    } catch (e) {}
+    Reveal.on('slidechanged', save);
+    Reveal.on('fragmentshown', save);
+    Reveal.on('fragmenthidden', save);
+  }, 50);
+})();
+</script>
