@@ -60,6 +60,79 @@ def fig_runge():
     fig.tight_layout(); fig.savefig(os.path.join(OUT, "runge.svg"), bbox_inches="tight")
     if PREV: fig.savefig(PREV + "-runge.png", dpi=70, bbox_inches="tight")
 
+def bernstein_rho(z0):
+    """Parameter of the Bernstein ellipse through z0: |z0 + sqrt(z0^2 - 1)|, branch with modulus >= 1."""
+    w = z0 + np.sqrt(complex(z0) ** 2 - 1); return max(abs(w), 1 / abs(w))
+
+def cheb_coeffs(f, n=400):
+    """Chebyshev coefficients a_k from samples at x_j = cos(j pi/n) (DCT-I), k = 0..n."""
+    th = np.pi * np.arange(n + 1) / n; v = f(np.cos(th))
+    a = np.real(np.fft.fft(np.r_[v, v[-2:0:-1]]))[: n + 1] / n; a[0] /= 2; a[-1] /= 2
+    return a
+
+def fig_bernstein():
+    fns = [(r"$1/(1+25x^2)$, poles $\pm\frac{i}{5}$", lambda x: 1 / (1 + 25 * x ** 2), 0.2j, BLUE),
+           (r"$1/(1+400x^2)$, poles $\pm\frac{i}{20}$", lambda x: 1 / (1 + 400 * x ** 2), 0.05j, ORANGE),
+           (r"$1/(1.05-x)$, pole $1.05$", lambda x: 1 / (1.05 - x), 1.05, GREEN)]
+    fig, axes = plt.subplots(1, 2, figsize=(13, 4.4)); ax = axes[0]; t = np.linspace(0, 2 * np.pi, 400)
+    N = 12; th = np.pi * np.arange(N + 1) / N
+    ax.plot(np.cos(t[:200]), np.sin(t[:200]), color=GREY, lw=0.8, ls=":")
+    for xj, yj in zip(np.cos(th), np.sin(th)): ax.plot([xj, xj], [0, yj], color=GREY, lw=0.6, ls=":")
+    ax.plot(np.cos(th), np.sin(th), "o", color=GREY, ms=3); ax.plot(np.cos(th), 0 * th, "o", color=INK, ms=4)
+    ax.plot([-1, 1], [0, 0], color=INK, lw=2.5)
+    for lab, f, z0, c in fns:
+        rho = bernstein_rho(z0); a, b = (rho + 1 / rho) / 2, (rho - 1 / rho) / 2
+        ax.plot(a * np.cos(t), b * np.sin(t), color=c, lw=1.8, label=fr"$\rho={rho:.3f}$")
+        ax.plot([np.real(z0)] * (2 if np.imag(z0) else 1), [np.imag(z0), -np.imag(z0)][: 2 if np.imag(z0) else 1], "x", color=c, ms=9, mew=2.2)
+    ax.set_aspect("equal"); ax.set_xlim(-1.45, 1.45); ax.set_ylim(-0.5, 1.08); ax.spines["left"].set_visible(False); ax.set_yticks([])
+    ax.legend(frameon=False, fontsize=10, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.32))
+    ax.set_title(r"Bernstein ellipses through the nearest singularity ($\times$)", fontsize=12)
+    ax = axes[1]; k = np.arange(0, 161)
+    for lab, f, z0, c in fns:
+        a = np.abs(cheb_coeffs(f))[: len(k)]; rho = bernstein_rho(z0); m = a > 1e-15
+        ax.semilogy(k[m], a[m], ".", color=c, ms=4, label=lab)
+        ax.semilogy(k, a[2] * rho ** (2.0 - k), "--", color=c, lw=1, alpha=0.8)
+        kk = np.arange(20, 60, 2); kk = kk[a[kk] > 1e-13]
+        print(f"Bernstein: {lab}: rho = {rho:.4f}, fitted decay rate of |a_k| = {np.exp(-np.polyfit(kk, np.log(a[kk]), 1)[0]):.4f}, digits per node = {np.log10(rho):.3f}")
+    ax.set_ylim(1e-16, 10); ax.set_xlabel("$k$"); ax.set_ylabel(r"$|a_k|$"); ax.legend(frameon=False, fontsize=10)
+    ax.set_title(r"Chebyshev coefficients decay like $\rho^{-k}$ (dashed)", fontsize=12)
+    fig.tight_layout(); fig.savefig(os.path.join(OUT, "bernstein.svg"), bbox_inches="tight")
+    if PREV: fig.savefig(PREV + "-bernstein.png", dpi=70, bbox_inches="tight")
+    # endpoint vs middle asymptotics and the strip <-> ellipse correspondence
+    for d in (1e-2, 1e-3): print(f"delta={d}: rho(1+delta) = {bernstein_rho(1 + d):.4f} vs 1+sqrt(2 delta) = {1 + np.sqrt(2 * d):.4f};  rho(i delta) = {bernstein_rho(1j * d):.5f} vs 1+delta")
+    al = 0.3; print("cos(theta + i alpha) lies on E_rho with rho = e^alpha:", np.allclose([bernstein_rho(np.cos(th0 + 1j * al)) for th0 in (0.3, 1.0, 2.5)], np.exp(al)))
+
+def fig_aliasing():
+    """A high mode T_l (l > N) sampled at N+1 nodes, and the degree-N polynomial the samples are mistaken for."""
+    T = lambda l, x: np.cos(l * np.arccos(np.clip(x, -1, 1))); xx = np.linspace(-1, 1, 4001)
+    N, l = 12, 16
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4.3), gridspec_kw={"width_ratios": [1, 1, 0.9]})
+    for ax, (name, xn, c) in zip(axes[:2], (("equispaced", np.linspace(-1, 1, N + 1), ORANGE),
+                                            ("Chebyshev", np.cos(np.pi * np.arange(N + 1) / N), BLUE))):
+        q = interp(xn, T(l, xn), xx)
+        ax.plot(xx, T(l, xx), color=GREY, lw=1.2, alpha=0.8, label=fr"high mode $T_{{{l}}}$")
+        ax.plot(xx, q, color=c, lw=2.2, label=fr"its alias: interpolant of degree $\leq{N}$")
+        ax.plot(xn, T(l, xn), "o", color=INK, ms=5, zorder=5, label=f"samples at the {N+1} nodes")
+        ax.set_ylim(-2.6, 2.6); ax.set_xlabel("$x$"); ax.axhline(0, color=GREY, lw=0.5)
+        ax.set_title(f"{name} nodes, $N={N}$:  max of alias $= {abs(q).max():.3g}$", fontsize=12)
+        print(f"aliasing figure: {name}, N={N}, l={l}: sup of interpolant = {abs(q).max():.3g}")
+    axes[0].annotate("off the chart:\nreaches $\\pm70$", xy=(-0.93, 2.5), xytext=(-0.55, 1.9), fontsize=10, color=ORANGE,
+                     arrowprops=dict(arrowstyle="->", color=ORANGE))
+    axes[1].text(0.0, -2.35, r"$T_{16}=T_8$ at these nodes  ($16=2\cdot12-8$)", ha="center", fontsize=10, color=BLUE)
+    from matplotlib.lines import Line2D; from matplotlib.legend_handler import HandlerTuple
+    hs = [Line2D([], [], color=GREY, lw=1.2), (Line2D([], [], color=ORANGE, lw=2.2), Line2D([], [], color=BLUE, lw=2.2)),
+          Line2D([], [], color=INK, marker="o", ls="", ms=5)]
+    fig.legend(hs, [fr"high mode $T_{{{l}}}$", fr"its alias: the interpolant of degree $\leq{N}$", f"samples at the {N+1} nodes"],
+               handler_map={tuple: HandlerTuple(ndivide=None)}, frameon=False, fontsize=11, ncol=3, loc="lower center", bbox_to_anchor=(0.36, -0.07))
+    ax = axes[2]; N2 = 20; ls = np.arange(0, 61)
+    for name, xn, c in (("equispaced", np.linspace(-1, 1, N2 + 1), ORANGE), ("Chebyshev", np.cos(np.pi * np.arange(N2 + 1) / N2), BLUE)):
+        ax.semilogy(ls, [abs(interp(xn, T(m, xn), xx)).max() for m in ls], "o-", color=c, ms=3, lw=1.4, label=name)
+    ax.axvline(N2, color=GREY, ls=":", lw=1); ax.text(N2 + 1, 1.6, "$l=N$", color=GREY, fontsize=10)
+    ax.set_xlabel("mode $l$"); ax.set_ylabel(r"$\max_{[-1,1]}|I_NT_l|$"); ax.legend(frameon=False, fontsize=10, loc="upper left")
+    ax.set_title(f"size of the alias, $N={N2}$", fontsize=12)
+    fig.tight_layout(); fig.savefig(os.path.join(OUT, "aliasing.svg"), bbox_inches="tight")
+    if PREV: fig.savefig(PREV + "-aliasing.png", dpi=70, bbox_inches="tight")
+
 def cheb_dirichlet_eigs(N):
     D, x = cheb(N); A = -(D @ D)[1:-1, 1:-1]                     # -u'' on [-1,1], u(+-1)=0
     lam = eig(A, right=False); return np.sort(lam.real), np.abs(lam.imag).max()
@@ -127,5 +200,5 @@ def nonnormal():
         print(f"nonnormality N={N}: ||A A^T - A^T A|| / ||A||^2 = {np.linalg.norm(A @ A.T - A.T @ A) / np.linalg.norm(A) ** 2:.3f}, cond(eigenvectors) = {cond_V:.2e}, cond(A) = {np.linalg.cond(A):.2e}")
 
 if __name__ == "__main__":
-    fig_runge(); fig_eigs(); fig_sl(); fraction_check(); nonnormal()
-    print("wrote figures/runge.svg, figures/cheb-eigs.svg, figures/sl-convergence.svg")
+    fig_runge(); fig_bernstein(); fig_aliasing(); fig_eigs(); fig_sl(); fraction_check(); nonnormal()
+    print("wrote figures/runge.svg, figures/bernstein.svg, figures/aliasing.svg, figures/cheb-eigs.svg, figures/sl-convergence.svg")

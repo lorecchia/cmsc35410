@@ -403,23 +403,117 @@ $$\|f-p_N\|_\infty\le(1+\Lambda_N)\,\min_{\deg q\le N}\|f-q\|_\infty.$$
 Numbers from scripts/collocation_figures.py (barycentric interpolation). Runge: equispaced error 60 at N = 20 and 10⁵ at N = 40; Chebyshev 1.8·10⁻², 3.4·10⁻⁴, 6.4·10⁻⁶ at N = 20, 40, 60. The Lebesgue bound says: Chebyshev interpolation is within a factor 1 + Λ_N ≈ 4 of the best polynomial approximation, for every f. Equispaced interpolation amplifies errors exponentially.
 :::
 
-## Chebyshev is Fourier in disguise
+## Series expansion vs. interpolation {.smaller}
 
-Substitute $x=\cos\theta$. The **Chebyshev polynomials** satisfy $T_k(\cos\theta)=\cos k\theta$, and the nodes $x_j=\cos\frac{j\pi}N$ are **equispaced in $\theta$**.
+Approximate $f$ by $N+1$ modes $\varphi_0,\dots,\varphi_N$ of an orthonormal basis of $L^2(w\,dx)$, e.g. the eigenfunctions of an operator. There are two natural choices:
 
-- Interpolating $f$ at Chebyshev points $=$ cosine interpolation of the even, $2\pi$-periodic $F(\theta)=f(\cos\theta)$ at equispaced $\theta_j$: a **discrete cosine transform** (type I, with the endpoints; the path graph's was type II), now in the variable $\theta$.
-- The nodes cluster at the ends like $\frac1{\sqrt{1-x^2}}$: equispaced points on the circle, **projected** onto the diameter.
+- **Truncated series** $f_N=\sum_{k\le N}a_k\varphi_k$, with $a_k=\int f\,\varphi_k\,w\,dx$: the orthogonal projection. **Needs integrals of $f$.**
+- **Interpolant** $p_N=\sum_{k\le N}c_k\varphi_k$, with $p_N(x_j)=f(x_j)$ at $N+1$ nodes. **Needs only samples.**
 
-::: {.thm}
-**Theorem** (Trefethen, *ATAP* Thm 8.2). If $f$ is analytic and $|f|\le M$ inside the Bernstein ellipse $E_\rho$ (foci $\pm1$, semi-axes summing to $\rho>1$), then
-$$\|f-p_N\|_\infty\ \le\ \frac{4M\rho^{-N}}{\rho-1}\qquad\text{(Chebyshev interpolant)}.$$
+**1. Interpolation is projection with the integral replaced by a quadrature rule.**
+$$a_k=\int f\,\varphi_k\,w\,dx\quad\leadsto\quad c_k=\sum_j w_j\,f(x_j)\,\varphi_k(x_j).$$
+If the modes are **discretely orthonormal**, $\sum_jw_j\varphi_k(x_j)\varphi_l(x_j)=\delta_{kl}$ for $k,l\le N$, then this $p_N$ matches $f$ at every node.
+
+**2. The quadrature error is aliasing.** On the grid, a high mode $\varphi_l$ ($l>N$) can coincide with a low mode $\varphi_k$, so the samples cannot tell them apart and the tail of $f$ is counted as low modes. Fourier at $M$ equispaced points: $e^{i(k+mM)x_j}=e^{ikx_j}$, so
+$$c_k=a_k+\sum_{m\ne0}a_{k+mM}.$$
+
+**3. So interpolation costs at most a factor 2.** When each high mode aliases onto a single low mode (Fourier, cosines, Chebyshev),
+$$\|f-p_N\|_\infty\le\|f-f_N\|_\infty+\|p_N-f_N\|_\infty\le2\sum_{k>N}|a_k|\,\|\varphi_k\|_\infty .$$
+
+**Every node set aliases.** What matters is the size of the aliased mode, measured by the Lebesgue constant $\Lambda_N$: Chebyshev aliasing only relabels modes ($\approx1$), while equispaced aliasing amplifies them ($\sim2^N$).
+
+::: {.idea}
+**You have seen this already.** Sampled Fourier is the DFT, i.e. the trapezoidal rule. On the path (Part 1), expanding sampled $f$ in the eigenvectors of $L$ is cosine interpolation in $x$ at the cell centers (DCT-II). Equispaced **polynomial** interpolation has no such quadrature structure, which is why its Lebesgue constant grows like $2^N$. **Next:** Chebyshev interpolation is exactly this picture, with cosines in a new variable.
 :::
 
-- **Geometric** convergence, rate set by the nearest singularity. Runge has poles at $\pm\frac i5$, so $\rho=\frac15+\sqrt{1.04}\approx1.22$: the dashed line on the last slide.
-- Smoothness is the whole story: periodic smooth $F$ has rapidly decaying Fourier coefficients.
+::: notes
+~4 min. Why step 1 interpolates: let Φ = [φ_k(x_j)] (rows j, columns k) and W = diag(w_j). Discrete orthonormality says ΦᵀWΦ = I, so Φ is invertible. The coefficients are c = ΦᵀW f(x), and the samples of p_N are Φc = Φ ΦᵀW f(x) = f(x), because ΦΦᵀW = I as well (a left inverse of a square matrix is a right inverse). Step 2 in general: c_k = Σ_l a_l ⟨φ_l, φ_k⟩_grid, and ⟨φ_l, φ_k⟩_grid = δ_kl for l ≤ N, so only l > N contributes. Step 3: p_N − f_N = Σ_{l>N} a_l φ_{k(l)} when each φ_l equals a single φ_{k(l)} on the grid. Check on Runge with Chebyshev, N = 10: the aliasing formula holds exactly; truncation error 0.110, interpolation error 0.132, tail sum 0.110. Aliasing at equispaced vs. Chebyshev nodes (N = 20): interpolating T_l, with |T_l| ≤ 1, gives an interpolant of sup norm 245, 1.7·10³, 1.1·10⁴ at l = 21, 25, 30 on the equispaced grid, and exactly 1 at Chebyshev nodes, where I_N T_l is a single T_k. Caution for students: discrete orthonormality alone does not distinguish the two. Gram–Schmidt in any positive grid inner product gives discretely orthonormal polynomials at any nodes (Gram polynomials for equispaced, equal weights), and projecting onto them reproduces the interpolant. The difference is that Chebyshev's discrete basis is also continuously orthonormal and bounded (the same T_k), while the Gram polynomials stay bounded at the nodes but blow up between them: sup on [−1, 1] / max at the nodes ≈ 1, 1.8, 21, 7600 for degree 5, 10, 15, 20 at N = 20. General bound: ‖f − p_N‖ ≤ ‖f − f_N‖ + ‖I_N(f − f_N)‖ ≤ (1 + Λ_N)‖f − f_N‖. The practical point for collocation: D_N acts on samples, so it is the interpolant we differentiate, and the factor 2 says that loses essentially nothing compared with the true series.
+:::
+
+## Aliasing: relabeling vs. amplification
+
+![A high mode $T_{16}$ (grey) sampled at $13$ nodes, and the degree-$12$ interpolant of those samples (its alias). Right: the size of the alias of $T_l$ for every $l$, with $N=20$.](figures/aliasing.svg){.nostretch fig-align="center" width="100%" fig-alt="Left: at equispaced nodes the interpolant of T_16 matches the samples but swings far outside [-1,1] near the endpoints, reaching about 70. Middle: at Chebyshev nodes the interpolant is the smooth mode T_8, bounded by 1. Right: semilog plot of the maximum of the interpolant of T_l against l; both equal 1 for l up to N = 20; beyond that the Chebyshev curve stays at 1 while the equispaced curve jumps to between 10 and 10^4."}
+
+- **Both grids alias:** $13$ samples cannot tell $T_{16}$ from a polynomial of degree $\le12$.
+- **Chebyshev:** the alias is another mode, $T_8$, of the same size. The tail of $f$ is **relabeled**, never amplified.
+- **Equispaced:** the alias matches the samples but **oscillates wildly** between the nodes near the ends, $70\times$ larger than $T_{16}$. At $N=20$ the factor reaches $10^4$, so a tail of size $10^{-6}$ can come back as an error of size $10^{-2}$.
+- **Right panel:** for $l\le N$ both are exact (size $1$). For $l>N$ the equispaced alias is $10$ to $10^4$ times too large: this amplification factor is what $\Lambda_N$ bounds.
 
 ::: notes
-~4 min. Why the folding picture from Part 1 returns: Chebyshev = cosine series in θ, the path = cosine series in x. The path has equispaced x and hence algebraic accuracy for the derivative stencil; Chebyshev puts equispaced points where the function is periodic (in θ), so the trigonometric machinery gives spectral accuracy. If f, …, f^{(k−1)} are absolutely continuous and f^{(k)} has bounded variation, the rate is O(N^{−k}) instead (ATAP Thm 7.2).
+~3 min. Point at the middle panel: T_16 and T_8 agree at every Chebyshev node because cos(16 jπ/12) = cos(2πj − 8jπ/12) = cos(8 jπ/12). In θ this is just Fourier aliasing on an equispaced grid, which is a relabeling of frequencies. Point at the left panel: the alias is the same kind of wild polynomial as the Runge interpolant, and for the same reason. The equispaced curve on the right is not monotone in l; what matters is that it is far above 1 for every l > N. Figure from scripts/collocation_figures.py (fig_aliasing).
+:::
+
+## Chebyshev is Fourier in disguise {.smaller}
+
+::: {.defn}
+**Chebyshev polynomials** are defined by the **cosine property**
+$$T_k(\cos\theta)=\cos k\theta,\qquad\text{i.e. }\ T_k(x)=\cos(k\arccos x)\ \text{ on }[-1,1].$$
+This is a polynomial of degree $k$ in $x$: the identity $\cos(k+1)\theta+\cos(k-1)\theta=2\cos\theta\,\cos k\theta$ gives
+$$T_0=1,\qquad T_1=x,\qquad T_{k+1}=2x\,T_k-T_{k-1}\qquad(T_2=2x^2-1,\ \ T_3=4x^3-3x).$$
+So $|T_k|\le1$ on $[-1,1]$, with alternating extrema $\pm1$ at $x=\cos\frac{j\pi}k$, and leading coefficient $2^{k-1}$.
+:::
+
+Substitute $x=\cos\theta$, $\theta\in[0,\pi]$, and set $F(\theta)=f(\cos\theta)$. Everything about Chebyshev becomes a statement about cosines in $\theta$:
+
+| on $[-1,1]$, variable $x$ | on the circle, variable $\theta$ |
+|:--|:--|
+| any function $f$ | $F(\theta)=f(\cos\theta)$: **even and $2\pi$-periodic** |
+| $T_k(x)$ | $\cos k\theta$ |
+| Chebyshev series $f=\sum_k a_kT_k$ | cosine series $F=\sum_k a_k\cos k\theta$ |
+| $a_k=\frac2\pi\int_{-1}^1 f\,T_k\,\frac{dx}{\sqrt{1-x^2}}$ | $a_k=\frac2\pi\int_0^\pi F(\theta)\cos k\theta\,d\theta$ $\ $ (halve $a_0$) |
+| nodes $x_j=\cos\frac{j\pi}N$, clustered at $\pm1$ | $\theta_j=\frac{j\pi}N$, **equispaced** |
+| interpolant $p_N$ at the $x_j$ | trigonometric interpolant: a DCT-I, $O(N\log N)$ by FFT |
+
+: {tbl-colwidths="[50,50]"}
+
+**Why this helps: $F$ is smooth and periodic for free.** $F'(\theta)=-\sin\theta\,f'(\cos\theta)$ vanishes at $\theta=0,\pi$, whatever $f'(\pm1)$ is, and so does every odd derivative. So the periodic extension of $F$ has **no kink**.
+
+| expand $f$ in | periodic extension | coefficients of a smooth $f$ |
+|:--|:--|:--|
+| Fourier in $x$ on $[-1,1]$ | jumps if $f(-1)\ne f(1)$ (Gibbs) | $O(1/k)$ |
+| cosines in $x$ (the path, Part 1) | kinks if $f'\ne0$ at the ends | $O(1/k^2)$ |
+| cosines in $\theta$ (Chebyshev) | smooth | as fast as $f$ is smooth |
+
+: {tbl-colwidths="[34,40,26]"}
+
+::: notes
+~4 min. The folding picture from Part 1 returns: the path is a cosine series in x, Chebyshev is a cosine series in θ. The change of variables moves the endpoints ±1 to the turning points θ = 0, π of an even function, where a smooth even function automatically has zero slope. In the x-cosine series, the even extension of f across x = 0 and x = 1 is continuous, but its slope jumps from −f'(0) to f'(0), so the coefficients are O(1/k²): a_k ≈ 2((−1)^k f'(1) − f'(0))/(πk)². In θ there is nothing to jump. Coefficient formula: substitute x = cos θ, dx = −sin θ dθ, and √(1 − x²) = sin θ; the weight 1/√(1 − x²) is exactly the Jacobian. DCT-I (endpoints included) is the transform for the extreme points cos(jπ/N); the path's cell centers gave DCT-II. Chebfun computes Chebyshev coefficients from samples by exactly this FFT.
+:::
+
+## Why the convergence is geometric {.smaller}
+
+::: {.thm}
+**Theorem** (Trefethen, *ATAP* Thms 8.1–8.2). Let $f$ be analytic, with $|f|\le M$, inside the **Bernstein ellipse** $E_\rho$ (foci $\pm1$, semi-axes $\frac{\rho\pm\rho^{-1}}2$, $\rho>1$). Then
+$$|a_k|\le2M\rho^{-k},\qquad \|f-f_N\|_\infty\le\frac{2M\rho^{-N}}{\rho-1}\ \ (\text{truncation}),\qquad \|f-p_N\|_\infty\le\frac{4M\rho^{-N}}{\rho-1}\ \ (\text{interpolation}).$$
+:::
+
+**Proof in three moves.** Make $\theta$ complex.
+
+1. **Joukowski.** Put $z=e^{i\theta}$, so $x=\frac{z+z^{-1}}2$ and $T_k(x)=\frac{z^k+z^{-k}}2$. The Chebyshev series of $f$ is the **Laurent series** of $g(z)=f\big(\tfrac{z+z^{-1}}2\big)$: $\ g(z)=a_0+\sum_{k\ge1}\frac{a_k}2\,(z^k+z^{-k})$.
+2. **Circles become ellipses.** The Joukowski map sends the circles $|z|=\rho$ and $|z|=\rho^{-1}$ onto $E_\rho$. So
+$$f\text{ analytic in }E_\rho\iff g\text{ analytic on the annulus }\rho^{-1}<|z|<\rho\iff F\text{ analytic on the strip }|\operatorname{Im}\theta|<\log\rho.$$
+3. **Cauchy's estimate.** $\frac{a_k}2=\frac1{2\pi i}\oint_{|z|=\rho}g(z)\,z^{-k-1}dz$, so $|a_k|\le2M\rho^{-k}$. Since $|T_k|\le1$, the tail is at most $\sum_{k>N}2M\rho^{-k}=\frac{2M\rho^{-N}}{\rho-1}$. At the nodes $\cos\frac{j\pi}N$, $T_{2mN\pm k}=T_k$, so interpolation **aliases** the tail onto the low modes, $c_k=a_k+\sum_{m\ge1}(a_{2mN-k}+a_{2mN+k})$, which at most doubles this (step 3 of the series-vs-interpolation slide).
+
+::: {.idea}
+This is the classical Fourier fact, "analytic in a strip of half-width $\alpha$ $\Rightarrow$ coefficients $O(e^{-\alpha k})$", with $\rho=e^{\alpha}$. Chebyshev **is** Fourier, after the change of variables.
+:::
+
+::: notes
+~5 min. Step 1: cos kθ = (e^{ikθ} + e^{−ikθ})/2 = (z^k + z^{−k})/2. Step 2: on |z| = ρ, write z = ρe^{iφ}; then x = ½(ρ + ρ^{−1}) cos φ + (i/2)(ρ − ρ^{−1}) sin φ, an ellipse with those semi-axes and foci ±1. In θ: z = e^{iθ} with |z| = ρ means Im θ = −log ρ, so the annulus is the strip, and cos(θ + iα) traces E_{e^α} (checked numerically in scripts/collocation_figures.py). The unit circle |z| = 1 maps onto [−1, 1], covered twice (z and z̄ = z^{−1} give the same x): that is why g is symmetric under z ↦ 1/z and has equal coefficients on z^k and z^{−k}. Step 3: take the contour slightly inside |z| = ρ and pass to the limit. Aliasing: at the nodes x_j = cos(jπ/N), T_{2mN ± k'} and T_{k'} take the same values, so the interpolant is f_N + Σ_{k>N} a_k T_{k'(k)}, and the extra error is again at most the tail Σ_{k>N} |a_k|.
+:::
+
+## Reading the theorem
+
+![Left: equispaced points on the semicircle project to the Chebyshev nodes (dots on $[-1,1]$). Ellipses through the nearest singularity of three functions. Right: their Chebyshev coefficients, with $\rho^{-k}$ dashed.](figures/bernstein.svg){.nostretch fig-align="center" width="100%" fig-alt="Left: the interval [-1,1] with Chebyshev nodes obtained by projecting equispaced points on the upper semicircle, and three nested ellipses with foci at plus and minus 1 passing through poles at plus or minus i/5, plus or minus i/20, and 1.05. Right: semilog plot of Chebyshev coefficient magnitudes for the three functions, each decaying along a straight line of slope log rho: rho = 1.051 slowest, 1.220 middle, 1.370 fastest."}
+
+- **$\rho$ is set by the nearest complex singularity** $z_0$: $\ \rho=|z_0+\sqrt{z_0^2-1}|$ (the root with modulus $>1$). Smoothness on the real line is not enough: Runge is $C^\infty$ on $[-1,1]$, but its poles at $\pm\frac i5$ give $\rho\approx1.22$.
+- **Digits per node:** the error is $\approx\rho^{-N}$, so each extra node buys $\log_{10}\rho$ digits. For Runge that is $0.086$: one digit every $12$ nodes.
+- **The ends are forgiving, the middle is not.** A singularity at distance $\delta$ beyond an endpoint gives $\rho\approx1+\sqrt{2\delta}$; at distance $\delta$ off the middle, $\rho\approx1+\delta$. At $\delta=0.05$: $\rho=1.37$ vs. $1.05$. This is the node clustering again.
+- **Entire $f$** ($e^x$, $\sin x$): every $\rho$ works, so convergence is **faster than any geometric rate**.
+- **Only finitely smooth** ($f^{(\nu)}$ of bounded variation): $O(N^{-\nu})$ (*ATAP* Thm 7.2). A kink ($\nu=1$) gives $O(1/N)$, which is what a jump in $p$ does in §5.
+
+::: notes
+~4 min. Fitted decay rates of |a_k| in scripts/collocation_figures.py: 1.2198, 1.0512, 1.3702, matching ρ to four digits. (Runge is even, so its odd coefficients vanish; only the even ones are plotted.) Endpoint vs. middle: for z_0 = 1 + δ, ρ = 1 + δ + √(2δ + δ²) ≈ 1 + √(2δ); for z_0 = iδ, ρ = δ + √(1 + δ²) ≈ 1 + δ. The ellipse is thin near ±1, so a singularity there has to be much closer to hurt. The same 1/√(1 − x²) density puts more nodes near the ends. Contrast with equispaced interpolation: it converges only if f is analytic in a much larger region, bounded by a level curve of a logarithmic potential through ±1 that crosses the imaginary axis at about ±0.526i. Runge's poles at ±0.2i lie inside it, hence divergence. Practical reading: plot |a_k| on a log scale. A straight line means analytic, and its slope is log ρ; a plateau at 10⁻¹⁶ means converged (Chebfun chops there).
 :::
 
 # §5 · Differentiation matrices and eigenvalues {background-color="#1c1b19"}
@@ -442,7 +536,48 @@ def cheb(N):                                    # Trefethen, Spectral Methods in
 ```
 
 ::: notes
-~3 min. The off-diagonal formula is ℓ_j'(x_i) for Chebyshev nodes, from the barycentric weights w_j ∝ (−1)^j/c_j. Same function as in Lecture 1's demo. Cost: dense (N+1)², but N is 20–100.
+~3 min. The off-diagonal formula is ℓ_j'(x_i) for Chebyshev nodes, from the barycentric weights w_j ∝ (−1)^j/c_j (derived on the next two slides). Same function as in Lecture 1's demo. Cost: dense (N+1)², but N is 20–100.
+:::
+
+## Deriving $D_N$ (1): any nodes {.smaller}
+
+**Definition.** Interpolate the values $u_j$ by $p(x)=\sum_j u_j\,\ell_j(x)$, differentiate, sample at the nodes:
+$$p'(x_i)=\sum_j \underbrace{\ell_j'(x_i)}_{(D_N)_{ij}}\,u_j .$$
+So $D_N$ is **exact** on polynomials of degree $\le N$, and the task is to compute $\ell_j'(x_i)$.
+
+**1. Write $\ell_j$ through the node polynomial** $\ \omega(x)=\prod_{k=0}^N(x-x_k)$:
+$$\ell_j(x)=\frac{\omega_j(x)}{\omega_j(x_j)},\qquad \omega_j(x)=\frac{\omega(x)}{x-x_j}=\prod_{k\ne j}(x-x_k),\qquad \omega_j(x_j)=\omega'(x_j).$$
+
+**2. Off-diagonal ($i\ne j$).** Quotient rule, then use $\omega(x_i)=0$:
+$$\omega_j'(x)=\frac{\omega'(x)}{x-x_j}-\frac{\omega(x)}{(x-x_j)^2}\ \Longrightarrow\ \omega_j'(x_i)=\frac{\omega'(x_i)}{x_i-x_j}\ \Longrightarrow\ \boxed{(D_N)_{ij}=\frac{\omega'(x_i)}{\omega'(x_j)}\,\frac{1}{x_i-x_j}}.$$
+
+**3. Diagonal.** Interpolation reproduces constants: $\sum_j\ell_j\equiv1$. Differentiate: $\sum_j\ell_j'\equiv0$, so
+$$(D_N)_{ii}=-\sum_{j\ne i}(D_N)_{ij}\qquad\text{(the negative-sum trick is an identity, not a hack).}$$
+
+::: {.idea}
+Everything depends on the nodes only through the numbers $\omega'(x_j)$. Their reciprocals $w_j=1/\omega'(x_j)$ are the **barycentric weights**.
+:::
+
+::: notes
+~4 min. Smallest example, N = 1, nodes x = (1, −1): ω = x² − 1, ω' = 2x, so ω'(x_0) = 2, ω'(x_1) = −2, and D_01 = (2/−2)·1/(1 − (−1)) = −1/2. The diagonal gives D_00 = 1/2. So D_1 = [[½, −½], [½, −½]]: both rows return the slope (u_0 − u_1)/2 of the line through the two points, as they must. In step 2, ω_j'(x_i) can also be seen directly: ω_j(x) = ω(x)/(x − x_j), and at a root x_i of ω only the term in which (x − x_i) is differentiated survives in the product rule.
+:::
+
+## Deriving $D_N$ (2): the Chebyshev weights {.smaller}
+
+**Nodes** $x_j=\cos\theta_j$, $\theta_j=\frac{j\pi}N$: the endpoints $\pm1$ and the $N-1$ extrema of $T_N$, i.e. the roots of
+$$\omega(x)\ \propto\ (x^2-1)\,U_{N-1}(x),\qquad\text{and in }\theta:\ \ (x^2-1)\,U_{N-1}(x)=-\sin\theta\,\sin N\theta .$$
+
+**Compute $\omega'(x_j)$** with the chain rule $\frac{d}{dx}=-\frac1{\sin\theta}\frac{d}{d\theta}$:
+$$\frac{d}{dx}\big(-\sin\theta\sin N\theta\big)=\frac{\cos\theta\,\sin N\theta+N\sin\theta\,\cos N\theta}{\sin\theta}.$$
+
+- **Interior** $0<j<N$: $\sin N\theta_j=0$ and $\cos N\theta_j=(-1)^j$, so $\ \omega'(x_j)\propto N(-1)^j$.
+- **Endpoints** ($\sin\theta=0$, use the polynomial form): $\frac{d}{dx}\big[(x^2-1)U_{N-1}\big]_{x=\pm1}=\pm2\,U_{N-1}(\pm1)$, with $U_{N-1}(1)=N$ and $U_{N-1}(-1)=(-1)^{N-1}N$. This gives $2N$ and $2N(-1)^N$: **twice** the interior pattern.
+
+So $\ \omega'(x_j)\propto(-1)^j c_j$, with $c_0=c_N=2$ and $c_j=1$ otherwise. Substitute into step 2:
+$$(D_N)_{ij}=\frac{(-1)^ic_i}{(-1)^jc_j}\,\frac1{x_i-x_j}=\frac{c_i}{c_j}\,\frac{(-1)^{i+j}}{x_i-x_j}\qquad(i\ne j).\ \ \checkmark$$
+
+::: notes
+~4 min. Where the node polynomial comes from: T_N'(cos θ) = N sin Nθ / sin θ = N U_{N−1}(cos θ), so the interior extrema of T_N are the roots of U_{N−1}, and the factor x² − 1 adds the endpoints. Monic normalization: ω = 2^{1−N}(x² − 1)U_{N−1}, so ω'(x_j) = 2^{1−N} N (−1)^j c_j exactly; the constant cancels in the ratio. The sign alternation is the equioscillation of T_N; the factor 2 at the ends is the same halving as the endpoint weights of the trapezoidal rule (DCT-I). Closed forms for the diagonal (not needed, the negative-sum trick gives them): D_00 = −D_NN = (2N² + 1)/6, and D_jj = −x_j / (2(1 − x_j²)) for 0 < j < N. All checked numerically against the derivative of the Lagrange basis.
 :::
 
 ## Eigenvalues of $-u''$: a constant fraction is exact
