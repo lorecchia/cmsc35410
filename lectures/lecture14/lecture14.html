@@ -1125,12 +1125,12 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <p><span class="math display">\[-(pu')'+qu=\lambda ru\quad\longrightarrow\quad\big(-D\,\mathrm{diag}(p)\,D+\mathrm{diag}(q)\big)u=\lambda\,\mathrm{diag}(r)\,u\]</span> (Dirichlet: keep interior rows and columns; generalized eigenproblem.)</p>
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="figures/sl-convergence.svg" class="" style="width:100.0%" alt="Left: Chebyshev errors fall to 10^-13 by N = 64 while finite-difference errors decrease like N^-2. Right: with a jump in p, Chebyshev errors decrease only like 1/N and are no better than finite differences."></p>
+<p><img data-src="figures/sl-convergence.svg" class="" style="width:100.0%" alt="Left: Chebyshev errors fall to 10^-11 by N = 64 while finite-difference errors decrease like N^-2. Right: with a jump in p, Chebyshev errors decrease only like 1/N and are no better than finite differences."></p>
 <figcaption>Relative error of <span class="math inline">\(\lambda_1\)</span> (solid) and <span class="math inline">\(\lambda_5\)</span> (dashed) on <span class="math inline">\([0,1]\)</span>, Dirichlet, <span class="math inline">\(r=1+\frac x2\)</span>. Left: smooth <span class="math inline">\(p\)</span> (the Weyl example of Part 1). Right: <span class="math inline">\(p\)</span> with a jump at <span class="math inline">\(x=\frac12\)</span>.</figcaption>
 </figure>
 </div>
 <ul>
-<li><strong>Smooth <span class="math inline">\(p\)</span>:</strong> <span class="math inline">\(\lambda_1\)</span> to <span class="math inline">\(4\times10^{-4},\ 1.5\times10^{-7},\ 10^{-13}\)</span> at <span class="math inline">\(N=16,32,64\)</span>; finite differences reach <span class="math inline">\(10^{-5}\)</span> only at <span class="math inline">\(N\approx230\)</span>.</li>
+<li><strong>Smooth <span class="math inline">\(p\)</span>:</strong> <span class="math inline">\(\lambda_1\)</span> to <span class="math inline">\(4\times10^{-4},\ 1.5\times10^{-7},\ 10^{-11}\)</span> at <span class="math inline">\(N=16,32,64\)</span>; finite differences reach <span class="math inline">\(10^{-5}\)</span> only at <span class="math inline">\(N\approx230\)</span>.</li>
 <li><strong>Jump in <span class="math inline">\(p\)</span>:</strong> Chebyshev error <span class="math inline">\(\approx\frac1N\)</span> (<span class="math inline">\(4.5\times10^{-2}\)</span>, <span class="math inline">\(2.2\times10^{-2}\)</span>, <span class="math inline">\(1.1\times10^{-2}\)</span>), <strong>worse</strong> than the graph. Smoothness is the price; the fix is a breakpoint at the jump (piecewise Chebyshev, spectral elements).</li>
 </ul>
 <aside class="notes">
@@ -1194,9 +1194,9 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <td style="text-align: left;"><span class="math inline">\(O(N^4)\)</span>: <span class="math inline">\(3.3\times10^5\)</span> at <span class="math inline">\(N=64\)</span></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">rough coefficients</td>
-<td style="text-align: left;">fine</td>
-<td style="text-align: left;">loses spectral accuracy</td>
+<td style="text-align: left;">rough <span class="math inline">\(p,q,r\)</span> (e.g.&nbsp;a jump in <span class="math inline">\(p\)</span>)</td>
+<td style="text-align: left;">robust: <span class="math inline">\(O(h^2)\)</span> if the jump is at a node, <span class="math inline">\(O(h)\)</span> otherwise</td>
+<td style="text-align: left;">loses spectral accuracy: <span class="math inline">\(O(1/N)\)</span></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">oscillation, monotone Fiedler</td>
