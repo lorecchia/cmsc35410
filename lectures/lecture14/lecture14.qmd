@@ -597,9 +597,9 @@ $$(D_N)_{ij}=\frac{(-1)^ic_i}{(-1)^jc_j}\,\frac1{x_i-x_j}=\frac{c_i}{c_j}\,\frac
 $$-(pu')'+qu=\lambda ru\quad\longrightarrow\quad\big(-D\,\mathrm{diag}(p)\,D+\mathrm{diag}(q)\big)u=\lambda\,\mathrm{diag}(r)\,u$$
 (Dirichlet: keep interior rows and columns; generalized eigenproblem.)
 
-![Relative error of $\lambda_1$ (solid) and $\lambda_5$ (dashed) on $[0,1]$, Dirichlet, $r=1+\frac x2$. Left: smooth $p$ (the Weyl example of Part 1). Right: $p$ with a jump at $x=\frac12$.](figures/sl-convergence.svg){.nostretch fig-align="center" width="100%" fig-alt="Left: Chebyshev errors fall to 10^-13 by N = 64 while finite-difference errors decrease like N^-2. Right: with a jump in p, Chebyshev errors decrease only like 1/N and are no better than finite differences."}
+![Relative error of $\lambda_1$ (solid) and $\lambda_5$ (dashed) on $[0,1]$, Dirichlet, $r=1+\frac x2$. Left: smooth $p$ (the Weyl example of Part 1). Right: $p$ with a jump at $x=\frac12$.](figures/sl-convergence.svg){.nostretch fig-align="center" width="100%" fig-alt="Left: Chebyshev errors fall to 10^-11 by N = 64 while finite-difference errors decrease like N^-2. Right: with a jump in p, Chebyshev errors decrease only like 1/N and are no better than finite differences."}
 
-- **Smooth $p$:** $\lambda_1$ to $4\times10^{-4},\ 1.5\times10^{-7},\ 10^{-13}$ at $N=16,32,64$; finite differences reach $10^{-5}$ only at $N\approx230$.
+- **Smooth $p$:** $\lambda_1$ to $4\times10^{-4},\ 1.5\times10^{-7},\ 10^{-11}$ at $N=16,32,64$; finite differences reach $10^{-5}$ only at $N\approx230$.
 - **Jump in $p$:** Chebyshev error $\approx\frac1N$ ($4.5\times10^{-2}$, $2.2\times10^{-2}$, $1.1\times10^{-2}$), **worse** than the graph. Smoothness is the price; the fix is a breakpoint at the jump (piecewise Chebyshev, spectral elements).
 
 ::: notes
@@ -617,7 +617,7 @@ $$-(pu')'+qu=\lambda ru\quad\longrightarrow\quad\big(-D\,\mathrm{diag}(p)\,D+\ma
 | accuracy | algebraic, $O(N^{-2})$ | geometric, $O(\rho^{-N})$ for smooth data |
 | trustworthy modes | low modes only ($j\ll N$) | bottom $\approx\frac2\pi$ fraction |
 | conditioning of $D^2$ | $O(N^2)$ | $O(N^4)$: $3.3\times10^5$ at $N=64$ |
-| rough coefficients | fine | loses spectral accuracy |
+| rough $p,q,r$ (e.g. a jump in $p$) | robust: $O(h^2)$ if the jump is at a node, $O(h)$ otherwise | loses spectral accuracy: $O(1/N)$ |
 | oscillation, monotone Fiedler | yes (Jacobi matrices) | not guaranteed |
 
 - **Getting symmetry back:** Legendre–Galerkin methods (weak form, quadrature weights) give a symmetric generalized eigenproblem with the same spectral accuracy.
