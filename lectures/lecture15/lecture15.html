@@ -179,8 +179,9 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <li><strong>§3 Boundaries, killing, spectra.</strong> Reflection and killing; exit times and the Green’s function; Feynman–Kac; compact vs.&nbsp;non-compact.</li>
 <li><strong>§4 Graphs on samples converge to Laplacians</strong> (one slide).</li>
 </ul>
+<p><strong>Running example:</strong> Langevin dynamics <span class="math inline">\(dX_t=-\nabla U(X_t)\,dt+\sqrt2\,dW_t\)</span>, with <span class="math inline">\(U=0\)</span> (Brownian motion), <span class="math inline">\(U=\frac{x^2}2\)</span> (Ornstein–Uhlenbeck) and <span class="math inline">\(U=(x^2-1)^2\)</span> (double well).</p>
 <aside class="notes">
-<p>~1 min. Timing: §1 ~16 min, §2 ~20 min, §3 ~20 min, §4 ~5 min, closing ~6 min.</p>
+<p>~1 min. Timing: §1 ~24 min (with the Langevin and OU slides), §2 ~22 min, §3 ~20 min, §4 ~5 min, closing ~6 min.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -249,16 +250,111 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
           display:block!important;
       }</style></aside>
 </section>
-<section class="slide level2">
-<h2>Itô’s formula and Dynkin’s formula</h2>
-<p>For <span class="math inline">\(dX_t=\sqrt2\,dW_t\)</span> and smooth <span class="math inline">\(f\)</span> (<strong>Itô’s formula</strong>: the <span class="math inline">\((dW)^2=dt\)</span> term survives): <span class="math display">\[df(X_t)=\sqrt2\,\nabla f(X_t)\cdot dW_t+\Delta f(X_t)\,dt .\]</span></p>
+<section class="slide level2 smaller">
+<h2>Running example: Langevin dynamics</h2>
+<div class="defn">
+<p><strong>Langevin dynamics</strong> with a smooth <strong>potential</strong> <span class="math inline">\(U:\mathbb R^d\to\mathbb R\)</span>: <span class="math display">\[dX_t=-\nabla U(X_t)\,dt+\sqrt2\,dW_t .\]</span></p>
+</div>
 <ul>
-<li><strong>Martingale:</strong> <span class="math inline">\(\ M_t^f=f(X_t)-f(X_0)-\int_0^t\Delta f(X_s)\,ds\ \)</span> has mean zero: the generator is the <strong>drift of <span class="math inline">\(f(X_t)\)</span></strong>.</li>
-<li><strong>Dynkin’s formula:</strong> for a stopping time <span class="math inline">\(\tau\)</span> with <span class="math inline">\(\mathbb E_x\tau&lt;\infty\)</span>, <span class="math display">\[\mathbb E_xf(X_\tau)=f(x)+\mathbb E_x\int_0^\tau\Delta f(X_s)\,ds .\]</span></li>
+<li><strong>Gradient descent plus noise.</strong> Euler–Maruyama with step <span class="math inline">\(\eta\)</span> gives the <strong>unadjusted Langevin algorithm</strong> <span class="math inline">\(\ X_{k+1}=X_k-\eta\,\nabla U(X_k)+\sqrt{2\eta}\,\xi_k\)</span>, <span class="math inline">\(\ \xi_k\sim N(0,I)\)</span>. The drift pulls toward minima of <span class="math inline">\(U\)</span>; the noise kicks the particle out.</li>
+<li><strong>Claim (proved in §2):</strong> when <span class="math inline">\(Z=\int e^{-U}&lt;\infty\)</span>, the stationary law is <span class="math inline">\(\ \pi=e^{-U}/Z\)</span>. So Langevin <strong>samples</strong> from any density known up to a constant, such as a Bayesian posterior (<span class="math inline">\(U=-\log\)</span> likelihood <span class="math inline">\(-\log\)</span> prior).</li>
+</ul>
+<table class="caption-top">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 26%">
+<col style="width: 57%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><span class="math inline">\(U\)</span></th>
+<th style="text-align: left;">name</th>
+<th style="text-align: left;">behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: left;">Brownian motion</td>
+<td style="text-align: left;">spreads forever; <span class="math inline">\(e^{-U}=1\)</span> is <strong>not normalizable</strong>: no stationary probability</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(\frac{\lvert x\rvert^2}2\)</span></td>
+<td style="text-align: left;">Ornstein–Uhlenbeck (OU)</td>
+<td style="text-align: left;">pulled back to <span class="math inline">\(0\)</span>; <span class="math inline">\(\pi=N(0,I)\)</span>; everything explicit</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\((x^2-1)^2\)</span></td>
+<td style="text-align: left;">double well</td>
+<td style="text-align: left;"><strong>metastable</strong>: stays near <span class="math inline">\(\pm1\)</span>, hops between them</td>
+</tr>
+</tbody>
+</table>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="figures/langevin.svg" class="" style="width:92.0%" alt="Top left: a Brownian path wandering away inside a widening grey band, and an OU path decaying toward 0 along the dashed curve 3e^{-t} and then fluctuating around it. Bottom left: a double-well path that stays near +1 or -1 for a few time units and then hops to the other well. Right: histograms matching a standard Gaussian for OU and a bimodal density with peaks at plus and minus 1 for the double well."></p>
+<figcaption>Left: paths from <span class="math inline">\(x=3\)</span> (Brownian, OU) and <span class="math inline">\(x=1\)</span> (double well). Right: <span class="math inline">\(X_t\)</span> at large <span class="math inline">\(t\)</span> over many paths, against <span class="math inline">\(e^{-U}/Z\)</span>.</figcaption>
+</figure>
+</div>
+<aside class="notes">
+<p>~4 min. Temperature: dX = −∇U dt + √(2/β) dW has stationary law ∝ e^{−βU}; as β → ∞ it concentrates on the minima of U (simulated annealing), so Langevin interpolates between optimization and sampling. Stochastic-gradient Langevin dynamics (SGLD) replaces ∇U by a minibatch estimate. The discretization has bias O(η) in its stationary law; a Metropolis correction (MALA) removes it: Lecture 16. Double well: the hopping rate is given by Kramers’ formula, ≈ (√(U’‘(1)|U’’(0)|)/2π) e^{−ΔU} = (√32/2π) e^{−1} ≈ 0.33 per unit time for barrier ΔU = 1; the path in the figure changes sign about 15 times on [0, 30]. Simulation: scripts/make_figures.py (fig_langevin), Euler–Maruyama with dt = 10⁻³.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2 smaller">
+<h2>Itô’s formula and Dynkin’s formula</h2>
+<div class="thm">
+<p><strong>Itô’s formula.</strong> Let <span class="math inline">\(X\)</span> solve <span class="math inline">\(dX_t=b(X_t)\,dt+\sigma(X_t)\,dW_t\)</span> in <span class="math inline">\(\mathbb R^d\)</span>, with <span class="math inline">\(W\)</span> an <span class="math inline">\(m\)</span>-dimensional Brownian motion and <span class="math inline">\(b,\sigma\)</span> Lipschitz. Let <span class="math inline">\(f(t,x)\)</span> be <span class="math inline">\(C^1\)</span> in <span class="math inline">\(t\)</span> and <span class="math inline">\(C^2\)</span> in <span class="math inline">\(x\)</span>. Then, almost surely, for all <span class="math inline">\(t\ge0\)</span>, <span class="math display">\[f(t,X_t)=f(0,X_0)+\int_0^t\Big(\partial_sf+b\cdot\nabla f+\tfrac12\operatorname{tr}\big(\sigma\sigma^\top\nabla^2f\big)\Big)(s,X_s)\,ds+\int_0^t\nabla f(s,X_s)^\top\sigma(X_s)\,dW_s .\]</span></p>
+</div>
+<ul>
+<li><strong>How to remember it:</strong> Taylor-expand to second order, <span class="math inline">\(\ df=\partial_tf\,dt+\nabla f\cdot dX+\frac12\,dX^\top\nabla^2f\,dX\)</span>, and use <span class="math inline">\(\ dW^i\,dW^j=\delta_{ij}\,dt\)</span>, <span class="math inline">\(\ dt\,dW=dt^2=0\)</span>. Since <span class="math inline">\(|dW|\sim\sqrt{dt}\)</span>, the second-order term <strong>survives</strong>: that is the difference from ordinary calculus.</li>
+<li><strong>Langevin</strong> (<span class="math inline">\(b=-\nabla U\)</span>, <span class="math inline">\(\sigma=\sqrt2\,I\)</span>, <span class="math inline">\(f=f(x)\)</span>): <span class="math inline">\(\ df(X_t)=\sqrt2\,\nabla f(X_t)\cdot dW_t+\mathcal Af(X_t)\,dt\)</span>, with <span class="math inline">\(\ \mathcal Af=\Delta f-\nabla U\cdot\nabla f\)</span>. <strong>Brownian motion</strong> is <span class="math inline">\(U=0\)</span>, <span class="math inline">\(\mathcal A=\Delta\)</span>.</li>
+<li><strong>Check</strong> (<span class="math inline">\(d=1\)</span>, <span class="math inline">\(f=x^2\)</span>): <span class="math inline">\(\ d(X_t^2)=2\sqrt2\,X_t\,dW_t+2\,dt\)</span>, so <span class="math inline">\(\mathbb E_0X_t^2=2t\)</span>, the variance of the scaling limit.</li>
+<li><strong>Martingale:</strong> <span class="math inline">\(\ M_t^f=f(X_t)-f(X_0)-\int_0^t\mathcal Af(X_s)\,ds\ \)</span> is the stochastic integral, so it has mean zero (e.g.&nbsp;for bounded <span class="math inline">\(\nabla f\)</span>): the generator is the <strong>drift of <span class="math inline">\(f(X_t)\)</span></strong>.</li>
+<li><strong>Dynkin’s formula:</strong> for a stopping time <span class="math inline">\(\tau\)</span> with <span class="math inline">\(\mathbb E_x\tau&lt;\infty\)</span>, <span class="math display">\[\mathbb E_xf(X_\tau)=f(x)+\mathbb E_x\int_0^\tau\mathcal Af(X_s)\,ds .\]</span></li>
 <li><strong>Graph analogue:</strong> <span class="math inline">\(f(X_t)-\int_0^t(P-I)f(X_s)\,ds\)</span> is a martingale for the continuous-time walk; this gave the hitting-time equations <span class="math inline">\(Lh=d-\mathrm{vol}\,\mathbf 1_t\)</span> in Lecture 9.</li>
 </ul>
 <aside class="notes">
-<p>~4 min. Heuristic for Itô: Taylor to second order, df = ∇f·dX + ½ dXᵀ∇²f dX, and dX dXᵀ = 2 dW dWᵀ = 2I dt. Dynkin is optional stopping for the martingale M^f; we use it in §3 for exit times. Everything here is stated without proof (Øksendal, Le Gall).</p>
+<p>~5 min. Heuristic for Itô: Taylor to second order, df = ∇f·dX + ½ dXᵀ∇²f dX, and dX dXᵀ = σ dW dWᵀ σᵀ = σσᵀ dt (= 2I dt for Brownian motion). Why dW dWᵀ = I dt: over a partition of [0, t] with mesh → 0, Σ (ΔW)² → t in L² (quadratic variation), while Σ |Δt ΔW| and Σ (Δt)² → 0. The dW integral is the Itô integral (integrand evaluated at the left endpoint of each interval), which is what makes it a (local) martingale; it is a true martingale when E∫|σᵀ∇f|² ds &lt; ∞. The time-dependent form is the one used for Feynman–Kac in §3. The drift term is exactly the generator of the next section’s “Diffusion generators” slide, plus ∂_t. Dynkin is optional stopping for the martingale M^f; we use it in §3 for exit times. Everything here is stated without proof (Øksendal, Le Gall).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2 smaller scrollable">
+<h2>Example: Ornstein–Uhlenbeck, solved with Itô</h2>
+<p>In <span class="math inline">\(d=1\)</span> with <span class="math inline">\(U=\frac{x^2}2\)</span>: <span class="math inline">\(\quad dX_t=-X_t\,dt+\sqrt2\,dW_t\)</span>.</p>
+<ol type="1">
+<li><strong>Integrating factor.</strong> Apply Itô to <span class="math inline">\(f(t,x)=e^tx\)</span>. Here <span class="math inline">\(\partial_tf=e^tx\)</span>, <span class="math inline">\(\partial_xf=e^t\)</span>, <span class="math inline">\(\partial_x^2f=0\)</span>, so there is <strong>no</strong> second-order correction: <span class="math display">\[d(e^tX_t)=e^tX_t\,dt+e^t\,dX_t=\sqrt2\,e^t\,dW_t\quad\Longrightarrow\quad X_t=e^{-t}x+\sqrt2\int_0^te^{-(t-s)}\,dW_s .\]</span></li>
+<li><strong>The law.</strong> A stochastic integral of a deterministic integrand is Gaussian, with mean <span class="math inline">\(0\)</span> and variance <span class="math inline">\(2\int_0^te^{-2(t-s)}\,ds=1-e^{-2t}\)</span> (Itô isometry). So <span class="math display">\[X_t\sim N\big(e^{-t}x,\ 1-e^{-2t}\big)\ \xrightarrow[t\to\infty]{}\ N(0,1)=\frac{e^{-x^2/2}}{\sqrt{2\pi}}\ \propto\ e^{-U}\qquad\text{from every }x.\]</span></li>
+<li><strong>The semigroup</strong> (Mehler’s formula): <span class="math inline">\(\ P_tf(x)=\mathbb E\,f\big(e^{-t}x+\sqrt{1-e^{-2t}}\,Z\big)\)</span>, <span class="math inline">\(\ Z\sim N(0,1)\)</span>.</li>
+</ol>
+<ul>
+<li><strong>Compare Brownian motion</strong> (<span class="math inline">\(U=0\)</span>): <span class="math inline">\(X_t\sim N(x,2t)\)</span>, and the variance grows forever. The confining drift is the difference between <strong>spreading</strong> and <strong>mixing</strong>.</li>
+<li><strong>The generator as the drift of <span class="math inline">\(f(X_t)\)</span>:</strong> <span class="math inline">\(\ \mathcal Af=f''-xf'\)</span>.
+<ul>
+<li><span class="math inline">\(f=x\)</span>: <span class="math inline">\(\ \mathcal Ax=-x\)</span>, so <span class="math inline">\(\ \frac{d}{dt}\mathbb E_xX_t=-\mathbb E_xX_t\)</span> and <span class="math inline">\(\mathbb E_xX_t=e^{-t}x\)</span>, as in step 2.</li>
+<li><span class="math inline">\(f=x^2-1\)</span>: <span class="math inline">\(\ \mathcal Af=-2f\)</span>. So <span class="math inline">\(x\)</span> and <span class="math inline">\(x^2-1\)</span> are <strong>eigenfunctions</strong>, with eigenvalues <span class="math inline">\(-1,-2\)</span>: the start of the Hermite basis (Lecture 16).</li>
+</ul></li>
+</ul>
+<aside class="notes">
+<p>~4 min. Itô isometry: E(∫_0^t g dW)² = ∫_0^t g² ds for deterministic (or adapted) g; a deterministic g gives a Gaussian because the integral is a limit of Gaussian sums. Simulation check (scripts/make_figures.py): from x = 2 at t = 1, sample mean 0.740 vs 2/e = 0.736 and variance 0.860 vs 1 − e^{−2} = 0.865. The rate 1 at which the mean forgets x is the spectral gap of OU; the eigenvalue −2 of x² − 1 is the rate at which the variance relaxes, consistent with 1 − e^{−2t}. The same integrating-factor trick solves any linear SDE dX = −BX dt + σ dW (Gaussian processes).</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -313,6 +409,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <ul>
 <li><strong>Duality:</strong> <span class="math inline">\(\ \int f\,d\mu_t=\int P_tf\,d\mu\)</span>.</li>
 <li><strong>Densities relative to <span class="math inline">\(\pi\)</span>:</strong> if <span class="math inline">\(\mu_t=h_t\,\pi\)</span> and <span class="math inline">\(\pi\)</span> is stationary, then <span class="math inline">\(\partial_th_t=\mathcal A^\dagger h_t\)</span>, the adjoint in <span class="math inline">\(L^2(\pi)\)</span>. For <strong>reversible</strong> processes <span class="math inline">\(\mathcal A^\dagger=\mathcal A\)</span>: densities evolve like functions (Lecture 2, §2.4).</li>
+<li><strong>OU:</strong> on functions, <span class="math inline">\(P_tf(x)=\mathbb E f\big(e^{-t}x+\sqrt{1-e^{-2t}}Z\big)\)</span>; on measures, <span class="math inline">\(\delta_xP_t=N(e^{-t}x,1-e^{-2t})\to N(0,1)\)</span> for every <span class="math inline">\(x\)</span>.</li>
 <li>The forward equation for a diffusion is the <strong>Fokker–Planck equation</strong> (Lecture 16).</li>
 </ul>
 <aside class="notes">
@@ -334,7 +431,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <p>For the SDE <span class="math inline">\(\ dX_t=b(X_t)\,dt+\sigma(X_t)\,dW_t\)</span>, Itô’s formula gives the generator <span class="math display">\[\mathcal Af=b\cdot\nabla f+\tfrac12\operatorname{tr}\big(\sigma\sigma^\top\nabla^2f\big).\]</span></p>
 <ul>
 <li><strong>Drift</strong> <span class="math inline">\(b\)</span>: first-order term (transport). <strong>Diffusion matrix</strong> <span class="math inline">\(a=\sigma\sigma^\top\)</span>: second-order term.</li>
-<li>With <span class="math inline">\(\sigma=\sqrt2\,I\)</span>: <span class="math inline">\(\ \mathcal Af=\Delta f+b\cdot\nabla f\)</span>.</li>
+<li>With <span class="math inline">\(\sigma=\sqrt2\,I\)</span>: <span class="math inline">\(\ \mathcal Af=\Delta f+b\cdot\nabla f\)</span>. <strong>Langevin:</strong> <span class="math inline">\(\ \mathcal Af=\Delta f-\nabla U\cdot\nabla f\)</span>. OU: <span class="math inline">\(\ f''-xf'\)</span>; double well: <span class="math inline">\(\ f''-4x(x^2-1)f'\)</span>.</li>
 <li><strong>Graph analogue:</strong> <span class="math inline">\(\mathcal A=P-I\)</span>, i.e.&nbsp;<span class="math inline">\(\mathcal Af(x)=\sum_yP(x,y)\big(f(y)-f(x)\big)\)</span>: the average change of <span class="math inline">\(f\)</span> over one jump.</li>
 <li><strong>Local vs.&nbsp;non-local:</strong> diffusion generators are <strong>differential operators</strong> (paths are continuous); graph generators average over neighbours (paths jump). Both are <strong>Markov generators</strong>: <span class="math inline">\(\mathcal A1=0\)</span> and the <strong>maximum principle</strong> (<span class="math inline">\(f\)</span> maximal at <span class="math inline">\(x\)</span> <span class="math inline">\(\Rightarrow\)</span> <span class="math inline">\(\mathcal Af(x)\le0\)</span>).</li>
 </ul>
@@ -359,13 +456,14 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <li><strong>Reversible</strong> <span class="math inline">\(\pi\)</span>: <span class="math inline">\(\ \int g\,\mathcal Af\,d\pi=\int f\,\mathcal Ag\,d\pi\)</span>, i.e.&nbsp;<span class="math inline">\(\mathcal A\)</span> is <strong>self-adjoint in <span class="math inline">\(L^2(\pi)\)</span></strong>. Graph: <span class="math inline">\(\Pi P=P^\top\Pi\)</span>.</li>
 </ul>
 <div class="thm">
-<p><strong>Example.</strong> Let <span class="math inline">\(\pi\propto e^{-U}\)</span> and <span class="math inline">\(\mathcal A=\Delta+b\cdot\nabla\)</span>. Integration by parts gives <span class="math inline">\(\ \int g\,\Delta f\,e^{-U}=-\int\nabla g\cdot\nabla f\,e^{-U}+\int g\,\nabla U\cdot\nabla f\,e^{-U}\)</span>, so <span class="math display">\[\mathcal A\ \text{is reversible for}\ \pi\iff b=-\nabla U:\qquad dX_t=-\nabla U(X_t)\,dt+\sqrt2\,dW_t .\]</span></p>
+<p><strong>Langevin is the reversible diffusion.</strong> Let <span class="math inline">\(\pi\propto e^{-U}\)</span> and <span class="math inline">\(\mathcal A=\Delta+b\cdot\nabla\)</span>. Integration by parts gives <span class="math inline">\(\ \int g\,\Delta f\,e^{-U}=-\int\nabla g\cdot\nabla f\,e^{-U}+\int g\,\nabla U\cdot\nabla f\,e^{-U}\)</span>, so <span class="math display">\[\mathcal A\ \text{is reversible for}\ \pi\iff b=-\nabla U:\qquad dX_t=-\nabla U(X_t)\,dt+\sqrt2\,dW_t .\]</span></p>
 </div>
 <ul>
-<li>This is <strong>Langevin dynamics</strong>, the continuum Metropolis chain for sampling from <span class="math inline">\(e^{-U}\)</span> (Lecture 16). <span class="math inline">\(U=\frac{|x|^2}2\)</span> gives Ornstein–Uhlenbeck, <span class="math inline">\(\mathcal Af=\Delta f-x\cdot\nabla f\)</span>.</li>
+<li><strong>This proves the claim of §1:</strong> reversible implies stationary (take <span class="math inline">\(g=1\)</span>), so <span class="math inline">\(e^{-U}/Z\)</span> is stationary for Langevin, as the histograms showed. It is the continuum Metropolis chain (Lecture 16). OU: <span class="math inline">\(\pi=N(0,I)\)</span>.</li>
+<li><strong>Brownian motion has no stationary probability.</strong> Here <span class="math inline">\(e^{-U}=1\)</span> is not normalizable, and nothing else works either: <span class="math inline">\(\ \mathbb P_x(X_t\in K)\le|K|\,(4\pi t)^{-d/2}\to0\)</span> for every bounded <span class="math inline">\(K\)</span>. If <span class="math inline">\(\pi\)</span> were stationary, then <span class="math inline">\(\pi(K)=\int\mathbb P_x(X_t\in K)\,d\pi(x)\to0\)</span> for every <span class="math inline">\(K\)</span>, which is impossible. Lebesgue measure is stationary but <strong>infinite</strong> (§3).</li>
 </ul>
 <aside class="notes">
-<p>~4 min. With b = −∇U the symmetric form is ∫g 𝒜f dπ = −∫∇g·∇f dπ, manifestly symmetric. Conversely, symmetry for all f, g forces (b + ∇U)·∇f to integrate to zero against every g, so b = −∇U. Non-reversible drifts with the same π exist (b = −∇U + c with div(c e^{−U}) = 0); they can mix faster, a theme for Lecture 16.</p>
+<p>~5 min. With b = −∇U the symmetric form is ∫g 𝒜f dπ = −∫∇g·∇f dπ, manifestly symmetric. Brownian argument: the limit uses dominated convergence (P_x(X_t ∈ K) ≤ 1 and → 0 pointwise), so π(K) = 0 for every bounded K, hence π = 0. The density e^{−U} needs U to grow at infinity: Z &lt; ∞ for OU and the double well, Z = ∞ for U = 0 (and for any U that grows too slowly, e.g.&nbsp;U = ½ log(1 + |x|²) in d = 1). Conversely, symmetry for all f, g forces (b + ∇U)·∇f to integrate to zero against every g, so b = −∇U. Non-reversible drifts with the same π exist (b = −∇U + c with div(c e^{−U}) = 0); they can mix faster, a theme for Lecture 16.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -411,6 +509,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 </table>
 <ul>
 <li><strong>Same functional inequalities:</strong> Poincaré <span class="math inline">\(\lambda\operatorname{Var}_\pi f\le\mathcal E(f,f)\)</span>, LSI, MLSI, and the same proofs of <span class="math inline">\(\chi^2\)</span> and entropy decay (Lectures 3–4, 13).</li>
+<li><strong>OU:</strong> <span class="math inline">\(\ \mathcal E(f,f)=\int f'^2\,d\gamma\)</span> for <span class="math inline">\(\gamma=N(0,1)\)</span>. The <strong>Gaussian Poincaré inequality</strong> <span class="math inline">\(\operatorname{Var}_\gamma f\le\int f'^2\,d\gamma\)</span> holds with <span class="math inline">\(\lambda=1\)</span>, and <span class="math inline">\(f=x\)</span> (the eigenfunction above) shows it is sharp: <span class="math inline">\(\operatorname{Var}_\gamma x=1=\int1\,d\gamma\)</span>. Proof: Lecture 16.</li>
 <li><strong>Diffusion property (chain rule):</strong> <span class="math inline">\(\ \Gamma(\varphi(f),g)=\varphi'(f)\,\Gamma(f,g)\)</span>. This is why <span class="math inline">\(\mathcal E(h,\log h)=4\,\mathcal E(\sqrt h,\sqrt h)\)</span> and <span class="math inline">\(\rho_0=4\alpha\)</span> for diffusions (Lecture 13). On graphs it fails: only inequalities survive.</li>
 <li><strong>Next:</strong> iterate once more, <span class="math inline">\(\Gamma_2(f)=\frac12\big(\mathcal A\Gamma(f)-2\Gamma(f,\mathcal Af)\big)\)</span>: <strong>Bakry–Émery</strong> (Lecture 17).</li>
 </ul>
@@ -434,6 +533,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <li><span class="math inline">\(\Delta\)</span> is <strong>unbounded</strong>; it is defined on a <strong>domain</strong>, and the domain encodes the boundary behaviour (LA Review II §8, Lecture 14). <span class="math inline">\(P_t\)</span> is a <strong>contraction</strong> for every <span class="math inline">\(t\)</span>.</li>
 <li><strong>Hille–Yosida</strong> (stated): a closed, densely defined <span class="math inline">\(\mathcal A\)</span> generates a strongly continuous contraction semigroup iff every <span class="math inline">\(\lambda&gt;0\)</span> is in its resolvent set and <span class="math inline">\(\|(\lambda-\mathcal A)^{-1}\|\le\frac1\lambda\)</span>.</li>
 <li><strong>Self-adjoint case:</strong> <span class="math inline">\(-\mathcal A\succeq0\)</span> self-adjoint in <span class="math inline">\(L^2(\pi)\)</span> <span class="math inline">\(\Rightarrow\)</span> <span class="math inline">\(P_t=e^{t\mathcal A}\)</span> by the spectral theorem. Equivalently, start from a <strong>closed quadratic form</strong> <span class="math inline">\(\mathcal E\)</span> (a Dirichlet form) and build the operator from it (Friedrichs, Fukushima).</li>
+<li><strong>OU:</strong> <span class="math inline">\(\mathcal A=\frac{d^2}{dx^2}-x\frac d{dx}\)</span> is self-adjoint on <span class="math inline">\(L^2(\gamma)\)</span> with <strong>discrete</strong> spectrum <span class="math inline">\(0,-1,-2,\dots\)</span>, although it lives on all of <span class="math inline">\(\mathbb R\)</span>: confinement does the job of a compact domain (§3).</li>
 <li><strong>Practical rule:</strong> state and prove things for <span class="math inline">\(P_t\)</span>, resolvents <span class="math inline">\((\lambda-\mathcal A)^{-1}\)</span>, or <span class="math inline">\(\mathcal E\)</span>; differentiate only on a core of nice functions.</li>
 </ul>
 <aside class="notes">
@@ -568,7 +668,7 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <li>The heat kernel decays only polynomially: <span class="math inline">\(\ \sup_yp_t(x,y)=(4\pi t)^{-d/2}\)</span>. The particle spreads, it never mixes.</li>
 </ul>
 <div class="idea">
-<p>To get a stationary probability and a gap on <span class="math inline">\(\mathbb R^d\)</span>, add a <strong>confining drift</strong>: <span class="math inline">\(dX=-\nabla U\,dt+\sqrt2\,dW\)</span>. Next lecture: Ornstein–Uhlenbeck (<span class="math inline">\(\lambda=1\)</span>, Hermite eigenfunctions) and Langevin dynamics.</p>
+<p>To get a stationary probability and a gap on <span class="math inline">\(\mathbb R^d\)</span>, add a <strong>confining drift</strong>: this is exactly what Langevin’s <span class="math inline">\(-\nabla U\)</span> does. OU has gap <span class="math inline">\(\lambda=1\)</span> (eigenfunctions <span class="math inline">\(x\)</span>, <span class="math inline">\(x^2-1\)</span>, … from §1); the double well has a <strong>small</strong> gap, set by the hopping rate. Next lecture: Hermite functions, Fokker–Planck, and Poincaré for log-concave <span class="math inline">\(\pi\)</span>.</p>
 </div>
 <aside class="notes">
 <p>~4 min. Point mass starts: on a compact manifold the heat kernel is smooth for every t &gt; 0, so after any positive time the density is bounded and the χ² burn-in is finite, unlike δ_x on a graph with π_min tiny. On ℝ^d: Fourier transform diagonalizes −Δ as multiplication by |ξ|², the multiplication-operator form of the spectral theorem (LA Review II §7.4).</p>
@@ -729,30 +829,34 @@ Reading: Lecture 2 notes §2; Bakry–Gentil–Ledoux Ch. 1; Pavliotis Chs. 2–
 <td style="text-align: left;"><span class="math inline">\(P_tf(x)=\mathbb E_xf(X_t)\)</span>; <span class="math inline">\(\ \mathcal Af=\lim_{t\to0}(P_tf-f)/t\)</span>; <span class="math inline">\(\ \partial_tP_tf=\mathcal AP_tf\)</span></td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">Langevin, OU</td>
+<td style="text-align: left;"><span class="math inline">\(dX=-\nabla U\,dt+\sqrt2\,dW\)</span>, <span class="math inline">\(\ \pi\propto e^{-U}\)</span>; <span class="math inline">\(\ U=\frac{x^2}2\)</span>: <span class="math inline">\(X_t\sim N(e^{-t}x,1-e^{-2t})\)</span></td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">Itô, Dynkin</td>
 <td style="text-align: left;"><span class="math inline">\(df(X)=\sqrt2\nabla f\cdot dW+\Delta f\,dt\)</span>; <span class="math inline">\(\ \mathbb E_xf(X_\tau)=f(x)+\mathbb E_x\int_0^\tau\mathcal Af(X_s)ds\)</span></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">diffusion generator</td>
 <td style="text-align: left;"><span class="math inline">\(dX=b\,dt+\sigma dW\)</span>: <span class="math inline">\(\ \mathcal Af=b\cdot\nabla f+\frac12\operatorname{tr}(\sigma\sigma^\top\nabla^2f)\)</span></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">stationary, reversible</td>
 <td style="text-align: left;"><span class="math inline">\(\int\mathcal Af\,d\pi=0\)</span>; <span class="math inline">\(\ \mathcal A\)</span> self-adjoint in <span class="math inline">\(L^2(\pi)\)</span>; <span class="math inline">\(\pi\propto e^{-U}\)</span>: <span class="math inline">\(b=-\nabla U\)</span></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">carré du champ</td>
 <td style="text-align: left;"><span class="math inline">\(\Gamma(f,g)=\frac12(\mathcal A(fg)-f\mathcal Ag-g\mathcal Af)\)</span>; <span class="math inline">\(\ \mathcal E=\int\Gamma\,d\pi\)</span></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">killing</td>
 <td style="text-align: left;">reflected <span class="math inline">\(\leftrightarrow\)</span> Neumann; killed <span class="math inline">\(\leftrightarrow\)</span> Dirichlet; rate <span class="math inline">\(q\)</span>: generator <span class="math inline">\(\Delta-q\)</span> (Feynman–Kac)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">exit time, occupation</td>
 <td style="text-align: left;"><span class="math inline">\(\mathbb E_x\int_0^\tau f(X_s)ds=\int G(x,y)f(y)dy\)</span>; <span class="math inline">\(\ [0,1]\)</span>: <span class="math inline">\(\mathbb E_x\tau=\frac{x(1-x)}2\)</span></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">sampled graphs</td>
 <td style="text-align: left;"><span class="math inline">\(\frac c{\varepsilon^2}(P-I)\to\Delta+2(1-\alpha)\nabla\log\rho\cdot\nabla\)</span></td>
 </tr>
