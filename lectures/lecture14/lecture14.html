@@ -812,22 +812,197 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
           display:block!important;
       }</style></aside>
 </section>
-<section class="slide level2">
-<h2>Chebyshev is Fourier in disguise</h2>
-<p>Substitute <span class="math inline">\(x=\cos\theta\)</span>. The <strong>Chebyshev polynomials</strong> satisfy <span class="math inline">\(T_k(\cos\theta)=\cos k\theta\)</span>, and the nodes <span class="math inline">\(x_j=\cos\frac{j\pi}N\)</span> are <strong>equispaced in <span class="math inline">\(\theta\)</span></strong>.</p>
+<section class="slide level2 smaller">
+<h2>Series expansion vs.&nbsp;interpolation</h2>
+<p>Approximate <span class="math inline">\(f\)</span> by <span class="math inline">\(N+1\)</span> modes <span class="math inline">\(\varphi_0,\dots,\varphi_N\)</span> of an orthonormal basis of <span class="math inline">\(L^2(w\,dx)\)</span>, e.g.&nbsp;the eigenfunctions of an operator. There are two natural choices:</p>
 <ul>
-<li>Interpolating <span class="math inline">\(f\)</span> at Chebyshev points <span class="math inline">\(=\)</span> cosine interpolation of the even, <span class="math inline">\(2\pi\)</span>-periodic <span class="math inline">\(F(\theta)=f(\cos\theta)\)</span> at equispaced <span class="math inline">\(\theta_j\)</span>: a <strong>discrete cosine transform</strong> (type I, with the endpoints; the path graph’s was type II), now in the variable <span class="math inline">\(\theta\)</span>.</li>
-<li>The nodes cluster at the ends like <span class="math inline">\(\frac1{\sqrt{1-x^2}}\)</span>: equispaced points on the circle, <strong>projected</strong> onto the diameter.</li>
+<li><strong>Truncated series</strong> <span class="math inline">\(f_N=\sum_{k\le N}a_k\varphi_k\)</span>, with <span class="math inline">\(a_k=\int f\,\varphi_k\,w\,dx\)</span>: the orthogonal projection. <strong>Needs integrals of <span class="math inline">\(f\)</span>.</strong></li>
+<li><strong>Interpolant</strong> <span class="math inline">\(p_N=\sum_{k\le N}c_k\varphi_k\)</span>, with <span class="math inline">\(p_N(x_j)=f(x_j)\)</span> at <span class="math inline">\(N+1\)</span> nodes. <strong>Needs only samples.</strong></li>
 </ul>
-<div class="thm">
-<p><strong>Theorem</strong> (Trefethen, <em>ATAP</em> Thm 8.2). If <span class="math inline">\(f\)</span> is analytic and <span class="math inline">\(|f|\le M\)</span> inside the Bernstein ellipse <span class="math inline">\(E_\rho\)</span> (foci <span class="math inline">\(\pm1\)</span>, semi-axes summing to <span class="math inline">\(\rho&gt;1\)</span>), then <span class="math display">\[\|f-p_N\|_\infty\ \le\ \frac{4M\rho^{-N}}{\rho-1}\qquad\text{(Chebyshev interpolant)}.\]</span></p>
+<p><strong>1. Interpolation is projection with the integral replaced by a quadrature rule.</strong> <span class="math display">\[a_k=\int f\,\varphi_k\,w\,dx\quad\leadsto\quad c_k=\sum_j w_j\,f(x_j)\,\varphi_k(x_j).\]</span> If the modes are <strong>discretely orthonormal</strong>, <span class="math inline">\(\sum_jw_j\varphi_k(x_j)\varphi_l(x_j)=\delta_{kl}\)</span> for <span class="math inline">\(k,l\le N\)</span>, then this <span class="math inline">\(p_N\)</span> matches <span class="math inline">\(f\)</span> at every node.</p>
+<p><strong>2. The quadrature error is aliasing.</strong> On the grid, a high mode <span class="math inline">\(\varphi_l\)</span> (<span class="math inline">\(l&gt;N\)</span>) can coincide with a low mode <span class="math inline">\(\varphi_k\)</span>, so the samples cannot tell them apart and the tail of <span class="math inline">\(f\)</span> is counted as low modes. Fourier at <span class="math inline">\(M\)</span> equispaced points: <span class="math inline">\(e^{i(k+mM)x_j}=e^{ikx_j}\)</span>, so <span class="math display">\[c_k=a_k+\sum_{m\ne0}a_{k+mM}.\]</span></p>
+<p><strong>3. So interpolation costs at most a factor 2.</strong> When each high mode aliases onto a single low mode (Fourier, cosines, Chebyshev), <span class="math display">\[\|f-p_N\|_\infty\le\|f-f_N\|_\infty+\|p_N-f_N\|_\infty\le2\sum_{k&gt;N}|a_k|\,\|\varphi_k\|_\infty .\]</span></p>
+<p><strong>Every node set aliases.</strong> What matters is the size of the aliased mode, measured by the Lebesgue constant <span class="math inline">\(\Lambda_N\)</span>: Chebyshev aliasing only relabels modes (<span class="math inline">\(\approx1\)</span>), while equispaced aliasing amplifies them (<span class="math inline">\(\sim2^N\)</span>).</p>
+<div class="idea">
+<p><strong>You have seen this already.</strong> Sampled Fourier is the DFT, i.e.&nbsp;the trapezoidal rule. On the path (Part 1), expanding sampled <span class="math inline">\(f\)</span> in the eigenvectors of <span class="math inline">\(L\)</span> is cosine interpolation in <span class="math inline">\(x\)</span> at the cell centers (DCT-II). Equispaced <strong>polynomial</strong> interpolation has no such quadrature structure, which is why its Lebesgue constant grows like <span class="math inline">\(2^N\)</span>. <strong>Next:</strong> Chebyshev interpolation is exactly this picture, with cosines in a new variable.</p>
+</div>
+<aside class="notes">
+<p>~4 min. Why step 1 interpolates: let Φ = [φ_k(x_j)] (rows j, columns k) and W = diag(w_j). Discrete orthonormality says ΦᵀWΦ = I, so Φ is invertible. The coefficients are c = ΦᵀW f(x), and the samples of p_N are Φc = Φ ΦᵀW f(x) = f(x), because ΦΦᵀW = I as well (a left inverse of a square matrix is a right inverse). Step 2 in general: c_k = Σ_l a_l ⟨φ_l, φ_k⟩<em>grid, and ⟨φ_l, φ_k⟩<em>grid = δ_kl for l ≤ N, so only l &gt; N contributes. Step 3: p_N − f_N = Σ</em>{l&gt;N} a_l φ</em>{k(l)} when each φ_l equals a single φ_{k(l)} on the grid. Check on Runge with Chebyshev, N = 10: the aliasing formula holds exactly; truncation error 0.110, interpolation error 0.132, tail sum 0.110. Aliasing at equispaced vs.&nbsp;Chebyshev nodes (N = 20): interpolating T_l, with |T_l| ≤ 1, gives an interpolant of sup norm 245, 1.7·10³, 1.1·10⁴ at l = 21, 25, 30 on the equispaced grid, and exactly 1 at Chebyshev nodes, where I_N T_l is a single T_k. Caution for students: discrete orthonormality alone does not distinguish the two. Gram–Schmidt in any positive grid inner product gives discretely orthonormal polynomials at any nodes (Gram polynomials for equispaced, equal weights), and projecting onto them reproduces the interpolant. The difference is that Chebyshev’s discrete basis is also continuously orthonormal and bounded (the same T_k), while the Gram polynomials stay bounded at the nodes but blow up between them: sup on [−1, 1] / max at the nodes ≈ 1, 1.8, 21, 7600 for degree 5, 10, 15, 20 at N = 20. General bound: ‖f − p_N‖ ≤ ‖f − f_N‖ + ‖I_N(f − f_N)‖ ≤ (1 + Λ_N)‖f − f_N‖. The practical point for collocation: D_N acts on samples, so it is the interpolant we differentiate, and the factor 2 says that loses essentially nothing compared with the true series.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Aliasing: relabeling vs.&nbsp;amplification</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="figures/aliasing.svg" class="" style="width:100.0%" alt="Left: at equispaced nodes the interpolant of T_16 matches the samples but swings far outside [-1,1] near the endpoints, reaching about 70. Middle: at Chebyshev nodes the interpolant is the smooth mode T_8, bounded by 1. Right: semilog plot of the maximum of the interpolant of T_l against l; both equal 1 for l up to N = 20; beyond that the Chebyshev curve stays at 1 while the equispaced curve jumps to between 10 and 10^4."></p>
+<figcaption>A high mode <span class="math inline">\(T_{16}\)</span> (grey) sampled at <span class="math inline">\(13\)</span> nodes, and the degree-<span class="math inline">\(12\)</span> interpolant of those samples (its alias). Right: the size of the alias of <span class="math inline">\(T_l\)</span> for every <span class="math inline">\(l\)</span>, with <span class="math inline">\(N=20\)</span>.</figcaption>
+</figure>
 </div>
 <ul>
-<li><strong>Geometric</strong> convergence, rate set by the nearest singularity. Runge has poles at <span class="math inline">\(\pm\frac i5\)</span>, so <span class="math inline">\(\rho=\frac15+\sqrt{1.04}\approx1.22\)</span>: the dashed line on the last slide.</li>
-<li>Smoothness is the whole story: periodic smooth <span class="math inline">\(F\)</span> has rapidly decaying Fourier coefficients.</li>
+<li><strong>Both grids alias:</strong> <span class="math inline">\(13\)</span> samples cannot tell <span class="math inline">\(T_{16}\)</span> from a polynomial of degree <span class="math inline">\(\le12\)</span>.</li>
+<li><strong>Chebyshev:</strong> the alias is another mode, <span class="math inline">\(T_8\)</span>, of the same size. The tail of <span class="math inline">\(f\)</span> is <strong>relabeled</strong>, never amplified.</li>
+<li><strong>Equispaced:</strong> the alias matches the samples but <strong>oscillates wildly</strong> between the nodes near the ends, <span class="math inline">\(70\times\)</span> larger than <span class="math inline">\(T_{16}\)</span>. At <span class="math inline">\(N=20\)</span> the factor reaches <span class="math inline">\(10^4\)</span>, so a tail of size <span class="math inline">\(10^{-6}\)</span> can come back as an error of size <span class="math inline">\(10^{-2}\)</span>.</li>
+<li><strong>Right panel:</strong> for <span class="math inline">\(l\le N\)</span> both are exact (size <span class="math inline">\(1\)</span>). For <span class="math inline">\(l&gt;N\)</span> the equispaced alias is <span class="math inline">\(10\)</span> to <span class="math inline">\(10^4\)</span> times too large: this amplification factor is what <span class="math inline">\(\Lambda_N\)</span> bounds.</li>
 </ul>
 <aside class="notes">
-<p>~4 min. Why the folding picture from Part 1 returns: Chebyshev = cosine series in θ, the path = cosine series in x. The path has equispaced x and hence algebraic accuracy for the derivative stencil; Chebyshev puts equispaced points where the function is periodic (in θ), so the trigonometric machinery gives spectral accuracy. If f, …, f^{(k−1)} are absolutely continuous and f^{(k)} has bounded variation, the rate is O(N^{−k}) instead (ATAP Thm 7.2).</p>
+<p>~3 min. Point at the middle panel: T_16 and T_8 agree at every Chebyshev node because cos(16 jπ/12) = cos(2πj − 8jπ/12) = cos(8 jπ/12). In θ this is just Fourier aliasing on an equispaced grid, which is a relabeling of frequencies. Point at the left panel: the alias is the same kind of wild polynomial as the Runge interpolant, and for the same reason. The equispaced curve on the right is not monotone in l; what matters is that it is far above 1 for every l &gt; N. Figure from scripts/collocation_figures.py (fig_aliasing).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2 smaller">
+<h2>Chebyshev is Fourier in disguise</h2>
+<div class="defn">
+<p><strong>Chebyshev polynomials</strong> are defined by the <strong>cosine property</strong> <span class="math display">\[T_k(\cos\theta)=\cos k\theta,\qquad\text{i.e. }\ T_k(x)=\cos(k\arccos x)\ \text{ on }[-1,1].\]</span> This is a polynomial of degree <span class="math inline">\(k\)</span> in <span class="math inline">\(x\)</span>: the identity <span class="math inline">\(\cos(k+1)\theta+\cos(k-1)\theta=2\cos\theta\,\cos k\theta\)</span> gives <span class="math display">\[T_0=1,\qquad T_1=x,\qquad T_{k+1}=2x\,T_k-T_{k-1}\qquad(T_2=2x^2-1,\ \ T_3=4x^3-3x).\]</span> So <span class="math inline">\(|T_k|\le1\)</span> on <span class="math inline">\([-1,1]\)</span>, with alternating extrema <span class="math inline">\(\pm1\)</span> at <span class="math inline">\(x=\cos\frac{j\pi}k\)</span>, and leading coefficient <span class="math inline">\(2^{k-1}\)</span>.</p>
+</div>
+<p>Substitute <span class="math inline">\(x=\cos\theta\)</span>, <span class="math inline">\(\theta\in[0,\pi]\)</span>, and set <span class="math inline">\(F(\theta)=f(\cos\theta)\)</span>. Everything about Chebyshev becomes a statement about cosines in <span class="math inline">\(\theta\)</span>:</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">on <span class="math inline">\([-1,1]\)</span>, variable <span class="math inline">\(x\)</span></th>
+<th style="text-align: left;">on the circle, variable <span class="math inline">\(\theta\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">any function <span class="math inline">\(f\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(F(\theta)=f(\cos\theta)\)</span>: <strong>even and <span class="math inline">\(2\pi\)</span>-periodic</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(T_k(x)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\cos k\theta\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Chebyshev series <span class="math inline">\(f=\sum_k a_kT_k\)</span></td>
+<td style="text-align: left;">cosine series <span class="math inline">\(F=\sum_k a_k\cos k\theta\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(a_k=\frac2\pi\int_{-1}^1 f\,T_k\,\frac{dx}{\sqrt{1-x^2}}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(a_k=\frac2\pi\int_0^\pi F(\theta)\cos k\theta\,d\theta\)</span> <span class="math inline">\(\ \)</span> (halve <span class="math inline">\(a_0\)</span>)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">nodes <span class="math inline">\(x_j=\cos\frac{j\pi}N\)</span>, clustered at <span class="math inline">\(\pm1\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\theta_j=\frac{j\pi}N\)</span>, <strong>equispaced</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">interpolant <span class="math inline">\(p_N\)</span> at the <span class="math inline">\(x_j\)</span></td>
+<td style="text-align: left;">trigonometric interpolant: a DCT-I, <span class="math inline">\(O(N\log N)\)</span> by FFT</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why this helps: <span class="math inline">\(F\)</span> is smooth and periodic for free.</strong> <span class="math inline">\(F'(\theta)=-\sin\theta\,f'(\cos\theta)\)</span> vanishes at <span class="math inline">\(\theta=0,\pi\)</span>, whatever <span class="math inline">\(f'(\pm1)\)</span> is, and so does every odd derivative. So the periodic extension of <span class="math inline">\(F\)</span> has <strong>no kink</strong>.</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 34%">
+<col style="width: 40%">
+<col style="width: 26%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">expand <span class="math inline">\(f\)</span> in</th>
+<th style="text-align: left;">periodic extension</th>
+<th style="text-align: left;">coefficients of a smooth <span class="math inline">\(f\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Fourier in <span class="math inline">\(x\)</span> on <span class="math inline">\([-1,1]\)</span></td>
+<td style="text-align: left;">jumps if <span class="math inline">\(f(-1)\ne f(1)\)</span> (Gibbs)</td>
+<td style="text-align: left;"><span class="math inline">\(O(1/k)\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">cosines in <span class="math inline">\(x\)</span> (the path, Part 1)</td>
+<td style="text-align: left;">kinks if <span class="math inline">\(f'\ne0\)</span> at the ends</td>
+<td style="text-align: left;"><span class="math inline">\(O(1/k^2)\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">cosines in <span class="math inline">\(\theta\)</span> (Chebyshev)</td>
+<td style="text-align: left;">smooth</td>
+<td style="text-align: left;">as fast as <span class="math inline">\(f\)</span> is smooth</td>
+</tr>
+</tbody>
+</table>
+<aside class="notes">
+<p>~4 min. The folding picture from Part 1 returns: the path is a cosine series in x, Chebyshev is a cosine series in θ. The change of variables moves the endpoints ±1 to the turning points θ = 0, π of an even function, where a smooth even function automatically has zero slope. In the x-cosine series, the even extension of f across x = 0 and x = 1 is continuous, but its slope jumps from −f’(0) to f’(0), so the coefficients are O(1/k²): a_k ≈ 2((−1)^k f’(1) − f’(0))/(πk)². In θ there is nothing to jump. Coefficient formula: substitute x = cos θ, dx = −sin θ dθ, and √(1 − x²) = sin θ; the weight 1/√(1 − x²) is exactly the Jacobian. DCT-I (endpoints included) is the transform for the extreme points cos(jπ/N); the path’s cell centers gave DCT-II. Chebfun computes Chebyshev coefficients from samples by exactly this FFT.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2 smaller scrollable">
+<h2>Why the convergence is geometric</h2>
+<div class="thm">
+<p><strong>Theorem</strong> (Trefethen, <em>ATAP</em> Thms 8.1–8.2). Let <span class="math inline">\(f\)</span> be analytic, with <span class="math inline">\(|f|\le M\)</span>, inside the <strong>Bernstein ellipse</strong> <span class="math inline">\(E_\rho\)</span> (foci <span class="math inline">\(\pm1\)</span>, semi-axes <span class="math inline">\(\frac{\rho\pm\rho^{-1}}2\)</span>, <span class="math inline">\(\rho&gt;1\)</span>). Then <span class="math display">\[|a_k|\le2M\rho^{-k},\qquad \|f-f_N\|_\infty\le\frac{2M\rho^{-N}}{\rho-1}\ \ (\text{truncation}),\qquad \|f-p_N\|_\infty\le\frac{4M\rho^{-N}}{\rho-1}\ \ (\text{interpolation}).\]</span></p>
+</div>
+<p><strong>Proof in three moves.</strong> Make <span class="math inline">\(\theta\)</span> complex.</p>
+<ol type="1">
+<li><strong>Joukowski.</strong> Put <span class="math inline">\(z=e^{i\theta}\)</span>, so <span class="math inline">\(x=\frac{z+z^{-1}}2\)</span> and <span class="math inline">\(T_k(x)=\frac{z^k+z^{-k}}2\)</span>. The Chebyshev series of <span class="math inline">\(f\)</span> is the <strong>Laurent series</strong> of <span class="math inline">\(g(z)=f\big(\tfrac{z+z^{-1}}2\big)\)</span>: <span class="math inline">\(\ g(z)=a_0+\sum_{k\ge1}\frac{a_k}2\,(z^k+z^{-k})\)</span>.</li>
+<li><strong>Circles become ellipses.</strong> The Joukowski map sends the circles <span class="math inline">\(|z|=\rho\)</span> and <span class="math inline">\(|z|=\rho^{-1}\)</span> onto <span class="math inline">\(E_\rho\)</span>. So <span class="math display">\[f\text{ analytic in }E_\rho\iff g\text{ analytic on the annulus }\rho^{-1}&lt;|z|&lt;\rho\iff F\text{ analytic on the strip }|\operatorname{Im}\theta|&lt;\log\rho.\]</span></li>
+<li><strong>Cauchy’s estimate.</strong> <span class="math inline">\(\frac{a_k}2=\frac1{2\pi i}\oint_{|z|=\rho}g(z)\,z^{-k-1}dz\)</span>, so <span class="math inline">\(|a_k|\le2M\rho^{-k}\)</span>. Since <span class="math inline">\(|T_k|\le1\)</span>, the tail is at most <span class="math inline">\(\sum_{k&gt;N}2M\rho^{-k}=\frac{2M\rho^{-N}}{\rho-1}\)</span>. At the nodes <span class="math inline">\(\cos\frac{j\pi}N\)</span>, <span class="math inline">\(T_{2mN\pm k}=T_k\)</span>, so interpolation <strong>aliases</strong> the tail onto the low modes, <span class="math inline">\(c_k=a_k+\sum_{m\ge1}(a_{2mN-k}+a_{2mN+k})\)</span>, which at most doubles this (step 3 of the series-vs-interpolation slide).</li>
+</ol>
+<div class="idea">
+<p>This is the classical Fourier fact, “analytic in a strip of half-width <span class="math inline">\(\alpha\)</span> <span class="math inline">\(\Rightarrow\)</span> coefficients <span class="math inline">\(O(e^{-\alpha k})\)</span>”, with <span class="math inline">\(\rho=e^{\alpha}\)</span>. Chebyshev <strong>is</strong> Fourier, after the change of variables.</p>
+</div>
+<aside class="notes">
+<p>~5 min. Step 1: cos kθ = (e^{ikθ} + e^{−ikθ})/2 = (z^k + z^{−k})/2. Step 2: on |z| = ρ, write z = ρe^{iφ}; then x = ½(ρ + ρ^{−1}) cos φ + (i/2)(ρ − ρ^{−1}) sin φ, an ellipse with those semi-axes and foci ±1. In θ: z = e^{iθ} with |z| = ρ means Im θ = −log ρ, so the annulus is the strip, and cos(θ + iα) traces E_{e^α} (checked numerically in scripts/collocation_figures.py). The unit circle |z| = 1 maps onto [−1, 1], covered twice (z and z̄ = z^{−1} give the same x): that is why g is symmetric under z ↦ 1/z and has equal coefficients on z^k and z^{−k}. Step 3: take the contour slightly inside |z| = ρ and pass to the limit. Aliasing: at the nodes x_j = cos(jπ/N), T_{2mN ± k’} and T_{k’} take the same values, so the interpolant is f_N + Σ_{k&gt;N} a_k T_{k’(k)}, and the extra error is again at most the tail Σ_{k&gt;N} |a_k|.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2">
+<h2>Reading the theorem</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="figures/bernstein.svg" class="" style="width:100.0%" alt="Left: the interval [-1,1] with Chebyshev nodes obtained by projecting equispaced points on the upper semicircle, and three nested ellipses with foci at plus and minus 1 passing through poles at plus or minus i/5, plus or minus i/20, and 1.05. Right: semilog plot of Chebyshev coefficient magnitudes for the three functions, each decaying along a straight line of slope log rho: rho = 1.051 slowest, 1.220 middle, 1.370 fastest."></p>
+<figcaption>Left: equispaced points on the semicircle project to the Chebyshev nodes (dots on <span class="math inline">\([-1,1]\)</span>). Ellipses through the nearest singularity of three functions. Right: their Chebyshev coefficients, with <span class="math inline">\(\rho^{-k}\)</span> dashed.</figcaption>
+</figure>
+</div>
+<ul>
+<li><strong><span class="math inline">\(\rho\)</span> is set by the nearest complex singularity</strong> <span class="math inline">\(z_0\)</span>: <span class="math inline">\(\ \rho=|z_0+\sqrt{z_0^2-1}|\)</span> (the root with modulus <span class="math inline">\(&gt;1\)</span>). Smoothness on the real line is not enough: Runge is <span class="math inline">\(C^\infty\)</span> on <span class="math inline">\([-1,1]\)</span>, but its poles at <span class="math inline">\(\pm\frac i5\)</span> give <span class="math inline">\(\rho\approx1.22\)</span>.</li>
+<li><strong>Digits per node:</strong> the error is <span class="math inline">\(\approx\rho^{-N}\)</span>, so each extra node buys <span class="math inline">\(\log_{10}\rho\)</span> digits. For Runge that is <span class="math inline">\(0.086\)</span>: one digit every <span class="math inline">\(12\)</span> nodes.</li>
+<li><strong>The ends are forgiving, the middle is not.</strong> A singularity at distance <span class="math inline">\(\delta\)</span> beyond an endpoint gives <span class="math inline">\(\rho\approx1+\sqrt{2\delta}\)</span>; at distance <span class="math inline">\(\delta\)</span> off the middle, <span class="math inline">\(\rho\approx1+\delta\)</span>. At <span class="math inline">\(\delta=0.05\)</span>: <span class="math inline">\(\rho=1.37\)</span> vs.&nbsp;<span class="math inline">\(1.05\)</span>. This is the node clustering again.</li>
+<li><strong>Entire <span class="math inline">\(f\)</span></strong> (<span class="math inline">\(e^x\)</span>, <span class="math inline">\(\sin x\)</span>): every <span class="math inline">\(\rho\)</span> works, so convergence is <strong>faster than any geometric rate</strong>.</li>
+<li><strong>Only finitely smooth</strong> (<span class="math inline">\(f^{(\nu)}\)</span> of bounded variation): <span class="math inline">\(O(N^{-\nu})\)</span> (<em>ATAP</em> Thm 7.2). A kink (<span class="math inline">\(\nu=1\)</span>) gives <span class="math inline">\(O(1/N)\)</span>, which is what a jump in <span class="math inline">\(p\)</span> does in §5.</li>
+</ul>
+<aside class="notes">
+<p>~4 min. Fitted decay rates of |a_k| in scripts/collocation_figures.py: 1.2198, 1.0512, 1.3702, matching ρ to four digits. (Runge is even, so its odd coefficients vanish; only the even ones are plotted.) Endpoint vs.&nbsp;middle: for z_0 = 1 + δ, ρ = 1 + δ + √(2δ + δ²) ≈ 1 + √(2δ); for z_0 = iδ, ρ = δ + √(1 + δ²) ≈ 1 + δ. The ellipse is thin near ±1, so a singularity there has to be much closer to hurt. The same 1/√(1 − x²) density puts more nodes near the ends. Contrast with equispaced interpolation: it converges only if f is analytic in a much larger region, bounded by a level curve of a logarithmic potential through ±1 that crosses the imaginary axis at about ±0.526i. Runge’s poles at ±0.2i lie inside it, hence divergence. Practical reading: plot |a_k| on a log scale. A straight line means analytic, and its slope is log ρ; a plateau at 10⁻¹⁶ means converged (Chebfun chops there).</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -859,7 +1034,53 @@ CMSC 35410 · Spectral Methods for Machine Learning and Network Analysis
 <span id="cb1-4"><a aria-label="4"></a>    D <span class="op">=</span> np.outer(c, <span class="dv">1</span> <span class="op">/</span> c) <span class="op">/</span> (x[:, <span class="va">None</span>] <span class="op">-</span> x[<span class="va">None</span>, :] <span class="op">+</span> np.eye(N <span class="op">+</span> <span class="dv">1</span>))</span>
 <span id="cb1-5"><a aria-label="5"></a>    <span class="cf">return</span> D <span class="op">-</span> np.diag(D.<span class="bu">sum</span>(<span class="dv">1</span>)), x</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <aside class="notes">
-<p>~3 min. The off-diagonal formula is ℓ_j’(x_i) for Chebyshev nodes, from the barycentric weights w_j ∝ (−1)^j/c_j. Same function as in Lecture 1’s demo. Cost: dense (N+1)², but N is 20–100.</p>
+<p>~3 min. The off-diagonal formula is ℓ_j’(x_i) for Chebyshev nodes, from the barycentric weights w_j ∝ (−1)^j/c_j (derived on the next two slides). Same function as in Lecture 1’s demo. Cost: dense (N+1)², but N is 20–100.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2 smaller">
+<h2>Deriving <span class="math inline">\(D_N\)</span> (1): any nodes</h2>
+<p><strong>Definition.</strong> Interpolate the values <span class="math inline">\(u_j\)</span> by <span class="math inline">\(p(x)=\sum_j u_j\,\ell_j(x)\)</span>, differentiate, sample at the nodes: <span class="math display">\[p'(x_i)=\sum_j \underbrace{\ell_j'(x_i)}_{(D_N)_{ij}}\,u_j .\]</span> So <span class="math inline">\(D_N\)</span> is <strong>exact</strong> on polynomials of degree <span class="math inline">\(\le N\)</span>, and the task is to compute <span class="math inline">\(\ell_j'(x_i)\)</span>.</p>
+<p><strong>1. Write <span class="math inline">\(\ell_j\)</span> through the node polynomial</strong> <span class="math inline">\(\ \omega(x)=\prod_{k=0}^N(x-x_k)\)</span>: <span class="math display">\[\ell_j(x)=\frac{\omega_j(x)}{\omega_j(x_j)},\qquad \omega_j(x)=\frac{\omega(x)}{x-x_j}=\prod_{k\ne j}(x-x_k),\qquad \omega_j(x_j)=\omega'(x_j).\]</span></p>
+<p><strong>2. Off-diagonal (<span class="math inline">\(i\ne j\)</span>).</strong> Quotient rule, then use <span class="math inline">\(\omega(x_i)=0\)</span>: <span class="math display">\[\omega_j'(x)=\frac{\omega'(x)}{x-x_j}-\frac{\omega(x)}{(x-x_j)^2}\ \Longrightarrow\ \omega_j'(x_i)=\frac{\omega'(x_i)}{x_i-x_j}\ \Longrightarrow\ \boxed{(D_N)_{ij}=\frac{\omega'(x_i)}{\omega'(x_j)}\,\frac{1}{x_i-x_j}}.\]</span></p>
+<p><strong>3. Diagonal.</strong> Interpolation reproduces constants: <span class="math inline">\(\sum_j\ell_j\equiv1\)</span>. Differentiate: <span class="math inline">\(\sum_j\ell_j'\equiv0\)</span>, so <span class="math display">\[(D_N)_{ii}=-\sum_{j\ne i}(D_N)_{ij}\qquad\text{(the negative-sum trick is an identity, not a hack).}\]</span></p>
+<div class="idea">
+<p>Everything depends on the nodes only through the numbers <span class="math inline">\(\omega'(x_j)\)</span>. Their reciprocals <span class="math inline">\(w_j=1/\omega'(x_j)\)</span> are the <strong>barycentric weights</strong>.</p>
+</div>
+<aside class="notes">
+<p>~4 min. Smallest example, N = 1, nodes x = (1, −1): ω = x² − 1, ω’ = 2x, so ω’(x_0) = 2, ω’(x_1) = −2, and D_01 = (2/−2)·1/(1 − (−1)) = −1/2. The diagonal gives D_00 = 1/2. So D_1 = [[½, −½], [½, −½]]: both rows return the slope (u_0 − u_1)/2 of the line through the two points, as they must. In step 2, ω_j’(x_i) can also be seen directly: ω_j(x) = ω(x)/(x − x_j), and at a root x_i of ω only the term in which (x − x_i) is differentiated survives in the product rule.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section class="slide level2 smaller">
+<h2>Deriving <span class="math inline">\(D_N\)</span> (2): the Chebyshev weights</h2>
+<p><strong>Nodes</strong> <span class="math inline">\(x_j=\cos\theta_j\)</span>, <span class="math inline">\(\theta_j=\frac{j\pi}N\)</span>: the endpoints <span class="math inline">\(\pm1\)</span> and the <span class="math inline">\(N-1\)</span> extrema of <span class="math inline">\(T_N\)</span>, i.e.&nbsp;the roots of <span class="math display">\[\omega(x)\ \propto\ (x^2-1)\,U_{N-1}(x),\qquad\text{and in }\theta:\ \ (x^2-1)\,U_{N-1}(x)=-\sin\theta\,\sin N\theta .\]</span></p>
+<p><strong>Compute <span class="math inline">\(\omega'(x_j)\)</span></strong> with the chain rule <span class="math inline">\(\frac{d}{dx}=-\frac1{\sin\theta}\frac{d}{d\theta}\)</span>: <span class="math display">\[\frac{d}{dx}\big(-\sin\theta\sin N\theta\big)=\frac{\cos\theta\,\sin N\theta+N\sin\theta\,\cos N\theta}{\sin\theta}.\]</span></p>
+<ul>
+<li><strong>Interior</strong> <span class="math inline">\(0&lt;j&lt;N\)</span>: <span class="math inline">\(\sin N\theta_j=0\)</span> and <span class="math inline">\(\cos N\theta_j=(-1)^j\)</span>, so <span class="math inline">\(\ \omega'(x_j)\propto N(-1)^j\)</span>.</li>
+<li><strong>Endpoints</strong> (<span class="math inline">\(\sin\theta=0\)</span>, use the polynomial form): <span class="math inline">\(\frac{d}{dx}\big[(x^2-1)U_{N-1}\big]_{x=\pm1}=\pm2\,U_{N-1}(\pm1)\)</span>, with <span class="math inline">\(U_{N-1}(1)=N\)</span> and <span class="math inline">\(U_{N-1}(-1)=(-1)^{N-1}N\)</span>. This gives <span class="math inline">\(2N\)</span> and <span class="math inline">\(2N(-1)^N\)</span>: <strong>twice</strong> the interior pattern.</li>
+</ul>
+<p>So <span class="math inline">\(\ \omega'(x_j)\propto(-1)^j c_j\)</span>, with <span class="math inline">\(c_0=c_N=2\)</span> and <span class="math inline">\(c_j=1\)</span> otherwise. Substitute into step 2: <span class="math display">\[(D_N)_{ij}=\frac{(-1)^ic_i}{(-1)^jc_j}\,\frac1{x_i-x_j}=\frac{c_i}{c_j}\,\frac{(-1)^{i+j}}{x_i-x_j}\qquad(i\ne j).\ \ \checkmark\]</span></p>
+<aside class="notes">
+<p>~4 min. Where the node polynomial comes from: T_N’(cos θ) = N sin Nθ / sin θ = N U_{N−1}(cos θ), so the interior extrema of T_N are the roots of U_{N−1}, and the factor x² − 1 adds the endpoints. Monic normalization: ω = 2^{1−N}(x² − 1)U_{N−1}, so ω’(x_j) = 2^{1−N} N (−1)^j c_j exactly; the constant cancels in the ratio. The sign alternation is the equioscillation of T_N; the factor 2 at the ends is the same halving as the endpoint weights of the trapezoidal rule (DCT-I). Closed forms for the diagonal (not needed, the negative-sum trick gives them): D_00 = −D_NN = (2N² + 1)/6, and D_jj = −x_j / (2(1 − x_j²)) for 0 &lt; j &lt; N. All checked numerically against the derivative of the Lagrange basis.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
