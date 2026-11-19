@@ -36,8 +36,10 @@ format:
 - **§3 Boundaries, killing, spectra.** Reflection and killing; exit times and the Green's function; Feynman–Kac; compact vs. non-compact.
 - **§4 Graphs on samples converge to Laplacians** (one slide).
 
+**Running example:** Langevin dynamics $dX_t=-\nabla U(X_t)\,dt+\sqrt2\,dW_t$, with $U=0$ (Brownian motion), $U=\frac{x^2}2$ (Ornstein–Uhlenbeck) and $U=(x^2-1)^2$ (double well).
+
 ::: notes
-~1 min. Timing: §1 ~16 min, §2 ~20 min, §3 ~20 min, §4 ~5 min, closing ~6 min.
+~1 min. Timing: §1 ~24 min (with the Langevin and OU slides), §2 ~22 min, §3 ~20 min, §4 ~5 min, closing ~6 min.
 :::
 
 # §1 · From random walks to Brownian motion {background-color="#1c1b19"}
@@ -72,18 +74,66 @@ $$P_tf(x)=\mathbb E_x\,f(X_t)=\int p_t(x,y)f(y)\,dy,\qquad p_t(x,y)=\frac{e^{-|x
 ~4 min. Generator computation: P_t f(x) = E f(x + √(2t) Z) = f(x) + √(2t) E[∇f·Z] + t E[Zᵀ∇²f Z] + o(t) = f(x) + t Δf(x) + o(t), since E Z = 0 and E ZZᵀ = I. Chapman–Kolmogorov for Gaussians: variances add, 2t + 2s.
 :::
 
-## Itô's formula and Dynkin's formula
+## Running example: Langevin dynamics {.smaller}
 
-For $dX_t=\sqrt2\,dW_t$ and smooth $f$ (**Itô's formula**: the $(dW)^2=dt$ term survives):
-$$df(X_t)=\sqrt2\,\nabla f(X_t)\cdot dW_t+\Delta f(X_t)\,dt .$$
+::: {.defn}
+**Langevin dynamics** with a smooth **potential** $U:\mathbb R^d\to\mathbb R$:
+$$dX_t=-\nabla U(X_t)\,dt+\sqrt2\,dW_t .$$
+:::
 
-- **Martingale:** $\ M_t^f=f(X_t)-f(X_0)-\int_0^t\Delta f(X_s)\,ds\ $ has mean zero: the generator is the **drift of $f(X_t)$**.
+- **Gradient descent plus noise.** Euler–Maruyama with step $\eta$ gives the **unadjusted Langevin algorithm** $\ X_{k+1}=X_k-\eta\,\nabla U(X_k)+\sqrt{2\eta}\,\xi_k$, $\ \xi_k\sim N(0,I)$. The drift pulls toward minima of $U$; the noise kicks the particle out.
+- **Claim (proved in §2):** when $Z=\int e^{-U}<\infty$, the stationary law is $\ \pi=e^{-U}/Z$. So Langevin **samples** from any density known up to a constant, such as a Bayesian posterior ($U=-\log$ likelihood $-\log$ prior).
+
+| $U$ | name | behaviour |
+|:--|:--|:--|
+| $0$ | Brownian motion | spreads forever; $e^{-U}=1$ is **not normalizable**: no stationary probability |
+| $\frac{\lvert x\rvert^2}2$ | Ornstein–Uhlenbeck (OU) | pulled back to $0$; $\pi=N(0,I)$; everything explicit |
+| $(x^2-1)^2$ | double well | **metastable**: stays near $\pm1$, hops between them |
+
+: {tbl-colwidths="[16,26,58]"}
+
+![Left: paths from $x=3$ (Brownian, OU) and $x=1$ (double well). Right: $X_t$ at large $t$ over many paths, against $e^{-U}/Z$.](figures/langevin.svg){.nostretch fig-align="center" width="92%" fig-alt="Top left: a Brownian path wandering away inside a widening grey band, and an OU path decaying toward 0 along the dashed curve 3e^{-t} and then fluctuating around it. Bottom left: a double-well path that stays near +1 or -1 for a few time units and then hops to the other well. Right: histograms matching a standard Gaussian for OU and a bimodal density with peaks at plus and minus 1 for the double well."}
+
+::: notes
+~4 min. Temperature: dX = −∇U dt + √(2/β) dW has stationary law ∝ e^{−βU}; as β → ∞ it concentrates on the minima of U (simulated annealing), so Langevin interpolates between optimization and sampling. Stochastic-gradient Langevin dynamics (SGLD) replaces ∇U by a minibatch estimate. The discretization has bias O(η) in its stationary law; a Metropolis correction (MALA) removes it: Lecture 16. Double well: the hopping rate is given by Kramers' formula, ≈ (√(U''(1)|U''(0)|)/2π) e^{−ΔU} = (√32/2π) e^{−1} ≈ 0.33 per unit time for barrier ΔU = 1; the path in the figure changes sign about 15 times on [0, 30]. Simulation: scripts/make_figures.py (fig_langevin), Euler–Maruyama with dt = 10⁻³.
+:::
+
+## Itô's formula and Dynkin's formula {.smaller}
+
+::: {.thm}
+**Itô's formula.** Let $X$ solve $dX_t=b(X_t)\,dt+\sigma(X_t)\,dW_t$ in $\mathbb R^d$, with $W$ an $m$-dimensional Brownian motion and $b,\sigma$ Lipschitz. Let $f(t,x)$ be $C^1$ in $t$ and $C^2$ in $x$. Then, almost surely, for all $t\ge0$,
+$$f(t,X_t)=f(0,X_0)+\int_0^t\Big(\partial_sf+b\cdot\nabla f+\tfrac12\operatorname{tr}\big(\sigma\sigma^\top\nabla^2f\big)\Big)(s,X_s)\,ds+\int_0^t\nabla f(s,X_s)^\top\sigma(X_s)\,dW_s .$$
+:::
+
+- **How to remember it:** Taylor-expand to second order, $\ df=\partial_tf\,dt+\nabla f\cdot dX+\frac12\,dX^\top\nabla^2f\,dX$, and use $\ dW^i\,dW^j=\delta_{ij}\,dt$, $\ dt\,dW=dt^2=0$. Since $|dW|\sim\sqrt{dt}$, the second-order term **survives**: that is the difference from ordinary calculus.
+- **Langevin** ($b=-\nabla U$, $\sigma=\sqrt2\,I$, $f=f(x)$): $\ df(X_t)=\sqrt2\,\nabla f(X_t)\cdot dW_t+\mathcal Af(X_t)\,dt$, with $\ \mathcal Af=\Delta f-\nabla U\cdot\nabla f$. **Brownian motion** is $U=0$, $\mathcal A=\Delta$.
+- **Check** ($d=1$, $f=x^2$): $\ d(X_t^2)=2\sqrt2\,X_t\,dW_t+2\,dt$, so $\mathbb E_0X_t^2=2t$, the variance of the scaling limit.
+- **Martingale:** $\ M_t^f=f(X_t)-f(X_0)-\int_0^t\mathcal Af(X_s)\,ds\ $ is the stochastic integral, so it has mean zero (e.g. for bounded $\nabla f$): the generator is the **drift of $f(X_t)$**.
 - **Dynkin's formula:** for a stopping time $\tau$ with $\mathbb E_x\tau<\infty$,
-$$\mathbb E_xf(X_\tau)=f(x)+\mathbb E_x\int_0^\tau\Delta f(X_s)\,ds .$$
+$$\mathbb E_xf(X_\tau)=f(x)+\mathbb E_x\int_0^\tau\mathcal Af(X_s)\,ds .$$
 - **Graph analogue:** $f(X_t)-\int_0^t(P-I)f(X_s)\,ds$ is a martingale for the continuous-time walk; this gave the hitting-time equations $Lh=d-\mathrm{vol}\,\mathbf 1_t$ in Lecture 9.
 
 ::: notes
-~4 min. Heuristic for Itô: Taylor to second order, df = ∇f·dX + ½ dXᵀ∇²f dX, and dX dXᵀ = 2 dW dWᵀ = 2I dt. Dynkin is optional stopping for the martingale M^f; we use it in §3 for exit times. Everything here is stated without proof (Øksendal, Le Gall).
+~5 min. Heuristic for Itô: Taylor to second order, df = ∇f·dX + ½ dXᵀ∇²f dX, and dX dXᵀ = σ dW dWᵀ σᵀ = σσᵀ dt (= 2I dt for Brownian motion). Why dW dWᵀ = I dt: over a partition of [0, t] with mesh → 0, Σ (ΔW)² → t in L² (quadratic variation), while Σ |Δt ΔW| and Σ (Δt)² → 0. The dW integral is the Itô integral (integrand evaluated at the left endpoint of each interval), which is what makes it a (local) martingale; it is a true martingale when E∫|σᵀ∇f|² ds < ∞. The time-dependent form is the one used for Feynman–Kac in §3. The drift term is exactly the generator of the next section's "Diffusion generators" slide, plus ∂_t. Dynkin is optional stopping for the martingale M^f; we use it in §3 for exit times. Everything here is stated without proof (Øksendal, Le Gall).
+:::
+
+## Example: Ornstein–Uhlenbeck, solved with Itô {.smaller}
+
+In $d=1$ with $U=\frac{x^2}2$: $\quad dX_t=-X_t\,dt+\sqrt2\,dW_t$.
+
+1. **Integrating factor.** Apply Itô to $f(t,x)=e^tx$. Here $\partial_tf=e^tx$, $\partial_xf=e^t$, $\partial_x^2f=0$, so there is **no** second-order correction:
+$$d(e^tX_t)=e^tX_t\,dt+e^t\,dX_t=\sqrt2\,e^t\,dW_t\quad\Longrightarrow\quad X_t=e^{-t}x+\sqrt2\int_0^te^{-(t-s)}\,dW_s .$$
+2. **The law.** A stochastic integral of a deterministic integrand is Gaussian, with mean $0$ and variance $2\int_0^te^{-2(t-s)}\,ds=1-e^{-2t}$ (Itô isometry). So
+$$X_t\sim N\big(e^{-t}x,\ 1-e^{-2t}\big)\ \xrightarrow[t\to\infty]{}\ N(0,1)=\frac{e^{-x^2/2}}{\sqrt{2\pi}}\ \propto\ e^{-U}\qquad\text{from every }x.$$
+3. **The semigroup** (Mehler's formula): $\ P_tf(x)=\mathbb E\,f\big(e^{-t}x+\sqrt{1-e^{-2t}}\,Z\big)$, $\ Z\sim N(0,1)$.
+
+- **Compare Brownian motion** ($U=0$): $X_t\sim N(x,2t)$, and the variance grows forever. The confining drift is the difference between **spreading** and **mixing**.
+- **The generator as the drift of $f(X_t)$:** $\ \mathcal Af=f''-xf'$.
+  - $f=x$: $\ \mathcal Ax=-x$, so $\ \frac{d}{dt}\mathbb E_xX_t=-\mathbb E_xX_t$ and $\mathbb E_xX_t=e^{-t}x$, as in step 2.
+  - $f=x^2-1$: $\ \mathcal Af=-2f$. So $x$ and $x^2-1$ are **eigenfunctions**, with eigenvalues $-1,-2$: the start of the Hermite basis (Lecture 16).
+
+::: notes
+~4 min. Itô isometry: E(∫_0^t g dW)² = ∫_0^t g² ds for deterministic (or adapted) g; a deterministic g gives a Gaussian because the integral is a limit of Gaussian sums. Simulation check (scripts/make_figures.py): from x = 2 at t = 1, sample mean 0.740 vs 2/e = 0.736 and variance 0.860 vs 1 − e^{−2} = 0.865. The rate 1 at which the mean forgets x is the spectral gap of OU; the eigenvalue −2 of x² − 1 is the rate at which the variance relaxes, consistent with 1 − e^{−2t}. The same integrating-factor trick solves any linear SDE dX = −BX dt + σ dW (Gaussian processes).
 :::
 
 # §2 · Markov semigroups {background-color="#1c1b19"}
@@ -100,6 +150,7 @@ As on graphs (Lecture 2, §2): the process acts on **functions** and on **measur
 
 - **Duality:** $\ \int f\,d\mu_t=\int P_tf\,d\mu$.
 - **Densities relative to $\pi$:** if $\mu_t=h_t\,\pi$ and $\pi$ is stationary, then $\partial_th_t=\mathcal A^\dagger h_t$, the adjoint in $L^2(\pi)$. For **reversible** processes $\mathcal A^\dagger=\mathcal A$: densities evolve like functions (Lecture 2, §2.4).
+- **OU:** on functions, $P_tf(x)=\mathbb E f\big(e^{-t}x+\sqrt{1-e^{-2t}}Z\big)$; on measures, $\delta_xP_t=N(e^{-t}x,1-e^{-2t})\to N(0,1)$ for every $x$.
 - The forward equation for a diffusion is the **Fokker–Planck equation** (Lecture 16).
 
 ::: notes
@@ -112,7 +163,7 @@ For the SDE $\ dX_t=b(X_t)\,dt+\sigma(X_t)\,dW_t$, Itô's formula gives the gene
 $$\mathcal Af=b\cdot\nabla f+\tfrac12\operatorname{tr}\big(\sigma\sigma^\top\nabla^2f\big).$$
 
 - **Drift** $b$: first-order term (transport). **Diffusion matrix** $a=\sigma\sigma^\top$: second-order term.
-- With $\sigma=\sqrt2\,I$: $\ \mathcal Af=\Delta f+b\cdot\nabla f$.
+- With $\sigma=\sqrt2\,I$: $\ \mathcal Af=\Delta f+b\cdot\nabla f$. **Langevin:** $\ \mathcal Af=\Delta f-\nabla U\cdot\nabla f$. OU: $\ f''-xf'$; double well: $\ f''-4x(x^2-1)f'$.
 - **Graph analogue:** $\mathcal A=P-I$, i.e. $\mathcal Af(x)=\sum_yP(x,y)\big(f(y)-f(x)\big)$: the average change of $f$ over one jump.
 - **Local vs. non-local:** diffusion generators are **differential operators** (paths are continuous); graph generators average over neighbours (paths jump). Both are **Markov generators**: $\mathcal A1=0$ and the **maximum principle** ($f$ maximal at $x$ $\Rightarrow$ $\mathcal Af(x)\le0$).
 
@@ -126,14 +177,15 @@ $$\mathcal Af=b\cdot\nabla f+\tfrac12\operatorname{tr}\big(\sigma\sigma^\top\nab
 - **Reversible** $\pi$: $\ \int g\,\mathcal Af\,d\pi=\int f\,\mathcal Ag\,d\pi$, i.e. $\mathcal A$ is **self-adjoint in $L^2(\pi)$**. Graph: $\Pi P=P^\top\Pi$.
 
 ::: {.thm}
-**Example.** Let $\pi\propto e^{-U}$ and $\mathcal A=\Delta+b\cdot\nabla$. Integration by parts gives $\ \int g\,\Delta f\,e^{-U}=-\int\nabla g\cdot\nabla f\,e^{-U}+\int g\,\nabla U\cdot\nabla f\,e^{-U}$, so
+**Langevin is the reversible diffusion.** Let $\pi\propto e^{-U}$ and $\mathcal A=\Delta+b\cdot\nabla$. Integration by parts gives $\ \int g\,\Delta f\,e^{-U}=-\int\nabla g\cdot\nabla f\,e^{-U}+\int g\,\nabla U\cdot\nabla f\,e^{-U}$, so
 $$\mathcal A\ \text{is reversible for}\ \pi\iff b=-\nabla U:\qquad dX_t=-\nabla U(X_t)\,dt+\sqrt2\,dW_t .$$
 :::
 
-- This is **Langevin dynamics**, the continuum Metropolis chain for sampling from $e^{-U}$ (Lecture 16). $U=\frac{|x|^2}2$ gives Ornstein–Uhlenbeck, $\mathcal Af=\Delta f-x\cdot\nabla f$.
+- **This proves the claim of §1:** reversible implies stationary (take $g=1$), so $e^{-U}/Z$ is stationary for Langevin, as the histograms showed. It is the continuum Metropolis chain (Lecture 16). OU: $\pi=N(0,I)$.
+- **Brownian motion has no stationary probability.** Here $e^{-U}=1$ is not normalizable, and nothing else works either: $\ \mathbb P_x(X_t\in K)\le|K|\,(4\pi t)^{-d/2}\to0$ for every bounded $K$. If $\pi$ were stationary, then $\pi(K)=\int\mathbb P_x(X_t\in K)\,d\pi(x)\to0$ for every $K$, which is impossible. Lebesgue measure is stationary but **infinite** (§3).
 
 ::: notes
-~4 min. With b = −∇U the symmetric form is ∫g 𝒜f dπ = −∫∇g·∇f dπ, manifestly symmetric. Conversely, symmetry for all f, g forces (b + ∇U)·∇f to integrate to zero against every g, so b = −∇U. Non-reversible drifts with the same π exist (b = −∇U + c with div(c e^{−U}) = 0); they can mix faster, a theme for Lecture 16.
+~5 min. With b = −∇U the symmetric form is ∫g 𝒜f dπ = −∫∇g·∇f dπ, manifestly symmetric. Brownian argument: the limit uses dominated convergence (P_x(X_t ∈ K) ≤ 1 and → 0 pointwise), so π(K) = 0 for every bounded K, hence π = 0. The density e^{−U} needs U to grow at infinity: Z < ∞ for OU and the double well, Z = ∞ for U = 0 (and for any U that grows too slowly, e.g. U = ½ log(1 + |x|²) in d = 1). Conversely, symmetry for all f, g forces (b + ∇U)·∇f to integrate to zero against every g, so b = −∇U. Non-reversible drifts with the same π exist (b = −∇U + c with div(c e^{−U}) = 0); they can mix faster, a theme for Lecture 16.
 :::
 
 ## The carré du champ and the Dirichlet form
@@ -148,6 +200,7 @@ $\Gamma(f,g)=\frac12\big(\mathcal A(fg)-f\,\mathcal Ag-g\,\mathcal Af\big),\qqua
 | diffusion, $\mathcal A=\Delta-\nabla U\cdot\nabla$ | $|\nabla f|^2$ | $\int|\nabla f|^2\,d\pi$ |
 
 - **Same functional inequalities:** Poincaré $\lambda\operatorname{Var}_\pi f\le\mathcal E(f,f)$, LSI, MLSI, and the same proofs of $\chi^2$ and entropy decay (Lectures 3–4, 13).
+- **OU:** $\ \mathcal E(f,f)=\int f'^2\,d\gamma$ for $\gamma=N(0,1)$. The **Gaussian Poincaré inequality** $\operatorname{Var}_\gamma f\le\int f'^2\,d\gamma$ holds with $\lambda=1$, and $f=x$ (the eigenfunction above) shows it is sharp: $\operatorname{Var}_\gamma x=1=\int1\,d\gamma$. Proof: Lecture 16.
 - **Diffusion property (chain rule):** $\ \Gamma(\varphi(f),g)=\varphi'(f)\,\Gamma(f,g)$. This is why $\mathcal E(h,\log h)=4\,\mathcal E(\sqrt h,\sqrt h)$ and $\rho_0=4\alpha$ for diffusions (Lecture 13). On graphs it fails: only inequalities survive.
 - **Next:** iterate once more, $\Gamma_2(f)=\frac12\big(\mathcal A\Gamma(f)-2\Gamma(f,\mathcal Af)\big)$: **Bakry–Émery** (Lecture 17).
 
@@ -160,6 +213,7 @@ $\Gamma(f,g)=\frac12\big(\mathcal A(fg)-f\,\mathcal Ag-g\,\mathcal Af\big),\qqua
 - $\Delta$ is **unbounded**; it is defined on a **domain**, and the domain encodes the boundary behaviour (LA Review II §8, Lecture 14). $P_t$ is a **contraction** for every $t$.
 - **Hille–Yosida** (stated): a closed, densely defined $\mathcal A$ generates a strongly continuous contraction semigroup iff every $\lambda>0$ is in its resolvent set and $\|(\lambda-\mathcal A)^{-1}\|\le\frac1\lambda$.
 - **Self-adjoint case:** $-\mathcal A\succeq0$ self-adjoint in $L^2(\pi)$ $\Rightarrow$ $P_t=e^{t\mathcal A}$ by the spectral theorem. Equivalently, start from a **closed quadratic form** $\mathcal E$ (a Dirichlet form) and build the operator from it (Friedrichs, Fukushima).
+- **OU:** $\mathcal A=\frac{d^2}{dx^2}-x\frac d{dx}$ is self-adjoint on $L^2(\gamma)$ with **discrete** spectrum $0,-1,-2,\dots$, although it lives on all of $\mathbb R$: confinement does the job of a compact domain (§3).
 - **Practical rule:** state and prove things for $P_t$, resolvents $(\lambda-\mathcal A)^{-1}$, or $\mathcal E$; differentiate only on a core of nice functions.
 
 ::: notes
@@ -228,7 +282,7 @@ and every theorem of Lectures 3–4 holds: $\chi^2$ decays at rate $2\lambda_2$,
 - The heat kernel decays only polynomially: $\ \sup_yp_t(x,y)=(4\pi t)^{-d/2}$. The particle spreads, it never mixes.
 
 ::: {.idea}
-To get a stationary probability and a gap on $\mathbb R^d$, add a **confining drift**: $dX=-\nabla U\,dt+\sqrt2\,dW$. Next lecture: Ornstein–Uhlenbeck ($\lambda=1$, Hermite eigenfunctions) and Langevin dynamics.
+To get a stationary probability and a gap on $\mathbb R^d$, add a **confining drift**: this is exactly what Langevin's $-\nabla U$ does. OU has gap $\lambda=1$ (eigenfunctions $x$, $x^2-1$, … from §1); the double well has a **small** gap, set by the hopping rate. Next lecture: Hermite functions, Fokker–Planck, and Poincaré for log-concave $\pi$.
 :::
 
 ::: notes
@@ -303,6 +357,7 @@ $$\frac{c}{\varepsilon^2}(P-I)f\ \longrightarrow\ \Delta f+2(1-\alpha)\,\nabla\l
 |:--|:--|
 | Brownian motion (generator $\Delta$) | $X_t=x+\sqrt2W_t$; $\ p_t(x,y)=(4\pi t)^{-d/2}e^{-|x-y|^2/4t}$ |
 | semigroup, generator | $P_tf(x)=\mathbb E_xf(X_t)$; $\ \mathcal Af=\lim_{t\to0}(P_tf-f)/t$; $\ \partial_tP_tf=\mathcal AP_tf$ |
+| Langevin, OU | $dX=-\nabla U\,dt+\sqrt2\,dW$, $\ \pi\propto e^{-U}$; $\ U=\frac{x^2}2$: $X_t\sim N(e^{-t}x,1-e^{-2t})$ |
 | Itô, Dynkin | $df(X)=\sqrt2\nabla f\cdot dW+\Delta f\,dt$; $\ \mathbb E_xf(X_\tau)=f(x)+\mathbb E_x\int_0^\tau\mathcal Af(X_s)ds$ |
 | diffusion generator | $dX=b\,dt+\sigma dW$: $\ \mathcal Af=b\cdot\nabla f+\frac12\operatorname{tr}(\sigma\sigma^\top\nabla^2f)$ |
 | stationary, reversible | $\int\mathcal Af\,d\pi=0$; $\ \mathcal A$ self-adjoint in $L^2(\pi)$; $\pi\propto e^{-U}$: $b=-\nabla U$ |

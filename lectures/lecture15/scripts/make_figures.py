@@ -66,5 +66,42 @@ def fig_exit():
     fig.tight_layout(); fig.savefig(os.path.join(OUT, "exit.svg"), bbox_inches="tight")
     if PREV: fig.savefig(PREV + "-exit.png", dpi=70, bbox_inches="tight")
 
+def langevin_em(gradU, x0, T, dt, n_paths=1):
+    """Euler-Maruyama for dX = -U'(X) dt + sqrt(2) dW (the unadjusted Langevin algorithm). Returns the path array."""
+    n = int(T / dt); X = np.empty((n + 1, n_paths)); X[0] = x0
+    for k in range(n): X[k + 1] = X[k] - dt * gradU(X[k]) + np.sqrt(2 * dt) * rng.standard_normal(n_paths)
+    return X
+
+def fig_langevin():
+    ou = (lambda x: x ** 2 / 2, lambda x: x); dw = (lambda x: (x ** 2 - 1) ** 2, lambda x: 4 * x * (x ** 2 - 1))
+    dt = 1e-3; T = 30.0; t = np.arange(int(T / dt) + 1) * dt
+    fig = plt.figure(figsize=(13, 4.6)); gs = fig.add_gridspec(2, 2, width_ratios=[1.5, 1], hspace=0.12)
+    ax = fig.add_subplot(gs[0, 0])
+    Xb = langevin_em(lambda x: 0 * x, 3.0, T, dt)[:, 0]; Xo = langevin_em(ou[1], 3.0, T, dt)[:, 0]; Xd = langevin_em(dw[1], 1.0, T, dt)[:, 0]
+    tc = t[::100]; ax.fill_between(tc, 3 - 2 * np.sqrt(2 * tc), 3 + 2 * np.sqrt(2 * tc), color=GREY, alpha=0.15, lw=0)
+    ax.plot(t[::10], Xb[::10], color=GREY, lw=0.7, label=r"Brownian, $U=0$: spreads ($\pm2\sqrt{2t}$ shaded)")
+    ax.plot(t[::10], Xo[::10], color=BLUE, lw=0.7, label=r"OU, $U=\frac{x^2}{2}$: settles")
+    ax.plot(tc, 3 * np.exp(-tc), color=INK, lw=1.3, ls="--", label=r"OU mean $3e^{-t}$")
+    ax.set_ylim(-5, 12); ax.set_xticklabels([]); ax.set_ylabel("$X_t$")
+    ax.legend(frameon=False, fontsize=9.5, loc="upper left", ncol=1)
+    ax.set_title(r"Langevin paths, $dX=-U'(X)\,dt+\sqrt{2}\,dW$", fontsize=12)
+    ax = fig.add_subplot(gs[1, 0]); ax.plot(t[::10], Xd[::10], color=ORANGE, lw=0.7, label=r"double well, $U=(x^2-1)^2$: hops between $\pm1$")
+    ax.axhline(1, color=GREY, lw=0.6, ls=":"); ax.axhline(-1, color=GREY, lw=0.6, ls=":")
+    ax.set_ylim(-2.4, 3.2); ax.set_xlabel("$t$"); ax.set_ylabel("$X_t$"); ax.legend(frameon=False, fontsize=9.5, loc="upper left")
+    hops = int(np.sum(np.abs(np.diff(np.sign(Xd[::200]))) > 0)); print(f"langevin: double well sign changes (coarse) on [0,{T:.0f}]: {hops}; Brownian |X_T - 3| = {abs(Xb[-1]-3):.2f}")
+    ax = fig.add_subplot(gs[:, 1]); xs = np.linspace(-3.2, 3.2, 600)
+    Xs = langevin_em(dw[1], rng.standard_normal(4000), 30.0, 2e-3, 4000)[-1]
+    Ys = langevin_em(ou[1], 3.0, 4.0, 2e-3, 20000)[-1]
+    for S, (U, _), c, lab in ((Xs, dw, ORANGE, "double well"), (Ys, ou, BLUE, "OU")):
+        ax.hist(S, bins=np.linspace(-3.2, 3.2, 65), density=True, color=c, alpha=0.35)
+        w = np.exp(-U(xs)); ax.plot(xs, w / np.trapezoid(w, xs), color=c, lw=2, label=fr"{lab}: $e^{{-U}}/Z$")
+    print(f"langevin: OU from x=3 at t=4: mean {Ys.mean():.3f} (3e^-4 = {3*np.exp(-4):.3f}), var {Ys.var():.3f} (1-e^-8 = {1-np.exp(-8):.4f})")
+    Y1 = langevin_em(ou[1], 2.0, 1.0, 1e-3, 40000)[-1]
+    print(f"langevin: OU from x=2 at t=1: mean {Y1.mean():.3f} (2/e = {2/np.e:.3f}), var {Y1.var():.3f} (1-e^-2 = {1-np.exp(-2):.3f})")
+    ax.set_xlabel("$x$"); ax.legend(frameon=False, fontsize=10, loc="upper left"); ax.set_ylim(0, 0.75)
+    ax.set_title(r"long-run histograms vs. $e^{-U}/Z$", fontsize=12)
+    fig.savefig(os.path.join(OUT, "langevin.svg"), bbox_inches="tight")
+    if PREV: fig.savefig(PREV + "-langevin.png", dpi=70, bbox_inches="tight")
+
 if __name__ == "__main__":
-    fig_scaling(); fig_exit(); print("wrote figures/scaling.svg, figures/exit.svg")
+    fig_scaling(); fig_langevin(); fig_exit(); print("wrote figures/scaling.svg, figures/langevin.svg, figures/exit.svg")
